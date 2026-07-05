@@ -209,6 +209,12 @@ def render_table(table: list[list[str]]) -> str:
     return f"<table><thead><tr>{head_html}</tr></thead><tbody>{''.join(body_rows)}</tbody></table>"
 
 
+def render_tables(tables: list[list[list[str]]], empty_message: str) -> str:
+    if not tables:
+        return f"<p>{inline(empty_message)}</p>"
+    return "".join(render_table(table) for table in tables)
+
+
 def render_codex_folder_table(folders: list[CodexFolder]) -> str:
     rows = []
     for folder in folders:
@@ -494,12 +500,12 @@ def build_html(
     </section>
     <section>
       <h2>Agents</h2>
-      {render_table(agent_tables[0]) if agent_tables else "<p>No agent table found.</p>"}
+      {render_tables(agent_tables, "No agent tables found.")}
     </section>
     <section class="two-col">
       <div>
         <h2>Skills</h2>
-        {render_table(skill_tables[0]) if skill_tables else "<p>No skill table found.</p>"}
+        {render_tables(skill_tables, "No skill tables found.")}
       </div>
       <div>
         <h2>Token Registry</h2>

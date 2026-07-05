@@ -38,6 +38,17 @@ Preview archive moves without changing anything:
 make archive-dry-run
 ```
 
+## Token Checks
+
+Estimate prompt or AgentOps note size:
+
+```sh
+python3 src/token_counter.py --file /Users/leandrofajardo/Documents/AgentOps/skills.md
+```
+
+The helper uses `tiktoken` when installed. Without it, it returns a conservative
+character-based estimate so the dashboard workflow still verifies cleanly.
+
 ## Current Build Target
 
 - Keep Codex as the coordinator.
