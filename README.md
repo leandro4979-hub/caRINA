@@ -108,3 +108,9 @@ character-based estimate so the dashboard workflow still verifies cleanly.
 - Token registry
 - Service register
 - Observed TCP listeners
+
+## Support the Project
+
+If this tool saved you some time, feel free to buy me a coffee!
+
+[☕ Support via PayPal](https://www.paypal.com/ncp/payment/G4JVKQBYCCYUS)
