@@ -136,7 +136,12 @@ def discover_host() -> str:
     configured = os.environ.get("CARINA_BRIDGE_HOST", "").strip()
     if configured:
         return configured
-    for command in (["tailscale", "ip", "-4"], ["/Applications/Tailscale.app/Contents/MacOS/Tailscale", "ip", "-4"]):
+    for command in (
+        ["/usr/local/bin/tailscale", "ip", "-4"],
+        ["/opt/homebrew/bin/tailscale", "ip", "-4"],
+        ["tailscale", "ip", "-4"],
+        ["/Applications/Tailscale.app/Contents/MacOS/Tailscale", "ip", "-4"],
+    ):
         try:
             result = subprocess.run(command, capture_output=True, text=True, timeout=5, check=False)
         except (OSError, subprocess.TimeoutExpired):
