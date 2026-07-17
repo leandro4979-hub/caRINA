@@ -22,6 +22,18 @@ final class AgentArchitectureTests: XCTestCase {
         }
     }
 
+    func testCleverHandoffRequiresApproval() {
+        let decision = engine.authorize(
+            CommandRequest(
+                name: "clever.open",
+                payload: ["prompt": "Plan my day", "url": "com.turbofasttools.geniusai://"]
+            )
+        )
+        guard case .requireApproval = decision else {
+            return XCTFail("Clever AI app handoff must require explicit approval")
+        }
+    }
+
     func testUnknownAndMissingPayloadCommandsAreDenied() {
         guard case .deny = engine.authorize(CommandRequest(name: "terminal.run", payload: [:])) else {
             return XCTFail("Unknown command must be denied")

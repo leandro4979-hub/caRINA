@@ -20,6 +20,7 @@ iPhone
   |
   v
 CARINA SwiftUI + Karina App Intents
+  +-- Clever AI app handoff (paid in-app account)
   |
   | authenticated HTTP / WebSocket
   v
@@ -47,13 +48,20 @@ guidance and the text-generation guide are available at:
 ChatGPT Plus and OpenAI API billing are separate. A ChatGPT login is not an API
 credential and CARINA does not inspect ChatGPT cookies or sessions.
 
+Clever AI is available as an on-device CARINA route. Because its paid plan has
+no documented external API, CARINA prepares the prompt, requires a single-use
+approval, copies the prompt to a device-local clipboard for ten minutes, and
+opens the official Clever AI app. If iOS has offloaded the app, CARINA opens its
+official App Store listing (`id1667722375`). Replies remain inside Clever AI
+unless that app adds a documented export, Shortcut, App Intent, or API.
+
 ## Permission model
 
 | Level | Behavior | Examples |
 |---|---|---|
 | `read` | Runs after registry validation | system, bridge, OpenClaw, and agent status |
 | `prepare` | Produces a preview without a side effect | prepare a Shortcut |
-| `execute` | Requires trusted confirmation and a single-use approval | run an allow-listed Shortcut |
+| `execute` | Requires trusted confirmation and a single-use approval | run an allow-listed Shortcut or open Clever AI with a prepared prompt |
 
 Execute approvals expire after five minutes. The iPhone validates the command,
 required payload, and SHA-256 fingerprint. The Mac validates the same exact

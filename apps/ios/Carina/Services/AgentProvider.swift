@@ -1,5 +1,7 @@
 import Foundation
 import os
+import UIKit
+import UniformTypeIdentifiers
 
 protocol AgentProvider: Sendable {
     func send(_ request: AgentRequest) async throws -> AgentResponse
@@ -142,21 +144,69 @@ final class CarinaAgentService: ObservableObject {
         }
     }
 
+    func prepareClever(message: String) {
+        let clean = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { return }
+        cancel()
+        messages.append(AgentMessage(role: .user, text: clean))
+        let payload = [
+            "prompt": String(clean.prefix(16_000)),
+            "url": "com.turbofasttools.geniusai://",
+        ]
+        let request = CommandRequest(name: "clever.open", payload: payload)
+        let now = Date()
+        let action = PreparedAction(
+            id: UUID(),
+            command: request.name,
+            summary: "Copy this prompt and open Clever AI",
+            payload: payload,
+            permission: .execute,
+            fingerprint: CommandPermissionEngine.fingerprint(for: request),
+            createdAt: now,
+            expiresAt: now.addingTimeInterval(300)
+        )
+        messages.append(
+            AgentMessage(
+                role: .assistant,
+                text: "Your prompt is prepared. Approve once to copy it and open the Clever AI app, where your paid subscription remains in control.",
+                agent: "Clever AI",
+                route: .clever
+            )
+        )
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await self.approvalStore.register(action)
+                self.pendingApproval = action
+                self.state = .waitingForApproval
+            } catch {
+                self.state = .failed(error.localizedDescription)
+            }
+        }
+    }
+
     func cancel() {
         activeTask?.cancel()
         activeTask = nil
         if state == .sending { state = .idle }
     }
 
-    func approve(configuration: BridgeConfiguration, bearerToken: String) {
+    func approve(configuration: BridgeConfiguration?, bearerToken: String) {
         guard let action = pendingApproval else { return }
-        let provider = BridgeAgentProvider(configuration: configuration, bearerToken: bearerToken)
         state = .sending
         activeTask = Task { [weak self] in
             guard let self else { return }
             do {
                 try await self.approvalStore.consume(action)
                 self.pendingApproval = nil
+                if action.command == "clever.open" {
+                    try await self.openClever(action)
+                    return
+                }
+                guard let configuration else {
+                    throw AgentError.approval("The Mac bridge configuration is unavailable.")
+                }
+                let provider = BridgeAgentProvider(configuration: configuration, bearerToken: bearerToken)
                 let response = try await provider.execute(action, conversationID: self.conversationID)
                 await self.accept(response)
             } catch {
@@ -165,6 +215,36 @@ final class CarinaAgentService: ObservableObject {
                 self.state = .failed(error.localizedDescription)
             }
         }
+    }
+
+    private func openClever(_ action: PreparedAction) async throws {
+        guard let prompt = action.payload["prompt"], !prompt.isEmpty,
+              let schemeURL = URL(string: action.payload["url"] ?? "") else {
+            throw AgentError.approval("The Clever AI handoff payload is invalid.")
+        }
+        UIPasteboard.general.setItems(
+            [[UTType.utf8PlainText.identifier: prompt]],
+            options: [
+                .localOnly: true,
+                .expirationDate: Date().addingTimeInterval(600),
+            ]
+        )
+        var opened = await UIApplication.shared.open(schemeURL)
+        if !opened, let fallbackURL = URL(string: "https://apps.apple.com/app/id1667722375") {
+            opened = await UIApplication.shared.open(fallbackURL)
+        }
+        guard opened else {
+            throw AgentError.approval("Clever AI could not be opened. Confirm it is installed on this iPhone.")
+        }
+        messages.append(
+            AgentMessage(
+                role: .assistant,
+                text: "Opened Clever AI and copied your prompt. Paste it there to use your paid plan.",
+                agent: "Clever AI",
+                route: .clever
+            )
+        )
+        state = .idle
     }
 
     func deny() {

@@ -7,6 +7,7 @@ enum AgentRoute: String, Codable, CaseIterable, Identifiable, Sendable {
     case maya
     case hermes
     case karina
+    case clever
 
     var id: String { rawValue }
 
@@ -18,6 +19,7 @@ enum AgentRoute: String, Codable, CaseIterable, Identifiable, Sendable {
         case .maya: "Maya"
         case .hermes: "Hermes"
         case .karina: "Karina"
+        case .clever: "Clever AI"
         }
     }
 }

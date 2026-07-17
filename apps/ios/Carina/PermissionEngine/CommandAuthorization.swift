@@ -36,6 +36,7 @@ struct CommandPermissionEngine: Sendable {
             CommandDefinition(name: "agent.message", permission: .read, requiredPayloadKeys: ["message"]),
             CommandDefinition(name: "shortcut.prepare", permission: .prepare, requiredPayloadKeys: ["shortcutName"]),
             CommandDefinition(name: "shortcut.run", permission: .execute, requiredPayloadKeys: ["shortcutName"]),
+            CommandDefinition(name: "clever.open", permission: .execute, requiredPayloadKeys: ["prompt", "url"]),
         ]
         registry = Dictionary(uniqueKeysWithValues: commands.map { ($0.name, $0) })
     }

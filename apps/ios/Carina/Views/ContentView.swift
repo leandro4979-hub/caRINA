@@ -75,7 +75,7 @@ struct ContentView: View {
                 ContentUnavailableView(
                     "Ready for OpenClaw",
                     systemImage: "sparkles",
-                    description: Text("CARINA routes to OpenAI, Ollama, Maya, Hermes, or Karina through your Mac.")
+                    description: Text("CARINA routes through your Mac or hands prompts to Clever AI on this iPhone.")
                 )
             } else {
                 ForEach(agent.messages) { message in
@@ -113,8 +113,7 @@ struct ContentView: View {
                 Button("Deny", role: .destructive) { agent.deny() }
                 Spacer()
                 Button("Approve Once") {
-                    guard let configuration = try? settings.configuration() else { return }
-                    agent.approve(configuration: configuration, bearerToken: credentials.bridgeToken)
+                    agent.approve(configuration: try? settings.configuration(), bearerToken: credentials.bridgeToken)
                 }
                 .buttonStyle(.borderedProminent)
             }
@@ -154,6 +153,12 @@ struct ContentView: View {
     }
 
     private func send() {
+        if agent.route == .clever {
+            let message = command
+            command = ""
+            agent.prepareClever(message: message)
+            return
+        }
         guard settings.save(), let configuration = try? settings.configuration(), credentials.hasBridgeToken else {
             showingSettings = true
             return
