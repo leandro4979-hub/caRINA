@@ -96,6 +96,21 @@ On the iPhone, open CARINA Settings and enter:
 The persistent bridge listens on dual-stack IPv4/IPv6 ports `51001` and `51002`
 so the `.local` hostname remains usable when the LAN address changes.
 
+## Hands-On live view
+
+Apple's iPhone Mirroring app requires the iPhone to remain locked and stops when
+the phone is used directly. CARINA cannot override that operating-system rule.
+Use the native hands-on view when the physical phone must remain interactive:
+
+```sh
+make iphone-live-view
+```
+
+The launcher keeps the CARINA bridge active and opens QuickTime Player's Movie
+Recording view. Choose `leandros 17pro max` from the capture-device menu on the
+first run. QuickTime provides the live display while input stays on the iPhone;
+Mac-side remote control is available only through Apple's iPhone Mirroring app.
+
 The persistent LaunchAgent can reach Ollama and Hermes. macOS privacy blocks it
 from reading the existing Maya key inside Documents. A foreground bridge can
 reuse that key in place without copying it:

@@ -1,4 +1,4 @@
-.PHONY: dashboard verify archive-dry-run
+.PHONY: dashboard verify archive-dry-run iphone-live-view
 
 dashboard:
 	python3 src/build_dashboard.py
@@ -11,3 +11,6 @@ verify:
 
 archive-dry-run:
 	python3 src/archive_codex_review.py --dry-run
+
+iphone-live-view:
+	./scripts/open_iphone_hands_on_view.sh

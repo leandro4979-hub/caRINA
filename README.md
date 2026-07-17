@@ -68,6 +68,20 @@ global App Transport Security enabled and permits authenticated local-network
 development traffic only. See `docs/ios-device-deployment.md` for routing,
 permissions, deployment, and troubleshooting.
 
+### Hands-On iPhone Live View
+
+Apple ends an iPhone Mirroring session as soon as the physical iPhone is used.
+For a live Mac view while operating the phone itself, connect the iPhone and run:
+
+```sh
+make iphone-live-view
+```
+
+This opens QuickTime Player's native Movie Recording view and keeps the CARINA
+bridge running. Select `leandros 17pro max` from QuickTime's capture-device menu
+the first time; QuickTime remembers the selection. This mode displays the phone
+but does not provide Mac-side remote control.
+
 The first working build is a local dashboard generator. It reads the Markdown
 files in `/Users/leandrofajardo/Documents/AgentOps`, checks local listening
 services, and writes a browser-ready dashboard to `dist/dashboard.html`.
