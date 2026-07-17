@@ -41,8 +41,8 @@ Deploy CARINA to the physical iPhone and complete device runtime verification.
 
 ## Current Task
 
-Reconnect the physical iPhone over USB, restart the persistent RemoteXPC tunnel,
-and finish the remaining harmless runtime checks.
+Verify a harmless OpenClaw conversation request and the remaining on-device
+approval and Shortcuts checks.
 
 ## Next Task
 
@@ -51,11 +51,6 @@ visibility in Shortcuts on the physical iPhone.
 
 ## Known Issues
 
-- The signed Appium control session is not currently active. Unlock the iPhone,
-  connect it to the Mac over USB, keep the RemoteXPC tunnel Terminal open, and
-  run `make device-control-start` before additional Mac-side UI checks.
-- The iPhone is currently visible through CoreDevice over `localNetwork`; the
-  Appium RemoteXPC registry has no active USB tunnel.
 - App Intent visibility in the Shortcuts app has not been directly verified.
 - Local Network, Microphone, and Speech Recognition approval states have not
   all been read back from the physical device.
@@ -78,11 +73,11 @@ signing and destination `leandros 17pro max`.
 - Device: `leandros 17pro max`
 - Model: iPhone 17 Pro Max
 - Pairing: available and paired
-- Current transport: local network; USB tunnel disconnected
+- Current transport: USB RemoteXPC tunnel active
 - Developer Mode: enabled
 - Trust: confirmed
 - CARINA installed: yes
-- Current Appium session: inactive
+- Current Appium session: active
 
 ## Service Status
 
