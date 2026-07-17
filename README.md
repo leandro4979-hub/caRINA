@@ -77,10 +77,10 @@ For a live Mac view while operating the phone itself, connect the iPhone and run
 make iphone-live-view
 ```
 
-This opens QuickTime Player's native Movie Recording view and keeps the CARINA
-bridge running. Select `leandros 17pro max` from QuickTime's capture-device menu
-the first time; QuickTime remembers the selection. This mode displays the phone
-but does not provide Mac-side remote control.
+This opens the Mac's AirPlay Receiver settings and keeps the CARINA bridge
+running. On the iPhone, open Control Center, tap **Screen Mirroring**, and select
+the Mac. This mode displays the phone without activating Continuity Camera, but
+it does not provide Mac-side remote control.
 
 The first working build is a local dashboard generator. It reads the Markdown
 files in `/Users/leandrofajardo/Documents/AgentOps`, checks local listening

@@ -10,15 +10,8 @@ else
   print -u2 "CARINA bridge is not installed. Run ./scripts/install_carina_bridge_launch_agent.sh first."
 fi
 
-/usr/bin/osascript <<'APPLESCRIPT'
-tell application "QuickTime Player"
-    activate
-    set liveViews to every document whose name contains "Movie Recording"
-    if (count of liveViews) is 0 then
-        new movie recording
-    end if
-end tell
-APPLESCRIPT
+/usr/bin/open "x-apple.systempreferences:com.apple.AirDrop-Handoff-Settings.extension"
 
-print "Hands-On Live View is open. Select the iPhone from QuickTime's capture-device menu if it is not already selected."
-print "Operate the iPhone physically; CARINA's bridge remains active in the background."
+print "Hands-On Live View is ready. Confirm AirPlay Receiver is enabled on the Mac."
+print "On the iPhone, open Control Center, tap Screen Mirroring, and select this Mac."
+print "CARINA's bridge remains active while the physical iPhone stays interactive."
