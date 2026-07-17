@@ -307,6 +307,12 @@ class AgentRouter:
             {
                 "model": self.ollama_model,
                 "stream": False,
+                "think": False,
+                "keep_alive": "10m",
+                "options": {
+                    "num_predict": 512,
+                    "temperature": 0.2,
+                },
                 "messages": [
                     {"role": "system", "content": system_instruction},
                     {"role": "user", "content": message},

@@ -75,6 +75,18 @@ class CarinaBridgeTests(unittest.TestCase):
             result = router.message(request(route="openclaw"))
         self.assertEqual(result["provider"], "openai-fallback")
 
+    def test_ollama_disables_reasoning_for_mobile_latency(self):
+        router = AgentRouter()
+        response = {"message": {"content": "CARINA_LINK_OK"}}
+        with patch.object(router, "_post_json", return_value=response) as post_json:
+            result = router._route_ollama("hello", "Be concise.")
+
+        self.assertEqual(result, "CARINA_LINK_OK")
+        payload = post_json.call_args.args[1]
+        self.assertFalse(payload["think"])
+        self.assertEqual(payload["keep_alive"], "10m")
+        self.assertEqual(payload["options"]["num_predict"], 512)
+
 
 if __name__ == "__main__":
     unittest.main()
