@@ -148,13 +148,19 @@ class AgentRouter:
         self.ollama_model = os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL).strip()
 
     def health(self) -> dict[str, Any]:
+        openclaw_url = self._openclaw_url()
+        openclaw_available = bool(
+            openclaw_url
+            and self._openclaw_token()
+            and self._probe(f"{openclaw_url}/healthz")
+        )
         return {
             "service": "carina-openclaw-bridge",
             "routes": {
-                "openclaw": bool(os.environ.get("OPENCLAW_URL", "").strip()),
+                "openclaw": openclaw_available,
                 "openai": self._has_openai_key(),
                 "ollama": self._probe("http://127.0.0.1:11434/api/tags"),
-                "maya": bool(os.environ.get("OPENCLAW_URL", "").strip())
+                "maya": openclaw_available
                 or self._has_openai_key()
                 or self._probe("http://127.0.0.1:11434/api/tags"),
                 "hermes": bool(self._hermes_command()),
@@ -254,18 +260,32 @@ class AgentRouter:
         )
 
     def _route_openclaw(self, message: str, system_instruction: str) -> tuple[str, str, str, str | None]:
-        openclaw_url = os.environ.get("OPENCLAW_URL", "").strip().rstrip("/")
-        if openclaw_url:
+        openclaw_url = self._openclaw_url()
+        openclaw_token = self._openclaw_token()
+        if openclaw_url and openclaw_token:
             body = self._post_json(
-                f"{openclaw_url}/v1/agent/message",
-                {"message": message, "system_instruction": system_instruction},
-                bearer=os.environ.get("OPENCLAW_TOKEN", "").strip() or None,
-                timeout=45,
+                f"{openclaw_url}/v1/responses",
+                {
+                    "model": "openclaw",
+                    "instructions": system_instruction,
+                    "input": message,
+                    "max_output_tokens": 2_000,
+                    "user": "carina-iphone",
+                },
+                bearer=openclaw_token,
+                timeout=120,
             )
-            text = str(body.get("text") or body.get("output") or "").strip()
+            text_parts: list[str] = []
+            for output in body.get("output", []):
+                if not isinstance(output, Mapping) or output.get("type") != "message":
+                    continue
+                for content in output.get("content", []):
+                    if isinstance(content, Mapping) and content.get("type") == "output_text":
+                        text_parts.append(str(content.get("text", "")))
+            text = "\n".join(part for part in text_parts if part).strip()
             if not text:
                 raise BridgeAPIError(502, "OpenClaw returned no text")
-            return text, str(body.get("agent", "OpenClaw")), "openclaw", str(body.get("model")) if body.get("model") else None
+            return text, "OpenClaw", "openclaw", "ollama/qwen3:8b"
         if self._has_openai_key():
             try:
                 return self._route_openai(message, system_instruction), "CARINA", "openai-fallback", self.openai_model
@@ -274,6 +294,37 @@ class AgentRouter:
         if self._probe("http://127.0.0.1:11434/api/tags"):
             return self._route_ollama(message, system_instruction), "CARINA", "ollama-fallback", self.ollama_model
         raise BridgeAPIError(503, "OpenClaw is not configured and no OpenAI or Ollama fallback is available")
+
+    @staticmethod
+    def _openclaw_config() -> Mapping[str, Any]:
+        configured = os.environ.get("OPENCLAW_CONFIG_PATH", "").strip()
+        path = Path(configured).expanduser() if configured else Path.home() / ".openclaw/openclaw.json"
+        try:
+            decoded = json.loads(path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, PermissionError, UnicodeDecodeError, json.JSONDecodeError):
+            return {}
+        return decoded if isinstance(decoded, Mapping) else {}
+
+    def _openclaw_url(self) -> str:
+        configured = os.environ.get("OPENCLAW_URL", "").strip().rstrip("/")
+        if configured:
+            return configured
+        gateway = self._openclaw_config().get("gateway", {})
+        if not isinstance(gateway, Mapping) or gateway.get("mode") != "local":
+            return ""
+        port = gateway.get("port", 18789)
+        if not isinstance(port, int) or not 1 <= port <= 65535:
+            return ""
+        return f"http://127.0.0.1:{port}"
+
+    def _openclaw_token(self) -> str:
+        configured = os.environ.get("OPENCLAW_TOKEN", "").strip()
+        if configured:
+            return configured
+        gateway = self._openclaw_config().get("gateway", {})
+        auth = gateway.get("auth", {}) if isinstance(gateway, Mapping) else {}
+        token = auth.get("token", "") if isinstance(auth, Mapping) else ""
+        return token.strip() if isinstance(token, str) else ""
 
     def _route_openai(self, message: str, system_instruction: str) -> str:
         key = os.environ.get("OPENAI_API_KEY", "").strip()

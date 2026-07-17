@@ -142,14 +142,23 @@ python3 -m unittest discover -s tests
 make verify
 ```
 
+OpenClaw runs as the per-user `ai.openclaw.gateway` LaunchAgent on port `18789`.
+It starts at login and launchd restarts it after a crash. Verify both the engine
+and CARINA routing with:
+
+```sh
+openclaw gateway status --json
+curl -fsS http://127.0.0.1:18789/readyz
+```
+
 ## Troubleshooting
 
 - `No Account for Team "S6FYTWBGVH"`: sign in under Xcode Settings > Apple Accounts.
 - `No profiles for 'com.leandrofajardo.carina' were found`: after signing in,
   reopen Signing & Capabilities and allow Xcode to create the profile.
-- OpenAI quota failure: the existing key authenticates, but its selected API
-  project currently returns `You exceeded your current quota, please check your
-  plan and billing details.` OpenClaw therefore reports and uses Ollama fallback.
+- OpenAI quota failure does not stop the local engine. OpenClaw currently uses
+  `ollama/qwen3:8b` as its primary model, and the CARINA bridge calls OpenClaw's
+  authenticated Responses endpoint.
 - `127.0.0.1` on the iPhone: rejected because it points to the iPhone. Use the
   default `leandros-MacBook-Air.local` hostname.
 - Tailscale reports an address but binding fails: this Mac currently runs

@@ -71,9 +71,34 @@ class CarinaBridgeTests(unittest.TestCase):
 
     def test_openclaw_falls_back_to_openai_when_configured(self):
         router = StubRouter()
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key-long-enough-value"}, clear=False):
+        with patch.object(router, "_openclaw_url", return_value=""), patch.dict(
+            os.environ,
+            {"OPENAI_API_KEY": "test-key-long-enough-value"},
+            clear=False,
+        ):
             result = router.message(request(route="openclaw"))
         self.assertEqual(result["provider"], "openai-fallback")
+
+    def test_openclaw_uses_responses_endpoint(self):
+        router = AgentRouter()
+        response = {
+            "output": [
+                {
+                    "type": "message",
+                    "content": [{"type": "output_text", "text": "ENGINE ONLINE"}],
+                }
+            ]
+        }
+        with patch.object(router, "_openclaw_url", return_value="http://127.0.0.1:18789"), patch.object(
+            router, "_openclaw_token", return_value="secure-token"
+        ), patch.object(router, "_post_json", return_value=response) as post_json:
+            text, agent, provider, model = router._route_openclaw("hello", "Be concise.")
+
+        self.assertEqual(text, "ENGINE ONLINE")
+        self.assertEqual(agent, "OpenClaw")
+        self.assertEqual(provider, "openclaw")
+        self.assertEqual(model, "ollama/qwen3:8b")
+        self.assertEqual(post_json.call_args.args[0], "http://127.0.0.1:18789/v1/responses")
 
     def test_ollama_disables_reasoning_for_mobile_latency(self):
         router = AgentRouter()
