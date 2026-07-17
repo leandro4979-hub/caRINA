@@ -109,8 +109,40 @@ make iphone-live-view
 The launcher keeps the CARINA bridge active and opens the Mac's AirPlay Receiver
 settings. On the iPhone, open Control Center, tap **Screen Mirroring**, and select
 the Mac. AirPlay provides the live display while input stays on the iPhone and
-does not activate Continuity Camera. Mac-side remote control is available only
-through Apple's iPhone Mirroring app.
+does not activate Continuity Camera.
+
+## Signed Mac-side CARINA control
+
+CARINA can also be controlled from the Mac while the unlocked iPhone remains
+usable. This uses Appium's XCUITest driver and a signed WebDriverAgent scoped to
+the CARINA bundle. The Appium HTTP service listens only on `127.0.0.1:4723`.
+
+Install and persist the loopback Appium service:
+
+```sh
+make device-control-install
+```
+
+Apple requires a privileged RemoteXPC tunnel for iOS 18 and newer. Open a
+Terminal window, start the tunnel, and authenticate with the Mac password or
+Touch ID when prompted. Keep that Terminal window open:
+
+```sh
+./scripts/start_carina_appium_tunnel.sh
+```
+
+Start and inspect the CARINA-only session from another terminal:
+
+```sh
+make device-control-start
+./scripts/carina_device_control.py status
+./scripts/carina_device_control.py screenshot /tmp/carina.png
+./scripts/carina_device_control.py tap 200 700
+```
+
+The helper discovers the paired physical iPhone at runtime and does not expose
+Appium to the LAN. It does not bypass the iPhone passcode or control a locked
+device.
 
 The persistent LaunchAgent can reach Ollama and Hermes. macOS privacy blocks it
 from reading the existing Maya key inside Documents. A foreground bridge can

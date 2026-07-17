@@ -1,4 +1,4 @@
-.PHONY: dashboard verify archive-dry-run iphone-live-view
+.PHONY: dashboard verify archive-dry-run iphone-live-view device-control-install device-control-start
 
 dashboard:
 	python3 src/build_dashboard.py
@@ -14,3 +14,9 @@ archive-dry-run:
 
 iphone-live-view:
 	./scripts/open_iphone_hands_on_view.sh
+
+device-control-install:
+	./scripts/install_carina_device_control_launch_agent.sh
+
+device-control-start:
+	./scripts/carina_device_control.py start

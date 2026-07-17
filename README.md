@@ -82,6 +82,19 @@ running. On the iPhone, open Control Center, tap **Screen Mirroring**, and selec
 the Mac. This mode displays the phone without activating Continuity Camera, but
 it does not provide Mac-side remote control.
 
+For signed Mac-side control of CARINA while the unlocked iPhone stays usable:
+
+```sh
+make device-control-install
+./scripts/start_carina_appium_tunnel.sh
+make device-control-start
+```
+
+The tunnel command requires local macOS authentication and must remain running.
+The Appium service is restricted to `127.0.0.1:4723`, and the control session is
+restricted to `com.leandrofajardo.carina`. See the deployment guide for status,
+screenshot, tap, and shutdown commands.
+
 The first working build is a local dashboard generator. It reads the Markdown
 files in `/Users/leandrofajardo/Documents/AgentOps`, checks local listening
 services, and writes a browser-ready dashboard to `dist/dashboard.html`.
