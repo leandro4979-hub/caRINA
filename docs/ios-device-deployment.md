@@ -5,7 +5,7 @@
 - Xcode project: `apps/ios/Carina.xcodeproj`
 - Scheme: `Carina`
 - Bundle identifier: `com.leandrofajardo.carina`
-- Personal Team: `863R3427Q3`
+- Personal Team: `S6FYTWBGVH`
 - Minimum iOS: 17.0
 - Connected device: `leandros 17pro max`
 - Mac LAN address: `192.168.1.122`
@@ -107,7 +107,7 @@ CARINA_OPENAI_ENV_FILE='/Users/leandrojoelfajardomatute/Documents/Documents - le
 
 1. Open `apps/ios/Carina.xcodeproj` in Xcode beta.
 2. Open Xcode Settings > Accounts and sign in to the Apple account that owns
-   Personal Team `863R3427Q3`.
+   Personal Team `S6FYTWBGVH`.
 3. Confirm Automatically manage signing for the Carina target.
 4. Select `leandros 17pro max` as the run destination.
 5. Unlock the iPhone and press Run.
@@ -141,7 +141,7 @@ make verify
 
 ## Troubleshooting
 
-- `No Account for Team "863R3427Q3"`: sign in under Xcode Settings > Accounts.
+- `No Account for Team "S6FYTWBGVH"`: sign in under Xcode Settings > Apple Accounts.
 - `No profiles for 'com.leandrofajardo.carina' were found`: after signing in,
   reopen Signing & Capabilities and allow Xcode to create the profile.
 - OpenAI quota failure: the existing key authenticates, but its selected API
@@ -159,7 +159,7 @@ make verify
 ## Device checklist
 
 - [ ] Apple account signed into Xcode
-- [ ] Carina target shows automatic signing with team `863R3427Q3`
+- [ ] Carina target shows automatic signing with team `S6FYTWBGVH`
 - [ ] `leandros 17pro max` selected and unlocked
 - [ ] CARINA installed and first screen visible
 - [ ] Local Network, Microphone, and Speech Recognition approved

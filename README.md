@@ -5,7 +5,7 @@ caRINA is the local build focus for Leandro's AgentOps setup.
 ## iPhone App
 
 The native SwiftUI app is in `apps/ios/Carina.xcodeproj`. It targets iOS 17 or
-later, uses automatic signing for Personal Team `863R3427Q3`, and has the bundle
+later, uses automatic signing for Personal Team `S6FYTWBGVH`, and has the bundle
 identifier `com.leandrofajardo.carina`.
 
 CARINA is the iPhone client for the agent network:
@@ -28,7 +28,7 @@ Open it with the installed Xcode beta:
 open -a "$HOME/Downloads/Xcode-beta.app" apps/ios/Carina.xcodeproj
 ```
 
-In Xcode, sign in to the Apple account that owns Personal Team `863R3427Q3`,
+In Xcode, sign in to the Apple account that owns Personal Team `S6FYTWBGVH`,
 select **leandros 17pro max**, and press Run. The first launch asks for local
 network, microphone, and speech-recognition access.
 
