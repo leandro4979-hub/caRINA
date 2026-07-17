@@ -2,6 +2,40 @@
 
 caRINA is the local build focus for Leandro's AgentOps setup.
 
+## iPhone App
+
+The native SwiftUI app is in `apps/ios/Carina.xcodeproj`. It targets iOS 17 or
+later, uses automatic signing for Personal Team `863R3427Q3`, and has the bundle
+identifier `com.leandrofajardo.carina`.
+
+Open it with the installed Xcode beta:
+
+```sh
+open -a "$HOME/Downloads/Xcode-beta.app" apps/ios/Carina.xcodeproj
+```
+
+In Xcode, sign in to the Apple account that owns Personal Team `863R3427Q3`,
+select **leandros 17pro max**, and press Run. The first launch asks for local
+network, microphone, and speech-recognition access.
+
+In the app's Settings screen, enter the Mac's LAN host name/IP or Tailscale IP.
+Do not enter `127.0.0.1` or `localhost`; those addresses point back to the
+iPhone. CARINA always uses HTTP port `51001` and WebSocket port `51002`.
+
+Build and test from the command line:
+
+```sh
+export DEVELOPER_DIR="$HOME/Downloads/Xcode-beta.app/Contents/Developer"
+xcodebuild -project apps/ios/Carina.xcodeproj -scheme Carina \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' build
+xcodebuild -project apps/ios/Carina.xcodeproj -scheme Carina \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
+  -parallel-testing-enabled NO test
+```
+
+The project has no external Swift Package Manager dependencies. Local HTTP and
+WebSocket access is enabled for development in `Carina/Resources/Info.plist`.
+
 The first working build is a local dashboard generator. It reads the Markdown
 files in `/Users/leandrofajardo/Documents/AgentOps`, checks local listening
 services, and writes a browser-ready dashboard to `dist/dashboard.html`.

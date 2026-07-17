@@ -2,4 +2,9 @@ __pycache__/
 *.py[cod]
 .*.swp
 dist/dashboard.html
-
+# Local environment and Apple build output
+.env
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.DS_Store
