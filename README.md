@@ -8,6 +8,20 @@ The native SwiftUI app is in `apps/ios/Carina.xcodeproj`. It targets iOS 17 or
 later, uses automatic signing for Personal Team `863R3427Q3`, and has the bundle
 identifier `com.leandrofajardo.carina`.
 
+CARINA is the iPhone client for the agent network:
+
+```text
+iPhone CARINA -> authenticated Mac bridge -> OpenClaw
+                                         -> OpenAI Responses API
+                                         -> Ollama
+                                         -> Maya / Hermes / Karina
+```
+
+The OpenAI API key stays on the Mac. The iPhone stores only the bridge bearer
+token in the device-only Keychain. ChatGPT subscriptions and OpenAI API billing
+are separate; CARINA uses the official Responses API when the selected API
+project has quota.
+
 Open it with the installed Xcode beta:
 
 ```sh
@@ -22,6 +36,20 @@ In the app's Settings screen, enter the Mac's LAN host name/IP or Tailscale IP.
 Do not enter `127.0.0.1` or `localhost`; those addresses point back to the
 iPhone. CARINA always uses HTTP port `51001` and WebSocket port `51002`.
 
+Set up and start the Mac bridge:
+
+```sh
+./scripts/setup_carina_bridge.sh
+./scripts/install_carina_bridge_launch_agent.sh
+"$HOME/Library/Application Support/CARINA/.venv/bin/python" \
+  "$HOME/Library/Application Support/CARINA/bridge/carina_bridge.py" \
+  --copy-pairing-token
+```
+
+The final command places the bridge token on the macOS clipboard without
+printing it. Paste it into CARINA Settings on the iPhone and use the Mac LAN
+address shown in `docs/ios-device-deployment.md`.
+
 Build and test from the command line:
 
 ```sh
@@ -33,8 +61,10 @@ xcodebuild -project apps/ios/Carina.xcodeproj -scheme Carina \
   -parallel-testing-enabled NO test
 ```
 
-The project has no external Swift Package Manager dependencies. Local HTTP and
-WebSocket access is enabled for development in `Carina/Resources/Info.plist`.
+The project has no external Swift Package Manager dependencies. The plist keeps
+global App Transport Security enabled and permits authenticated local-network
+development traffic only. See `docs/ios-device-deployment.md` for routing,
+permissions, deployment, and troubleshooting.
 
 The first working build is a local dashboard generator. It reads the Markdown
 files in `/Users/leandrofajardo/Documents/AgentOps`, checks local listening

@@ -4,6 +4,9 @@ __pycache__/
 dist/dashboard.html
 # Local environment and Apple build output
 .env
+.env.local
+.bridge-secret
+.venv/
 DerivedData/
 *.xcuserstate
 xcuserdata/

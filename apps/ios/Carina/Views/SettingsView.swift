@@ -3,55 +3,63 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var settings: BridgeSettings
     @ObservedObject var permissions: PermissionManager
+    @ObservedObject var credentials: CredentialManager
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Mac Bridge") {
+                Section("Mac / OpenClaw Bridge") {
                     TextField("Mac LAN or Tailscale address", text: $settings.host)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.URL)
+                    SecureField("Bridge bearer token", text: $credentials.bridgeToken)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
                     LabeledContent("HTTP port", value: String(BridgeConfiguration.httpPort))
                     LabeledContent("WebSocket port", value: String(BridgeConfiguration.webSocketPort))
-                    Text("Use the Mac's LAN address, .local name, or Tailscale address. Loopback addresses are rejected because they point to the iPhone itself.")
+                    Text("The OpenAI key stays on the Mac. This iPhone stores only the bridge token in this device's Keychain.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                    if let message = settings.validationMessage {
-                        Text(message)
-                            .font(.footnote)
-                            .foregroundStyle(.red)
+                    if let message = settings.validationMessage ?? credentials.errorMessage {
+                        Text(message).font(.footnote).foregroundStyle(.red)
+                    }
+                    if credentials.hasBridgeToken {
+                        Button("Remove Saved Bridge Token", role: .destructive) {
+                            Task { await credentials.delete() }
+                        }
                     }
                 }
 
                 Section("Permissions") {
                     LabeledContent("Microphone", value: permissions.microphone.rawValue)
                     LabeledContent("Speech Recognition", value: permissions.speechRecognition.rawValue)
-                    Text("Local Network access is requested by iOS when CARINA first connects to the Mac bridge. App Intents appear automatically in Shortcuts after installation.")
+                    Text("Local Network access is requested on first connection. App Intents appear in Shortcuts after installation. Execute commands always require confirmation.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
 
-                Section("Development Transport Security") {
-                    Text("Local HTTP and WebSocket traffic is enabled for development. Use a trusted LAN or Tailscale network and migrate the bridge to TLS before public distribution.")
+                Section("Development Transport") {
+                    Text("Local HTTP and WebSocket traffic is allowed only for the authenticated Mac bridge development path. OpenAI requests originate on the Mac over HTTPS.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("CARINA Settings")
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        if settings.save() {
-                            dismiss()
+                        Task {
+                            let hostSaved = settings.save()
+                            let tokenSaved = await credentials.save()
+                            if hostSaved && tokenSaved { dismiss() }
                         }
                     }
                 }
             }
-            .onAppear {
-                permissions.refresh()
-            }
+            .onAppear { permissions.refresh() }
         }
     }
 }

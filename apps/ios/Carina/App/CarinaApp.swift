@@ -4,6 +4,8 @@ import SwiftUI
 struct CarinaApp: App {
     @StateObject private var settings = BridgeSettings()
     @StateObject private var bridge = BridgeClient()
+    @StateObject private var credentials = CredentialManager()
+    @StateObject private var agent = CarinaAgentService()
     @StateObject private var speech = SpeechRecognitionService()
     @StateObject private var permissions = PermissionManager()
 
@@ -12,6 +14,8 @@ struct CarinaApp: App {
             ContentView()
                 .environmentObject(settings)
                 .environmentObject(bridge)
+                .environmentObject(credentials)
+                .environmentObject(agent)
                 .environmentObject(speech)
                 .environmentObject(permissions)
         }

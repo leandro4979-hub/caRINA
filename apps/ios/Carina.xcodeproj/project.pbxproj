@@ -15,6 +15,11 @@
 		A00000000000000000000007 /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000007 /* PermissionManager.swift */; };
 		A00000000000000000000008 /* CarinaAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000008 /* CarinaAppIntents.swift */; };
 		A00000000000000000000009 /* BridgeConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000009 /* BridgeConfigurationTests.swift */; };
+		A0000000000000000000000A /* AgentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000E /* AgentModels.swift */; };
+		A0000000000000000000000B /* CommandAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000F /* CommandAuthorization.swift */; };
+		A0000000000000000000000C /* SecureCredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000010 /* SecureCredentialStore.swift */; };
+		A0000000000000000000000D /* AgentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000011 /* AgentProvider.swift */; };
+		A0000000000000000000000E /* AgentArchitectureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012 /* AgentArchitectureTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,6 +46,11 @@
 		B0000000000000000000000B /* Carina.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Carina.entitlements; sourceTree = "<group>"; };
 		B0000000000000000000000C /* Carina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Carina.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0000000000000000000000D /* CarinaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CarinaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0000000000000000000000E /* AgentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentModels.swift; sourceTree = "<group>"; };
+		B0000000000000000000000F /* CommandAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandAuthorization.swift; sourceTree = "<group>"; };
+		B00000000000000000000010 /* SecureCredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureCredentialStore.swift; sourceTree = "<group>"; };
+		B00000000000000000000011 /* AgentProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentProvider.swift; sourceTree = "<group>"; };
+		B00000000000000000000012 /* AgentArchitectureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentArchitectureTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,11 +87,11 @@
 		C00000000000000000000004 /* App */ = {isa = PBXGroup; children = (B00000000000000000000001 /* CarinaApp.swift */); path = App; sourceTree = "<group>"; };
 		C00000000000000000000005 /* AppIntents */ = {isa = PBXGroup; children = (B00000000000000000000008 /* CarinaAppIntents.swift */); path = AppIntents; sourceTree = "<group>"; };
 		C00000000000000000000006 /* Views */ = {isa = PBXGroup; children = (B00000000000000000000002 /* ContentView.swift */, B00000000000000000000003 /* SettingsView.swift */); path = Views; sourceTree = "<group>"; };
-		C00000000000000000000007 /* Models */ = {isa = PBXGroup; children = (B00000000000000000000004 /* BridgeConfiguration.swift */); path = Models; sourceTree = "<group>"; };
-		C00000000000000000000008 /* Services */ = {isa = PBXGroup; children = (B00000000000000000000005 /* BridgeClient.swift */, B00000000000000000000006 /* SpeechRecognitionService.swift */); path = Services; sourceTree = "<group>"; };
-		C00000000000000000000009 /* PermissionEngine */ = {isa = PBXGroup; children = (B00000000000000000000007 /* PermissionManager.swift */); path = PermissionEngine; sourceTree = "<group>"; };
+		C00000000000000000000007 /* Models */ = {isa = PBXGroup; children = (B00000000000000000000004 /* BridgeConfiguration.swift */, B0000000000000000000000E /* AgentModels.swift */); path = Models; sourceTree = "<group>"; };
+		C00000000000000000000008 /* Services */ = {isa = PBXGroup; children = (B00000000000000000000005 /* BridgeClient.swift */, B00000000000000000000006 /* SpeechRecognitionService.swift */, B00000000000000000000010 /* SecureCredentialStore.swift */, B00000000000000000000011 /* AgentProvider.swift */); path = Services; sourceTree = "<group>"; };
+		C00000000000000000000009 /* PermissionEngine */ = {isa = PBXGroup; children = (B00000000000000000000007 /* PermissionManager.swift */, B0000000000000000000000F /* CommandAuthorization.swift */); path = PermissionEngine; sourceTree = "<group>"; };
 		C0000000000000000000000A /* Resources */ = {isa = PBXGroup; children = (B0000000000000000000000A /* Info.plist */); path = Resources; sourceTree = "<group>"; };
-		C0000000000000000000000B /* CarinaTests */ = {isa = PBXGroup; children = (B00000000000000000000009 /* BridgeConfigurationTests.swift */); path = CarinaTests; sourceTree = "<group>"; };
+		C0000000000000000000000B /* CarinaTests */ = {isa = PBXGroup; children = (B00000000000000000000009 /* BridgeConfigurationTests.swift */, B00000000000000000000012 /* AgentArchitectureTests.swift */); path = CarinaTests; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -152,10 +162,14 @@
 				A00000000000000000000006 /* SpeechRecognitionService.swift in Sources */,
 				A00000000000000000000007 /* PermissionManager.swift in Sources */,
 				A00000000000000000000008 /* CarinaAppIntents.swift in Sources */,
+				A0000000000000000000000A /* AgentModels.swift in Sources */,
+				A0000000000000000000000B /* CommandAuthorization.swift in Sources */,
+				A0000000000000000000000C /* SecureCredentialStore.swift in Sources */,
+				A0000000000000000000000D /* AgentProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000009 /* BridgeConfigurationTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		D00000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000009 /* BridgeConfigurationTests.swift in Sources */, A0000000000000000000000E /* AgentArchitectureTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */

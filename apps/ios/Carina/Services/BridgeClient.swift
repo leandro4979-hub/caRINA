@@ -37,7 +37,7 @@ final class BridgeClient: ObservableObject {
         webSocketTask?.cancel(with: .goingAway, reason: nil)
     }
 
-    func connect(using configuration: BridgeConfiguration) async {
+    func connect(using configuration: BridgeConfiguration, bearerToken: String) async {
         disconnect()
         state = .connecting
 
@@ -45,6 +45,9 @@ final class BridgeClient: ObservableObject {
             let healthURL = try configuration.httpBaseURL.appending(path: "health")
             var request = URLRequest(url: healthURL)
             request.timeoutInterval = 8
+            if !bearerToken.isEmpty {
+                request.setValue("Bearer \(bearerToken)", forHTTPHeaderField: "Authorization")
+            }
             let (_, response) = try await session.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse,
                   (200..<300).contains(httpResponse.statusCode) else {
@@ -52,7 +55,10 @@ final class BridgeClient: ObservableObject {
             }
 
             let socketURL = try configuration.webSocketURL
-            let socket = session.webSocketTask(with: socketURL)
+            var socketRequest = URLRequest(url: socketURL)
+            socketRequest.timeoutInterval = 8
+            socketRequest.setValue("Bearer \(bearerToken)", forHTTPHeaderField: "Authorization")
+            let socket = session.webSocketTask(with: socketRequest)
             webSocketTask = socket
             socket.resume()
             state = .connected
