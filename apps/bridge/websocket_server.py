@@ -11,6 +11,8 @@ from api import AgentRouter, BridgeAPIError, authorized
 
 LOGGER = logging.getLogger("CarinaBridge.WebSocket")
 MAX_MESSAGE_BYTES = 256_000
+PING_FIELDS = frozenset({"type"})
+LEGACY_COMMAND_FIELDS = frozenset({"type", "command", "route"})
 
 
 class CarinaWebSocketServer:
@@ -62,25 +64,42 @@ class CarinaWebSocketServer:
         if not isinstance(body, dict):
             await self._send_error(socket, "message must be a JSON object")
             return
-        if body.get("type") == "ping":
-            await socket.send(json.dumps({"type": "pong"}))
-            return
-        command = body.get("command")
-        if not isinstance(command, str) or not command.strip():
-            await self._send_error(socket, "command must be a non-empty string")
-            return
-        request = {
-            "request_id": str(uuid.uuid4()),
-            "conversation_id": str(uuid.uuid4()),
-            "route": str(body.get("route", "openclaw")),
-            "message": command,
-            "system_instruction": "You are CARINA, the authenticated iPhone interface for OpenClaw.",
-        }
         try:
+            request = self.normalize_envelope(body)
+            if request is None:
+                await socket.send(json.dumps({"type": "pong"}))
+                return
             response = await asyncio.to_thread(self.router.message, request)
             await socket.send(json.dumps({"type": "agent_response", **response}, ensure_ascii=False))
         except BridgeAPIError as exc:
             await self._send_error(socket, str(exc), status=exc.status)
+
+    @staticmethod
+    def normalize_envelope(body: dict[str, Any]) -> dict[str, Any] | None:
+        message_type = body.get("type")
+        if not isinstance(message_type, str):
+            raise BridgeAPIError(400, "type must be a string")
+        if message_type == "ping":
+            if set(body) != PING_FIELDS:
+                raise BridgeAPIError(400, "ping contains unexpected fields")
+            return None
+        if message_type != "command":
+            raise BridgeAPIError(400, "unsupported WebSocket message type")
+        if not set(body).issubset(LEGACY_COMMAND_FIELDS):
+            raise BridgeAPIError(400, "legacy command contains unexpected fields")
+        command = body.get("command")
+        if not isinstance(command, str) or not command.strip():
+            raise BridgeAPIError(400, "command must be a non-empty string")
+        route = body.get("route", "openclaw")
+        if not isinstance(route, str) or not route.strip():
+            raise BridgeAPIError(400, "route must be a non-empty string")
+        return {
+            "request_id": str(uuid.uuid4()),
+            "conversation_id": str(uuid.uuid4()),
+            "route": route.strip().lower(),
+            "message": command.strip(),
+            "system_instruction": "You are CARINA, the authenticated iPhone interface for OpenClaw.",
+        }
 
     @staticmethod
     async def _send_error(socket: Any, message: str, status: int = 400) -> None:

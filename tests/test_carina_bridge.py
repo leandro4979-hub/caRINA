@@ -9,7 +9,8 @@ from unittest.mock import patch
 BRIDGE_ROOT = Path(__file__).resolve().parents[1] / "apps" / "bridge"
 sys.path.insert(0, str(BRIDGE_ROOT))
 
-from api import ActionStore, AgentRouter, BridgeAPIError, authorized  # noqa: E402
+from api import ActionStore, AgentRouter, BridgeAPIError, OpenClawPayloadAdapter, authorized  # noqa: E402
+from websocket_server import CarinaWebSocketServer  # noqa: E402
 
 
 class StubRouter(AgentRouter):
@@ -47,6 +48,50 @@ class CarinaBridgeTests(unittest.TestCase):
         with self.assertRaisesRegex(BridgeAPIError, "unsupported route"):
             StubRouter().message(request(route="shell"))
 
+    def test_mixed_legacy_and_canonical_message_is_rejected(self):
+        payload = request()
+        payload.update({"type": "command", "command": "legacy", "mode": "auto"})
+        with self.assertRaisesRegex(BridgeAPIError, "unexpected fields"):
+            StubRouter().message(payload)
+
+    def test_system_instruction_is_not_coerced_from_legacy_data(self):
+        payload = request()
+        payload["system_instruction"] = {"legacy": True}
+        with self.assertRaisesRegex(BridgeAPIError, "must be a string"):
+            StubRouter().message(payload)
+
+    def test_uuid_fields_require_strings(self):
+        payload = request()
+        payload["request_id"] = 123
+        with self.assertRaisesRegex(BridgeAPIError, "UUID string"):
+            StubRouter().message(payload)
+
+    def test_openclaw_adapter_emits_only_current_responses_schema(self):
+        payload = OpenClawPayloadAdapter.responses_payload("hello", "Be accurate.")
+        self.assertEqual(
+            set(payload),
+            {"model", "instructions", "input", "max_output_tokens", "user"},
+        )
+        self.assertNotIn("messages", payload)
+        self.assertNotIn("command", payload)
+        self.assertNotIn("mode", payload)
+
+    def test_websocket_legacy_command_is_adapted_to_canonical_schema(self):
+        payload = CarinaWebSocketServer.normalize_envelope(
+            {"type": "command", "command": "hello", "route": "openclaw"}
+        )
+        self.assertIsNotNone(payload)
+        self.assertEqual(
+            set(payload),
+            {"request_id", "conversation_id", "route", "message", "system_instruction"},
+        )
+
+    def test_websocket_rejects_mixed_auto_and_legacy_fields(self):
+        with self.assertRaisesRegex(BridgeAPIError, "unexpected fields"):
+            CarinaWebSocketServer.normalize_envelope(
+                {"type": "command", "command": "hello", "message": "mixed", "mode": "auto"}
+            )
+
     def test_execute_command_is_prepared_not_run(self):
         result = StubRouter().message(request(message="shortcut.run Carina Command Center"))
         action = result["prepared_action"]
@@ -68,6 +113,17 @@ class CarinaBridgeTests(unittest.TestCase):
         changed["payload"] = {"shortcutName": "Different"}
         with self.assertRaisesRegex(BridgeAPIError, "modified"):
             store.consume(changed)
+
+    def test_execute_request_rejects_mixed_dispatch_fields(self):
+        with self.assertRaisesRegex(BridgeAPIError, "unexpected fields"):
+            StubRouter().execute(
+                {
+                    "conversation_id": str(uuid.uuid4()),
+                    "action": {},
+                    "command": "legacy",
+                    "mode": "auto",
+                }
+            )
 
     def test_openclaw_falls_back_to_openai_when_configured(self):
         router = StubRouter()
@@ -99,6 +155,10 @@ class CarinaBridgeTests(unittest.TestCase):
         self.assertEqual(provider, "openclaw")
         self.assertEqual(model, "ollama/qwen3:8b")
         self.assertEqual(post_json.call_args.args[0], "http://127.0.0.1:18789/v1/responses")
+        self.assertEqual(
+            set(post_json.call_args.args[1]),
+            {"model", "instructions", "input", "max_output_tokens", "user"},
+        )
 
     def test_ollama_disables_reasoning_for_mobile_latency(self):
         router = AgentRouter()

@@ -23,12 +23,72 @@ MAX_RESPONSE_BYTES = 1_048_576
 DEFAULT_OPENAI_MODEL = "gpt-5.6-terra"
 DEFAULT_OLLAMA_MODEL = "qwen3:8b"
 APPROVAL_LIFETIME_SECONDS = 300
+MESSAGE_REQUEST_FIELDS = frozenset(
+    {"request_id", "conversation_id", "route", "message", "system_instruction"}
+)
+EXECUTE_REQUEST_FIELDS = frozenset({"action", "conversation_id"})
+SUPPORTED_ROUTES = frozenset({"openclaw", "openai", "ollama", "maya", "hermes", "karina"})
 
 
 class BridgeAPIError(RuntimeError):
     def __init__(self, status: int, message: str) -> None:
         super().__init__(message)
         self.status = status
+
+
+def reject_unexpected_fields(payload: Mapping[str, Any], allowed: frozenset[str], schema: str) -> None:
+    if any(not isinstance(key, str) or key not in allowed for key in payload):
+        raise BridgeAPIError(400, f"{schema} contains unexpected fields")
+
+
+@dataclass(frozen=True)
+class AgentMessageRequest:
+    request_id: str
+    conversation_id: str
+    route: str
+    message: str
+    system_instruction: str
+
+    @classmethod
+    def from_payload(cls, payload: Mapping[str, Any]) -> AgentMessageRequest:
+        reject_unexpected_fields(payload, MESSAGE_REQUEST_FIELDS, "agent message")
+        message = AgentRouter._required_text(payload, "message", MAX_MESSAGE_LENGTH)
+        route_value = payload.get("route", "openclaw")
+        if not isinstance(route_value, str) or not route_value.strip():
+            raise BridgeAPIError(400, "route must be a non-empty string")
+        route = route_value.strip().lower()
+        if route not in SUPPORTED_ROUTES:
+            raise BridgeAPIError(400, f"unsupported route: {route}")
+        instruction_value = payload.get("system_instruction", "")
+        if not isinstance(instruction_value, str):
+            raise BridgeAPIError(400, "system_instruction must be a string")
+        if len(instruction_value) > 8_000:
+            raise BridgeAPIError(413, "system_instruction exceeds 8000 characters")
+        return cls(
+            request_id=AgentRouter._uuid(payload.get("request_id"), "request_id"),
+            conversation_id=AgentRouter._uuid(payload.get("conversation_id"), "conversation_id"),
+            route=route,
+            message=message,
+            system_instruction=instruction_value.strip(),
+        )
+
+
+class OpenClawPayloadAdapter:
+    """Builds a new OpenClaw envelope from validated canonical fields only."""
+
+    @staticmethod
+    def responses_payload(message: str, system_instruction: str) -> dict[str, Any]:
+        if not isinstance(message, str) or not message:
+            raise BridgeAPIError(500, "canonical message serialization failed")
+        if not isinstance(system_instruction, str):
+            raise BridgeAPIError(500, "canonical instruction serialization failed")
+        return {
+            "model": "openclaw",
+            "instructions": system_instruction,
+            "input": message,
+            "max_output_tokens": 2_000,
+            "user": "carina-iphone",
+        }
 
 
 def load_environment_file(path: Path) -> None:
@@ -172,13 +232,12 @@ class AgentRouter:
         }
 
     def message(self, payload: Mapping[str, Any]) -> dict[str, Any]:
-        message = self._required_text(payload, "message", MAX_MESSAGE_LENGTH)
-        route = str(payload.get("route", "openclaw")).strip().lower()
-        if route not in {"openclaw", "openai", "ollama", "maya", "hermes", "karina"}:
-            raise BridgeAPIError(400, f"unsupported route: {route}")
-        request_id = self._uuid(payload.get("request_id"), "request_id")
-        conversation_id = self._uuid(payload.get("conversation_id"), "conversation_id")
-        system_instruction = str(payload.get("system_instruction", ""))[:8_000]
+        request = AgentMessageRequest.from_payload(payload)
+        message = request.message
+        route = request.route
+        request_id = request.request_id
+        conversation_id = request.conversation_id
+        system_instruction = request.system_instruction
 
         prepared = self._prepare_explicit_action(message)
         if prepared is not None:
@@ -226,6 +285,7 @@ class AgentRouter:
         )
 
     def execute(self, payload: Mapping[str, Any]) -> dict[str, Any]:
+        reject_unexpected_fields(payload, EXECUTE_REQUEST_FIELDS, "execute request")
         raw_action = payload.get("action")
         if not isinstance(raw_action, Mapping):
             raise BridgeAPIError(400, "action must be a JSON object")
@@ -265,13 +325,7 @@ class AgentRouter:
         if openclaw_url and openclaw_token:
             body = self._post_json(
                 f"{openclaw_url}/v1/responses",
-                {
-                    "model": "openclaw",
-                    "instructions": system_instruction,
-                    "input": message,
-                    "max_output_tokens": 2_000,
-                    "user": "carina-iphone",
-                },
+                OpenClawPayloadAdapter.responses_payload(message, system_instruction),
                 bearer=openclaw_token,
                 timeout=120,
             )
@@ -452,8 +506,10 @@ class AgentRouter:
 
     @staticmethod
     def _uuid(value: Any, name: str) -> str:
+        if not isinstance(value, str):
+            raise BridgeAPIError(400, f"{name} must be a UUID string")
         try:
-            return str(uuid.UUID(str(value)))
+            return str(uuid.UUID(value))
         except (TypeError, ValueError, AttributeError) as exc:
             raise BridgeAPIError(400, f"{name} must be a UUID") from exc
 
