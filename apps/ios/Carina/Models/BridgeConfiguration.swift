@@ -87,6 +87,7 @@ struct BridgeConfiguration: Codable, Equatable, Sendable {
 
 enum BridgeDefaults {
     static let hostKey = "carina.bridge.host"
+    static let defaultHost = "leandros-MacBook-Air.local"
 }
 
 @MainActor
@@ -98,7 +99,7 @@ final class BridgeSettings: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        host = defaults.string(forKey: BridgeDefaults.hostKey) ?? ""
+        host = defaults.string(forKey: BridgeDefaults.hostKey) ?? BridgeDefaults.defaultHost
     }
 
     func configuration() throws -> BridgeConfiguration {

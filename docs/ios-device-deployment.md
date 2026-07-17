@@ -90,8 +90,11 @@ Copy the pairing token without printing it:
 
 On the iPhone, open CARINA Settings and enter:
 
-- Mac address: `192.168.1.122`
+- Mac address: `leandros-MacBook-Air.local` (the app default)
 - Bridge token: paste from the macOS clipboard
+
+The persistent bridge listens on dual-stack IPv4/IPv6 ports `51001` and `51002`
+so the `.local` hostname remains usable when the LAN address changes.
 
 The persistent LaunchAgent can reach Ollama and Hermes. macOS privacy blocks it
 from reading the existing Maya key inside Documents. A foreground bridge can
@@ -147,8 +150,8 @@ make verify
 - OpenAI quota failure: the existing key authenticates, but its selected API
   project currently returns `You exceeded your current quota, please check your
   plan and billing details.` OpenClaw therefore reports and uses Ollama fallback.
-- `127.0.0.1` on the iPhone: rejected because it points to the iPhone. Use
-  `192.168.1.122` on the current LAN.
+- `127.0.0.1` on the iPhone: rejected because it points to the iPhone. Use the
+  default `leandros-MacBook-Air.local` hostname.
 - Tailscale reports an address but binding fails: this Mac currently runs
   Tailscale in userspace mode. Use the LAN address until a bindable Tailscale
   interface is active.

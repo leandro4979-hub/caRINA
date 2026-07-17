@@ -154,7 +154,9 @@ class AgentRouter:
                 "openclaw": bool(os.environ.get("OPENCLAW_URL", "").strip()),
                 "openai": self._has_openai_key(),
                 "ollama": self._probe("http://127.0.0.1:11434/api/tags"),
-                "maya": self._has_openai_key(),
+                "maya": bool(os.environ.get("OPENCLAW_URL", "").strip())
+                or self._has_openai_key()
+                or self._probe("http://127.0.0.1:11434/api/tags"),
                 "hermes": bool(self._hermes_command()),
                 "karina": True,
             },
@@ -196,8 +198,8 @@ class AgentRouter:
             agent, provider, model = "CARINA", "ollama", self.ollama_model
         elif route == "maya":
             maya_instruction = "You are Maya, CARINA's strategic planning agent. Return a concrete safe plan. " + system_instruction
-            text = self._route_openai(message, maya_instruction)
-            agent, provider, model = "Maya", "openai", self.openai_model
+            text, _, provider, model = self._route_openclaw(message, maya_instruction)
+            agent = "Maya"
         elif route == "hermes":
             text = self._route_hermes_read_only(message)
             agent, provider, model = "Hermes", "hermes-local", None

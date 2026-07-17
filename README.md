@@ -32,9 +32,11 @@ In Xcode, sign in to the Apple account that owns Personal Team `S6FYTWBGVH`,
 select **leandros 17pro max**, and press Run. The first launch asks for local
 network, microphone, and speech-recognition access.
 
-In the app's Settings screen, enter the Mac's LAN host name/IP or Tailscale IP.
-Do not enter `127.0.0.1` or `localhost`; those addresses point back to the
-iPhone. CARINA always uses HTTP port `51001` and WebSocket port `51002`.
+CARINA defaults to `leandros-MacBook-Air.local`, which reaches the authenticated
+bridge over the current LAN on either IPv4 or IPv6. A Tailscale address can be
+entered in Settings when that interface is active. Do not enter `127.0.0.1` or
+`localhost`; those addresses point back to the iPhone. CARINA always uses HTTP
+port `51001` and WebSocket port `51002`.
 
 Set up and start the Mac bridge:
 

@@ -129,32 +129,21 @@ class BridgeHTTPServer(ThreadingHTTPServer):
 
     def __init__(self, address: tuple[str, int], application: BridgeApplication) -> None:
         self.application = application
+        if ":" in address[0]:
+            self.address_family = socket.AF_INET6
         super().__init__(address, BridgeRequestHandler)
+
+    def server_bind(self) -> None:
+        if self.address_family == socket.AF_INET6:
+            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        super().server_bind()
 
 
 def discover_host() -> str:
     configured = os.environ.get("CARINA_BRIDGE_HOST", "").strip()
     if configured:
         return configured
-    for command in (
-        ["/usr/local/bin/tailscale", "ip", "-4"],
-        ["/opt/homebrew/bin/tailscale", "ip", "-4"],
-        ["tailscale", "ip", "-4"],
-        ["/Applications/Tailscale.app/Contents/MacOS/Tailscale", "ip", "-4"],
-    ):
-        try:
-            result = subprocess.run(command, capture_output=True, text=True, timeout=5, check=False)
-        except (OSError, subprocess.TimeoutExpired):
-            continue
-        address = result.stdout.strip().splitlines()[0] if result.stdout.strip() else ""
-        if result.returncode == 0 and address.startswith("100."):
-            return address
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
-        try:
-            probe.connect(("192.0.2.1", 80))
-            return str(probe.getsockname()[0])
-        except OSError:
-            return "127.0.0.1"
+    return "::"
 
 
 def parse_args() -> argparse.Namespace:
