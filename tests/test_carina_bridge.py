@@ -99,6 +99,27 @@ class CarinaBridgeTests(unittest.TestCase):
         self.assertEqual(action["command"], "shortcut.run")
         self.assertEqual(action["permission"], "execute")
 
+    def test_system_status_is_handled_without_model_execution(self):
+        router = StubRouter()
+        with patch.object(router, "health", return_value={"routes": {"openclaw": True, "ollama": True}}):
+            result = router.message(request(route="openclaw", message="system.status"))
+        self.assertEqual(result["provider"], "permission-engine")
+        self.assertEqual(result["status"], "informational")
+        self.assertIn("CARINA system online", result["text"])
+
+    def test_shortcut_prepare_does_not_execute_or_request_approval(self):
+        result = StubRouter().message(request(message="shortcut.prepare System Online"))
+        self.assertEqual(result["provider"], "permission-engine")
+        self.assertEqual(result["status"], "prepared")
+        self.assertIsNone(result["prepared_action"])
+        self.assertEqual(result["text"], "Prepared System Online. Nothing was executed.")
+
+    def test_explicit_safe_commands_reject_invalid_payloads(self):
+        with self.assertRaisesRegex(BridgeAPIError, "does not accept"):
+            StubRouter().message(request(message="system.status unexpected"))
+        with self.assertRaisesRegex(BridgeAPIError, "requires a valid Shortcut name"):
+            StubRouter().message(request(message="shortcut.prepare"))
+
     def test_approval_is_single_use(self):
         store = ActionStore()
         action = store.create("shortcut.run", "Run test", {"shortcutName": "Test"})

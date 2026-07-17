@@ -47,7 +47,7 @@ struct CheckCarinaBridgeIntent: AppIntent {
     static let description = IntentDescription("Check the authenticated CARINA bridge on the configured Mac.")
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let host = UserDefaults.standard.string(forKey: BridgeDefaults.hostKey) ?? ""
+        let host = UserDefaults.standard.string(forKey: BridgeDefaults.hostKey) ?? BridgeDefaults.defaultHost
         let configuration = try BridgeConfiguration(host: host)
         guard let token = try await SecureCredentialStore.shared.load(account: CredentialManager.bridgeTokenAccount),
               !token.isEmpty else {
@@ -90,16 +90,58 @@ struct RunCarinaCommandIntent: AppIntent {
         let request = CommandRequest(name: command.rawValue, payload: payload)
         switch CommandPermissionEngine().authorize(request) {
         case .allow:
-            if command == .shortcutPrepare {
-                return .result(dialog: "Prepared \(value). Nothing was executed.")
-            }
-            return .result(dialog: "\(command.rawValue) is authorized as a read-only command. CARINA is open to show the result.")
-        case .requireApproval(let reason):
+            let runtime = try await IntentBridgeRuntime.load()
+            let response = try await runtime.send(command: serializedCommand())
+            return .result(dialog: "\(response.text)")
+        case .requireApproval:
             try await requestConfirmation()
-            return .result(dialog: "Approved once: \(reason) CARINA is open to complete the authenticated request.")
+            let runtime = try await IntentBridgeRuntime.load()
+            let prepared = try await runtime.send(command: serializedCommand())
+            guard let action = prepared.preparedAction else {
+                throw AgentError.approval("The bridge did not return an approval-bound action.")
+            }
+            guard case .requireApproval = CommandPermissionEngine().validate(action) else {
+                throw AgentError.approval("The bridge returned an invalid execute action.")
+            }
+            let response = try await runtime.provider.execute(action, conversationID: runtime.conversationID)
+            return .result(dialog: "\(response.text)")
         case .deny(let reason):
             return .result(dialog: "CARINA rejected the command: \(reason)")
         }
+    }
+
+    private func serializedCommand() -> String {
+        let cleanValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleanValue.isEmpty ? command.rawValue : "\(command.rawValue) \(cleanValue)"
+    }
+}
+
+private struct IntentBridgeRuntime {
+    let provider: BridgeAgentProvider
+    let conversationID: UUID
+
+    static func load() async throws -> Self {
+        let host = UserDefaults.standard.string(forKey: BridgeDefaults.hostKey) ?? BridgeDefaults.defaultHost
+        let configuration = try BridgeConfiguration(host: host)
+        guard let token = try await SecureCredentialStore.shared.load(account: CredentialManager.bridgeTokenAccount),
+              !token.isEmpty else {
+            throw AgentError.missingBridgeToken
+        }
+        return Self(
+            provider: BridgeAgentProvider(configuration: configuration, bearerToken: token),
+            conversationID: UUID()
+        )
+    }
+
+    func send(command: String) async throws -> AgentResponse {
+        try await provider.send(
+            AgentRequest(
+                conversationID: conversationID,
+                route: .openclaw,
+                message: command,
+                systemInstruction: "Execute only registered CARINA commands and preserve permission boundaries."
+            )
+        )
     }
 }
 

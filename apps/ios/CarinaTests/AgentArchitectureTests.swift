@@ -43,6 +43,17 @@ final class AgentArchitectureTests: XCTestCase {
         }
     }
 
+    func testRegisteredCommandSerializationPreservesPermissionBoundary() {
+        let read = CommandRequest(name: "system.status", payload: [:])
+        let prepare = CommandRequest(name: "shortcut.prepare", payload: ["shortcutName": "System Online"])
+        let execute = CommandRequest(name: "shortcut.run", payload: ["shortcutName": "System Online"])
+        XCTAssertEqual(engine.authorize(read), .allow)
+        XCTAssertEqual(engine.authorize(prepare), .allow)
+        guard case .requireApproval = engine.authorize(execute) else {
+            return XCTFail("Serialized shortcut.run must remain approval-gated")
+        }
+    }
+
     func testApprovalExpiresAndCannotReplay() async throws {
         let store = ApprovalStore()
         let action = makeAction(expiresAt: Date().addingTimeInterval(60))

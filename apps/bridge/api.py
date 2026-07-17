@@ -239,6 +239,10 @@ class AgentRouter:
         conversation_id = request.conversation_id
         system_instruction = request.system_instruction
 
+        safe_command = self._handle_explicit_safe_command(request)
+        if safe_command is not None:
+            return safe_command
+
         prepared = self._prepare_explicit_action(message)
         if prepared is not None:
             return self._response(
@@ -283,6 +287,44 @@ class AgentRouter:
             text=text,
             status="informational",
         )
+
+    def _handle_explicit_safe_command(self, request: AgentMessageRequest) -> dict[str, Any] | None:
+        command, separator, raw_value = request.message.partition(" ")
+        normalized = command.casefold()
+        value = raw_value.strip() if separator else ""
+        if normalized == "system.status":
+            if value:
+                raise BridgeAPIError(400, "system.status does not accept a payload")
+            health = self.health()
+            routes = health.get("routes", {})
+            route_status = ", ".join(
+                f"{name}={'ready' if available else 'unavailable'}"
+                for name, available in sorted(routes.items())
+            )
+            return self._response(
+                request_id=request.request_id,
+                conversation_id=request.conversation_id,
+                route=request.route,
+                agent="Karina",
+                provider="permission-engine",
+                model=None,
+                text=f"CARINA system online. {route_status}",
+                status="informational",
+            )
+        if normalized == "shortcut.prepare":
+            if not value or len(value) > 128:
+                raise BridgeAPIError(400, "shortcut.prepare requires a valid Shortcut name")
+            return self._response(
+                request_id=request.request_id,
+                conversation_id=request.conversation_id,
+                route=request.route,
+                agent="Karina",
+                provider="permission-engine",
+                model=None,
+                text=f"Prepared {value}. Nothing was executed.",
+                status="prepared",
+            )
+        return None
 
     def execute(self, payload: Mapping[str, Any]) -> dict[str, Any]:
         reject_unexpected_fields(payload, EXECUTE_REQUEST_FIELDS, "execute request")

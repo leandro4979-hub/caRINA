@@ -15,7 +15,8 @@
 
 ## Current Objective
 
-Deploy CARINA to the physical iPhone and complete device runtime verification.
+Keep the deployed CARINA iPhone build operational and finish the two optional
+on-device visual checks when the phone can remain on CARINA/Shortcuts.
 
 ## Completed
 
@@ -37,36 +38,65 @@ Deploy CARINA to the physical iPhone and complete device runtime verification.
 - Verified Mac-side CARINA screenshot capture and an accessibility-driven bridge
   health-check click.
 - Verified OpenClaw gateway readiness on `127.0.0.1:18789`.
-- Passed 25 repository unit tests.
+- Added deterministic, schema-validated handling for `system.status`,
+  `shortcut.prepare`, and approval-gated `shortcut.run` before model routing.
+- Connected `RunCarinaCommandIntent` to the authenticated bridge and preserved
+  explicit confirmation for execute-level commands.
+- Verified generated App Intent metadata contains Open CARINA, Check CARINA
+  Bridge, Run CARINA Command, and all three allow-listed command values.
+- Verified authenticated `system.status` returns the live OpenClaw/Ollama and
+  agent health state without model execution.
+- Verified `shortcut.prepare Get Clipboard` prepares without execution.
+- Verified `shortcut.run Get Clipboard` remains waiting for approval and then
+  executes exactly once through macOS Shortcuts after explicit approval.
+- Verified OpenClaw routes to `ollama/qwen3:8b` and direct Ollama responds.
+- Passed 28 Python unit tests and 13 Swift unit tests.
+- Rebuilt the signed physical-device Debug app successfully after the final
+  source changes.
+- Confirmed there are no CARINA crash reports on the physical iPhone.
 
 ## Current Task
 
-Verify a harmless OpenClaw conversation request and the remaining on-device
-approval and Shortcuts checks.
+Deployment implementation and automated verification are complete.
 
 ## Next Task
 
-Verify a harmless OpenClaw request, execute-approval UI, and CARINA App Intent
-visibility in Shortcuts on the physical iPhone.
+When the iPhone can remain in one foreground app, visually confirm CARINA's
+intents in Shortcuts and read back Microphone/Speech permission state.
 
 ## Known Issues
 
-- App Intent visibility in the Shortcuts app has not been directly verified.
-- Local Network, Microphone, and Speech Recognition approval states have not
-  all been read back from the physical device.
-- A live harmless OpenClaw conversation request has not yet been recorded as a
-  completed runtime check.
+- App Intent registration is present in the signed build metadata, but its
+  visual listing inside the physical Shortcuts app has not been observed while
+  the phone remained available for automation.
+- Local Network is proven by the live iPhone-to-Mac bridge connection;
+  Microphone and Speech Recognition approval states still need visual readback.
+- iOS Developer setting `Fast App Termination` is enabled. CARINA is terminated
+  whenever another app takes foreground focus during XCTest control. This is
+  not a crash; the device produced zero CARINA crash reports.
+- A final simulator re-run on the Xcode/iOS 27 beta was interrupted after the
+  simulator test worker failed to materialize for 668 seconds. The immediately
+  preceding 13-test Swift run passed with the same Swift source, and the final
+  physical-device build passed.
 - The privileged RemoteXPC tunnel reconnects after device interruptions but
   must be authenticated once again after a Mac reboot.
+- OpenAI is optional and currently unavailable to the LaunchAgent because
+  macOS privacy blocks its external environment file. OpenClaw and Ollama are
+  ready and remain the working local route.
 
 ## Last Commit
 
-`ea1798f feat(ios): add signed physical-device control`
+Current deployment milestone is the branch HEAD; run `git log -1 --oneline` to
+display its immutable hash.
 
 ## Build Status
 
 ✅ Physical-device Debug build succeeded for the current source using automatic
 signing and destination `leandros 17pro max`.
+
+✅ Python tests: 28 passed.
+
+✅ Swift tests: 13 passed before the later Xcode beta simulator-worker hang.
 
 ## Device Status
 
@@ -77,7 +107,8 @@ signing and destination `leandros 17pro max`.
 - Developer Mode: enabled
 - Trust: confirmed
 - CARINA installed: yes
-- Current Appium session: active
+- Appium session: restartable; foreground control requires CARINA to remain the
+  active app while `Fast App Termination` is enabled
 
 ## Service Status
 
@@ -85,6 +116,7 @@ signing and destination `leandros 17pro max`.
 - CARINA HTTP bridge: installed on port `51001`
 - CARINA WebSocket bridge: installed on port `51002`
 - Appium: loopback only on port `4723`
+- RemoteXPC: privileged retrying tunnel active
 
 ## Notes
 
@@ -94,3 +126,5 @@ signing and destination `leandros 17pro max`.
 - Prefer `leandros-MacBook-Air.local` until a bindable Tailscale interface is
   active.
 - Do not push, merge, or open a pull request without explicit authorization.
+- Resume foreground control with `make device-control-start` after confirming
+  the iPhone is unlocked and CARINA may remain in the foreground.
