@@ -10,4 +10,6 @@ if (( EUID != 0 )); then
   exec sudo --preserve-env=HOME,PATH,DEVELOPER_DIR "$0"
 fi
 
-exec "$HOME/.local/bin/appium" driver run xcuitest tunnel-creation
+exec "$HOME/.local/bin/appium" driver run xcuitest tunnel-creation -- \
+  --disconnect-retry-max-attempts 0 \
+  --disconnect-retry-interval-ms 1000
