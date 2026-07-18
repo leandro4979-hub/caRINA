@@ -8,6 +8,7 @@ enum AgentRoute: String, Codable, CaseIterable, Identifiable, Sendable {
     case hermes
     case karina
     case clever
+    case apple
 
     var id: String { rawValue }
 
@@ -20,6 +21,7 @@ enum AgentRoute: String, Codable, CaseIterable, Identifiable, Sendable {
         case .hermes: "Hermes"
         case .karina: "Karina"
         case .clever: "Clever AI"
+        case .apple: "Apple Intelligence"
         }
     }
 }
@@ -116,6 +118,7 @@ enum AgentError: LocalizedError, Equatable {
     case timedOut
     case cancelled
     case approval(String)
+    case localModelUnavailable(String)
 
     var errorDescription: String? {
         switch self {
@@ -133,6 +136,8 @@ enum AgentError: LocalizedError, Equatable {
             "The agent request was cancelled."
         case .approval(let message):
             message
+        case .localModelUnavailable(let reason):
+            "Apple Intelligence is unavailable: \(reason)"
         }
     }
 }

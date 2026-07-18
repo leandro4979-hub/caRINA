@@ -2,6 +2,9 @@ import Foundation
 import os
 import UIKit
 import UniformTypeIdentifiers
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
 
 enum CleverAIHandoff {
     static let bundleIdentifier = "com.turbofasttools.geniusai"
@@ -87,6 +90,44 @@ struct MockAgentProvider: AgentProvider {
     func execute(_ action: PreparedAction, conversationID: UUID) async throws -> AgentResponse { response }
 }
 
+#if canImport(FoundationModels)
+@available(iOS 26.0, *)
+struct AppleIntelligenceProvider: AgentProvider {
+    func send(_ request: AgentRequest) async throws -> AgentResponse {
+        let model = SystemLanguageModel.default
+        guard case .available = model.availability else {
+            throw AgentError.localModelUnavailable(Self.availabilityDescription(model.availability))
+        }
+        let session = LanguageModelSession(model: model, instructions: request.systemInstruction)
+        let response = try await session.respond(to: request.message)
+        return AgentResponse(
+            requestId: request.requestId,
+            conversationId: request.conversationId,
+            route: .apple,
+            agent: "Apple Intelligence",
+            provider: "apple-foundation-models",
+            model: "SystemLanguageModel",
+            text: response.content,
+            status: .informational,
+            preparedAction: nil
+        )
+    }
+
+    func execute(_ action: PreparedAction, conversationID: UUID) async throws -> AgentResponse {
+        throw AgentError.approval("Apple Intelligence cannot execute CARINA actions directly.")
+    }
+
+    private static func availabilityDescription(_ availability: SystemLanguageModel.Availability) -> String {
+        switch availability {
+        case .available:
+            return "available"
+        case .unavailable(let reason):
+            return String(describing: reason)
+        }
+    }
+}
+#endif
+
 private struct ActionExecutionRequest: Encodable {
     let action: PreparedAction
     let conversationID: UUID
@@ -127,7 +168,7 @@ final class CarinaAgentService: ObservableObject {
 
     deinit { activeTask?.cancel() }
 
-    func send(message: String, configuration: BridgeConfiguration, bearerToken: String) {
+    func send(message: String, configuration: BridgeConfiguration?, bearerToken: String) {
         let clean = message.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !clean.isEmpty else { return }
         cancel()
@@ -139,11 +180,29 @@ final class CarinaAgentService: ObservableObject {
             message: clean,
             systemInstruction: "You are CARINA, Leandro's truthful iPhone agent interface. Route through OpenClaw when available. Never claim an action executed unless the trusted bridge confirms it."
         )
-        let provider = BridgeAgentProvider(configuration: configuration, bearerToken: bearerToken)
         activeTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let response = try await provider.send(request)
+                let response: AgentResponse
+                if request.route == .apple {
+#if canImport(FoundationModels)
+                    if #available(iOS 26.0, *) {
+                        response = try await AppleIntelligenceProvider().send(request)
+                    } else {
+                        throw AgentError.localModelUnavailable("iOS 26 or later is required")
+                    }
+#else
+                    throw AgentError.localModelUnavailable("Foundation Models is not present in this SDK")
+#endif
+                } else {
+                    guard let configuration else {
+                        throw AgentError.missingBridgeToken
+                    }
+                    response = try await BridgeAgentProvider(
+                        configuration: configuration,
+                        bearerToken: bearerToken
+                    ).send(request)
+                }
                 await self.accept(response)
             } catch {
                 self.logger.error("Agent request failed: \(error.localizedDescription, privacy: .public)")

@@ -159,6 +159,12 @@ struct ContentView: View {
             agent.prepareClever(message: message)
             return
         }
+        if agent.route == .apple {
+            let message = command
+            command = ""
+            agent.send(message: message, configuration: nil, bearerToken: "")
+            return
+        }
         guard settings.save(), let configuration = try? settings.configuration(), credentials.hasBridgeToken else {
             showingSettings = true
             return

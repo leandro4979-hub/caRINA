@@ -62,6 +62,12 @@ final class AgentArchitectureTests: XCTestCase {
         XCTAssertTrue(CleverAIHandoff.appStoreURL.absoluteString.contains("1667722375"))
     }
 
+    func testAppleIntelligenceRouteIsExplicitlyLocal() {
+        XCTAssertEqual(AgentRoute.apple.displayName, "Apple Intelligence")
+        XCTAssertNotEqual(AgentRoute.apple, .openai)
+        XCTAssertNotEqual(AgentRoute.apple, .openclaw)
+    }
+
     func testApprovalExpiresAndCannotReplay() async throws {
         let store = ApprovalStore()
         let action = makeAction(expiresAt: Date().addingTimeInterval(60))
