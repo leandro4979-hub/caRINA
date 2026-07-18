@@ -24,10 +24,12 @@ DEFAULT_OPENAI_MODEL = "gpt-5.6-terra"
 DEFAULT_OLLAMA_MODEL = "qwen3:8b"
 APPROVAL_LIFETIME_SECONDS = 300
 MESSAGE_REQUEST_FIELDS = frozenset(
-    {"request_id", "conversation_id", "route", "message", "system_instruction"}
+    {"request_id", "conversation_id", "route", "delegate", "message", "system_instruction"}
 )
 EXECUTE_REQUEST_FIELDS = frozenset({"action", "conversation_id"})
-SUPPORTED_ROUTES = frozenset({"openclaw", "openai", "ollama", "maya", "hermes", "karina"})
+SUPPORTED_PROVIDER_ROUTES = frozenset({"openclaw", "openai", "ollama"})
+SUPPORTED_DELEGATES = frozenset({"maya", "hermes", "karina"})
+LEGACY_DELEGATE_ROUTES = SUPPORTED_DELEGATES
 
 
 class BridgeAPIError(RuntimeError):
@@ -46,6 +48,7 @@ class AgentMessageRequest:
     request_id: str
     conversation_id: str
     route: str
+    delegate: str | None
     message: str
     system_instruction: str
 
@@ -57,8 +60,21 @@ class AgentMessageRequest:
         if not isinstance(route_value, str) or not route_value.strip():
             raise BridgeAPIError(400, "route must be a non-empty string")
         route = route_value.strip().lower()
-        if route not in SUPPORTED_ROUTES:
+        delegate_value = payload.get("delegate")
+        if delegate_value is not None and (
+            not isinstance(delegate_value, str) or not delegate_value.strip()
+        ):
+            raise BridgeAPIError(400, "delegate must be a non-empty string")
+        delegate = delegate_value.strip().lower() if isinstance(delegate_value, str) else None
+        if route in LEGACY_DELEGATE_ROUTES:
+            if delegate is not None:
+                raise BridgeAPIError(400, "legacy delegate route cannot include delegate")
+            delegate = route
+            route = "openclaw"
+        if route not in SUPPORTED_PROVIDER_ROUTES:
             raise BridgeAPIError(400, f"unsupported route: {route}")
+        if delegate is not None and delegate not in SUPPORTED_DELEGATES:
+            raise BridgeAPIError(400, f"unsupported delegate: {delegate}")
         instruction_value = payload.get("system_instruction", "")
         if not isinstance(instruction_value, str):
             raise BridgeAPIError(400, "system_instruction must be a string")
@@ -68,6 +84,7 @@ class AgentMessageRequest:
             request_id=AgentRouter._uuid(payload.get("request_id"), "request_id"),
             conversation_id=AgentRouter._uuid(payload.get("conversation_id"), "conversation_id"),
             route=route,
+            delegate=delegate,
             message=message,
             system_instruction=instruction_value.strip(),
         )
@@ -235,6 +252,7 @@ class AgentRouter:
         request = AgentMessageRequest.from_payload(payload)
         message = request.message
         route = request.route
+        delegate = request.delegate
         request_id = request.request_id
         conversation_id = request.conversation_id
         system_instruction = request.system_instruction
@@ -249,7 +267,8 @@ class AgentRouter:
                 request_id=request_id,
                 conversation_id=conversation_id,
                 route=route,
-                agent="Karina",
+                agent="CARINA",
+                delegate_agent="karina",
                 provider="permission-engine",
                 model=None,
                 text=f"Prepared for approval: {prepared.summary}",
@@ -257,31 +276,24 @@ class AgentRouter:
                 prepared_action=prepared.public_view(),
             )
 
-        if route == "openclaw":
-            text, agent, provider, model = self._route_openclaw(message, system_instruction)
-        elif route == "openai":
-            text = self._route_openai(message, system_instruction)
-            agent, provider, model = "CARINA", "openai", self.openai_model
-        elif route == "ollama":
-            text = self._route_ollama(message, system_instruction)
-            agent, provider, model = "CARINA", "ollama", self.ollama_model
-        elif route == "maya":
+        if delegate == "maya":
             maya_instruction = "You are Maya, CARINA's strategic planning agent. Return a concrete safe plan. " + system_instruction
-            text, _, provider, model = self._route_openclaw(message, maya_instruction)
-            agent = "Maya"
-        elif route == "hermes":
+            text, provider, model = self._route_provider(route, message, maya_instruction)
+        elif delegate == "hermes":
             text = self._route_hermes_read_only(message)
-            agent, provider, model = "Hermes", "hermes-local", None
-        else:
+            provider, model = "hermes-local", None
+        elif delegate == "karina":
             karina_instruction = "You are Karina, the voice and Shortcuts layer. Prepare a concise device-safe response without executing actions. " + system_instruction
-            text = self._route_openai(message, karina_instruction) if self._has_openai_key() else message
-            agent, provider, model = "Karina", "openai" if self._has_openai_key() else "local", self.openai_model if self._has_openai_key() else None
+            text, provider, model = self._route_provider(route, message, karina_instruction)
+        else:
+            text, provider, model = self._route_provider(route, message, system_instruction)
 
         return self._response(
             request_id=request_id,
             conversation_id=conversation_id,
             route=route,
-            agent=agent,
+            agent="CARINA",
+            delegate_agent=delegate,
             provider=provider,
             model=model,
             text=text,
@@ -305,7 +317,7 @@ class AgentRouter:
                 request_id=request.request_id,
                 conversation_id=request.conversation_id,
                 route=request.route,
-                agent="Karina",
+                agent="CARINA",
                 provider="permission-engine",
                 model=None,
                 text=f"CARINA system online. {route_status}",
@@ -318,7 +330,8 @@ class AgentRouter:
                 request_id=request.request_id,
                 conversation_id=request.conversation_id,
                 route=request.route,
-                agent="Karina",
+                agent="CARINA",
+                delegate_agent="karina",
                 provider="permission-engine",
                 model=None,
                 text=f"Prepared {value}. Nothing was executed.",
@@ -353,13 +366,29 @@ class AgentRouter:
         return self._response(
             request_id=str(uuid.uuid4()),
             conversation_id=conversation_id,
-            route="karina",
-            agent="Karina",
+            route="openclaw",
+            agent="CARINA",
+            delegate_agent="karina",
             provider="macos-shortcuts",
             model=None,
             text=f"Executed {shortcut_name} once after approval.",
             status="executed",
         )
+
+    def _route_provider(
+        self,
+        route: str,
+        message: str,
+        system_instruction: str,
+    ) -> tuple[str, str, str | None]:
+        if route == "openclaw":
+            text, _, provider, model = self._route_openclaw(message, system_instruction)
+            return text, provider, model
+        if route == "openai":
+            return self._route_openai(message, system_instruction), "openai", self.openai_model
+        if route == "ollama":
+            return self._route_ollama(message, system_instruction), "ollama", self.ollama_model
+        raise BridgeAPIError(400, f"unsupported route: {route}")
 
     def _route_openclaw(self, message: str, system_instruction: str) -> tuple[str, str, str, str | None]:
         openclaw_url = self._openclaw_url()
@@ -522,6 +551,7 @@ class AgentRouter:
         model: str | None,
         text: str,
         status: str,
+        delegate_agent: str | None = None,
         prepared_action: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         return {
@@ -529,6 +559,7 @@ class AgentRouter:
             "conversation_id": conversation_id,
             "route": route,
             "agent": agent,
+            "delegate_agent": delegate_agent,
             "provider": provider,
             "model": model,
             "text": text[:MAX_RESPONSE_BYTES],

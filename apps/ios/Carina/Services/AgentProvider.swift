@@ -105,6 +105,7 @@ struct AppleIntelligenceProvider: AgentProvider {
             conversationId: request.conversationId,
             route: .apple,
             agent: "Apple Intelligence",
+            delegateAgent: nil,
             provider: "apple-foundation-models",
             model: "SystemLanguageModel",
             text: response.content,
@@ -176,7 +177,8 @@ final class CarinaAgentService: ObservableObject {
         state = .sending
         let request = AgentRequest(
             conversationID: conversationID,
-            route: route,
+            route: route.providerRoute,
+            delegate: route.delegate == .clever ? nil : route.delegate,
             message: clean,
             systemInstruction: "You are CARINA, Leandro's truthful iPhone agent interface. Route through OpenClaw when available. Never claim an action executed unless the trusted bridge confirms it."
         )
@@ -349,7 +351,7 @@ final class CarinaAgentService: ObservableObject {
                 role: .assistant,
                 text: response.text,
                 agent: response.agent,
-                route: response.route
+                route: response.delegateAgent?.legacyRoute ?? response.route.legacyRoute
             )
         )
         guard let action = response.preparedAction else {

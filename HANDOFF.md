@@ -89,16 +89,23 @@ restore its authenticated Mac connection.
 - Passed all 30 Python tests after the bridge and interface changes.
 - Built and signed the redesigned physical-device app with automatic
   provisioning and Personal Team certificate `863R3427Q3`.
+- Split CARINA's wire contract into provider routing and optional delegation so
+  CARINA remains the primary identity while Maya, Hermes, and Karina work
+  behind her.
+- Added strict compatibility adaptation for legacy `maya`, `hermes`, and
+  `karina` routes and rejection for mixed or unsupported delegate payloads.
+- Passed 24 focused bridge routing tests and a generic iOS Simulator build for
+  the voice-first routing milestone.
 
 ## Current Task
 
-Install the newly signed redesigned build on `DINO's iPhone`, retry **Connect
-Mac + OpenClaw**, and verify the live connected state through iPhone Mirroring.
+Build CARINA's voice-first Conversation home while retaining the current
+command center as the secondary Control view.
 
 ## Next Task
 
-Verify Apple Intelligence, Clever AI, and OpenClaw routes on the redesigned
-physical-device build.
+Add the approved Clever AI return-import flow, then deploy and verify the full
+voice-first build on the physical iPhone.
 
 ## Known Issues
 
@@ -136,7 +143,7 @@ physical-device build.
 
 ## Last Commit
 
-`10cdad0 feat(ios): redesign CARINA agent command center`
+Pending routing milestone commit.
 
 Previous bridge milestone: `7049841 fix(bridge): support iPhone IPv4 websocket
 connections`
@@ -150,6 +157,10 @@ connections`
 ⏳ Redesigned physical-device install is pending CoreDevice availability.
 
 ✅ Python tests: 30 passed.
+
+✅ Focused bridge routing tests: 24 passed.
+
+✅ Voice-first routing milestone generic Simulator build succeeded.
 
 ⚠️ Current Swift test bundle compiled, but Xcode 27 beta again stopped at
 `waiting for workers to materialize`; the most recent completed Swift run

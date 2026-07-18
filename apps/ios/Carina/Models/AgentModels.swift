@@ -1,5 +1,62 @@
 import Foundation
 
+enum ProviderRoute: String, Codable, CaseIterable, Identifiable, Sendable {
+    case openclaw
+    case openai
+    case ollama
+    case apple
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .openclaw: "Automatic"
+        case .openai: "OpenAI"
+        case .ollama: "Ollama"
+        case .apple: "Apple Intelligence"
+        }
+    }
+}
+
+enum CarinaDelegate: String, Codable, CaseIterable, Identifiable, Sendable {
+    case maya
+    case hermes
+    case karina
+    case clever
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .maya: "Maya"
+        case .hermes: "Hermes"
+        case .karina: "Karina"
+        case .clever: "Clever AI"
+        }
+    }
+
+    var legacyRoute: AgentRoute {
+        switch self {
+        case .maya: .maya
+        case .hermes: .hermes
+        case .karina: .karina
+        case .clever: .clever
+        }
+    }
+}
+
+extension ProviderRoute {
+    var legacyRoute: AgentRoute {
+        switch self {
+        case .openclaw: .openclaw
+        case .openai: .openai
+        case .ollama: .ollama
+        case .apple: .apple
+        }
+    }
+}
+
+/// Compatibility-only representation for the pre-delegation UI and stored selections.
 enum AgentRoute: String, Codable, CaseIterable, Identifiable, Sendable {
     case openclaw
     case openai
@@ -22,6 +79,25 @@ enum AgentRoute: String, Codable, CaseIterable, Identifiable, Sendable {
         case .karina: "Karina"
         case .clever: "Clever AI"
         case .apple: "Apple Intelligence"
+        }
+    }
+
+    var providerRoute: ProviderRoute {
+        switch self {
+        case .openai: .openai
+        case .ollama: .ollama
+        case .apple: .apple
+        default: .openclaw
+        }
+    }
+
+    var delegate: CarinaDelegate? {
+        switch self {
+        case .maya: .maya
+        case .hermes: .hermes
+        case .karina: .karina
+        case .clever: .clever
+        default: nil
         }
     }
 }
@@ -68,20 +144,23 @@ enum AgentResponseStatus: String, Codable, Sendable {
 struct AgentRequest: Codable, Equatable, Sendable {
     let requestId: UUID
     let conversationId: UUID
-    let route: AgentRoute
+    let route: ProviderRoute
+    let delegate: CarinaDelegate?
     let message: String
     let systemInstruction: String
 
     init(
         requestID: UUID = UUID(),
         conversationID: UUID,
-        route: AgentRoute,
+        route: ProviderRoute,
+        delegate: CarinaDelegate? = nil,
         message: String,
         systemInstruction: String
     ) {
         self.requestId = requestID
         self.conversationId = conversationID
         self.route = route
+        self.delegate = delegate
         self.message = message
         self.systemInstruction = systemInstruction
     }
@@ -101,13 +180,38 @@ struct PreparedAction: Identifiable, Codable, Equatable, Sendable {
 struct AgentResponse: Codable, Equatable, Sendable {
     let requestId: UUID
     let conversationId: UUID
-    let route: AgentRoute
+    let route: ProviderRoute
     let agent: String
+    let delegateAgent: CarinaDelegate?
     let provider: String
     let model: String?
     let text: String
     let status: AgentResponseStatus
     let preparedAction: PreparedAction?
+
+    init(
+        requestId: UUID,
+        conversationId: UUID,
+        route: ProviderRoute,
+        agent: String,
+        delegateAgent: CarinaDelegate? = nil,
+        provider: String,
+        model: String?,
+        text: String,
+        status: AgentResponseStatus,
+        preparedAction: PreparedAction?
+    ) {
+        self.requestId = requestId
+        self.conversationId = conversationId
+        self.route = route
+        self.agent = agent
+        self.delegateAgent = delegateAgent
+        self.provider = provider
+        self.model = model
+        self.text = text
+        self.status = status
+        self.preparedAction = preparedAction
+    }
 }
 
 enum AgentError: LocalizedError, Equatable {

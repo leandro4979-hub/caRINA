@@ -22,14 +22,17 @@ class StubRouter(AgentRouter):
         return f"ollama:{message}"
 
 
-def request(route="openai", message="hello"):
-    return {
+def request(route="openai", message="hello", delegate=None):
+    payload = {
         "request_id": str(uuid.uuid4()),
         "conversation_id": str(uuid.uuid4()),
         "route": route,
         "message": message,
         "system_instruction": "Be accurate.",
     }
+    if delegate is not None:
+        payload["delegate"] = delegate
+    return payload
 
 
 class CarinaBridgeTests(unittest.TestCase):
@@ -41,6 +44,8 @@ class CarinaBridgeTests(unittest.TestCase):
 
     def test_openai_route_returns_typed_response(self):
         result = StubRouter().message(request())
+        self.assertEqual(result["agent"], "CARINA")
+        self.assertIsNone(result["delegate_agent"])
         self.assertEqual(result["provider"], "openai")
         self.assertEqual(result["status"], "informational")
         self.assertEqual(result["text"], "openai:hello")
@@ -48,6 +53,33 @@ class CarinaBridgeTests(unittest.TestCase):
     def test_unknown_route_is_rejected(self):
         with self.assertRaisesRegex(BridgeAPIError, "unsupported route"):
             StubRouter().message(request(route="shell"))
+
+    def test_maya_is_a_delegate_while_carina_remains_primary(self):
+        result = StubRouter().message(request(route="openai", delegate="maya"))
+        self.assertEqual(result["route"], "openai")
+        self.assertEqual(result["agent"], "CARINA")
+        self.assertEqual(result["delegate_agent"], "maya")
+        self.assertEqual(result["provider"], "openai")
+
+    def test_legacy_maya_route_is_adapted(self):
+        router = StubRouter()
+        with patch.object(
+            router,
+            "_route_openclaw",
+            return_value=("openclaw:hello", "OpenClaw", "openclaw", "test-local"),
+        ):
+            result = router.message(request(route="maya"))
+        self.assertEqual(result["route"], "openclaw")
+        self.assertEqual(result["agent"], "CARINA")
+        self.assertEqual(result["delegate_agent"], "maya")
+
+    def test_legacy_delegate_route_cannot_mix_with_delegate_field(self):
+        with self.assertRaisesRegex(BridgeAPIError, "legacy delegate route"):
+            StubRouter().message(request(route="maya", delegate="hermes"))
+
+    def test_unknown_delegate_is_rejected(self):
+        with self.assertRaisesRegex(BridgeAPIError, "unsupported delegate"):
+            StubRouter().message(request(delegate="shell"))
 
     def test_mixed_legacy_and_canonical_message_is_rejected(self):
         payload = request()

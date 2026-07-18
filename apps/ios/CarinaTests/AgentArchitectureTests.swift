@@ -94,6 +94,7 @@ final class AgentArchitectureTests: XCTestCase {
         let request = AgentRequest(
             conversationID: conversationID,
             route: .openclaw,
+            delegate: .maya,
             message: "status",
             systemInstruction: "Be accurate."
         )
@@ -103,12 +104,14 @@ final class AgentArchitectureTests: XCTestCase {
         let requestJSON = try XCTUnwrap(JSONSerialization.jsonObject(with: requestData) as? [String: Any])
         XCTAssertEqual(requestJSON["conversation_id"] as? String, conversationID.uuidString)
         XCTAssertEqual(requestJSON["route"] as? String, "openclaw")
+        XCTAssertEqual(requestJSON["delegate"] as? String, "maya")
 
         let responseJSON: [String: Any] = [
             "request_id": UUID().uuidString,
             "conversation_id": conversationID.uuidString,
             "route": "openai",
             "agent": "CARINA",
+            "delegate_agent": "maya",
             "provider": "openai",
             "model": "test-model",
             "text": "online",
@@ -122,6 +125,8 @@ final class AgentArchitectureTests: XCTestCase {
         let response = try decoder.decode(AgentResponse.self, from: responseData)
         XCTAssertEqual(response.text, "online")
         XCTAssertEqual(response.route, .openai)
+        XCTAssertEqual(response.agent, "CARINA")
+        XCTAssertEqual(response.delegateAgent, .maya)
     }
 
     func testMockProviderReturnsInjectedResponse() async throws {
@@ -130,6 +135,7 @@ final class AgentArchitectureTests: XCTestCase {
             conversationId: UUID(),
             route: .openclaw,
             agent: "CARINA",
+            delegateAgent: nil,
             provider: "mock",
             model: nil,
             text: "mock response",
