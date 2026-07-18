@@ -122,12 +122,13 @@ restore its authenticated Mac connection.
 
 ## Current Task
 
-Rebuild, install, and launch the Presence-enabled app on the connected physical
-iPhone.
+Launch the installed Presence-enabled app after `17promax` is unlocked, then
+run the final live voice and bridge checks.
 
 ## Next Task
 
-Run final live voice, bridge, delegation, and approval checks.
+Verify microphone permission, Presence routing, Maya delegation, Clever return,
+and execute approval on-device.
 
 ## Known Issues
 
@@ -165,7 +166,7 @@ Run final live voice, bridge, delegation, and approval checks.
 
 ## Last Commit
 
-`2dea94e feat(ios): round-trip Clever responses through CARINA`
+`0a9135b feat(ios): gate voice transcripts with presence classifier`
 
 Previous bridge milestone: `7049841 fix(bridge): support iPhone IPv4 websocket
 connections`
@@ -197,6 +198,15 @@ connections`
 ✅ Presence Layer focused Swift tests: 4 passed.
 
 ✅ Current Python bridge tests: 34 passed.
+
+✅ Presence-enabled signed physical-device build succeeded with Personal Team
+`863R3427Q3`.
+
+✅ Presence-enabled app installed on `17promax`.
+
+⏳ Launch is blocked only by the physical phone remaining locked. Two CoreDevice
+launch attempts returned `Unable to launch com.leandrofajardo.carina because
+the device was not, or could not be, unlocked.`
 
 ⚠️ The updated Swift test bundle compiled, but Xcode 27 again stopped at the
 exact runner state `waiting for workers to materialize`; the run was terminated
