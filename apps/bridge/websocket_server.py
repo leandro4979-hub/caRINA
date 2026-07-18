@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import socket
 import uuid
 from typing import Any
 
@@ -27,17 +28,38 @@ class CarinaWebSocketServer:
             from websockets.asyncio.server import serve
         except ImportError as exc:
             raise RuntimeError("Install apps/bridge/requirements.txt before starting the bridge") from exc
-        async with serve(
-            self._handler,
-            self.host,
-            self.port,
-            max_size=MAX_MESSAGE_BYTES,
-            ping_interval=20,
-            ping_timeout=20,
-            close_timeout=5,
-        ):
-            LOGGER.info("WebSocket listening on %s:%d", self.host, self.port)
-            await asyncio.Future()
+        listener = self._listener_socket()
+        try:
+            async with serve(
+                self._handler,
+                sock=listener,
+                max_size=MAX_MESSAGE_BYTES,
+                ping_interval=20,
+                ping_timeout=20,
+                close_timeout=5,
+            ):
+                LOGGER.info("WebSocket listening on %s:%d", self.host, self.port)
+                await asyncio.Future()
+        finally:
+            listener.close()
+
+    def _listener_socket(self) -> socket.socket:
+        family = socket.AF_INET6 if ":" in self.host else socket.AF_INET
+        listener = socket.socket(family, socket.SOCK_STREAM)
+        try:
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            if family == socket.AF_INET6:
+                # Python's HTTP listener is explicitly dual-stack. Match it here
+                # so an iPhone can use either the Mac's IPv4 LAN address or its
+                # IPv6 mDNS address without the WebSocket port refusing IPv4.
+                listener.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+            listener.bind((self.host, self.port))
+            listener.listen(socket.SOMAXCONN)
+            listener.setblocking(False)
+            return listener
+        except Exception:
+            listener.close()
+            raise
 
     async def _handler(self, socket: Any) -> None:
         request = getattr(socket, "request", None)

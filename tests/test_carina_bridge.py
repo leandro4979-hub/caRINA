@@ -1,4 +1,5 @@
 import os
+import socket
 import sys
 import unittest
 import uuid
@@ -91,6 +92,15 @@ class CarinaBridgeTests(unittest.TestCase):
             CarinaWebSocketServer.normalize_envelope(
                 {"type": "command", "command": "hello", "message": "mixed", "mode": "auto"}
             )
+
+    def test_websocket_default_listener_accepts_ipv4_and_ipv6(self):
+        server = CarinaWebSocketServer("::", 0, "a-secure-token-that-is-long-enough", StubRouter())
+        listener = server._listener_socket()
+        try:
+            self.assertEqual(listener.family, socket.AF_INET6)
+            self.assertEqual(listener.getsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY), 0)
+        finally:
+            listener.close()
 
     def test_execute_command_is_prepared_not_run(self):
         result = StubRouter().message(request(message="shortcut.run Carina Command Center"))
