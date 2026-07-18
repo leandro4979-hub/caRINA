@@ -56,6 +56,7 @@ leandro4979-hub
 
 Then create README.md in that repo using this content:
 
+```markdown
 # Leandro Fajardo
 
 I build practical AI systems, iOS tooling, and developer automation.
