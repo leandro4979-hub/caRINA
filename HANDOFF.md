@@ -122,8 +122,8 @@ restore its authenticated Mac connection.
 
 ## Current Task
 
-Launch the installed Presence-enabled app after `17promax` is unlocked, then
-run the final live voice and bridge checks.
+Run the final live voice, bridge, delegation, and approval checks on
+`17promax`.
 
 ## Next Task
 
@@ -204,9 +204,8 @@ connections`
 
 ✅ Presence-enabled app installed on `17promax`.
 
-⏳ Launch is blocked only by the physical phone remaining locked. Two CoreDevice
-launch attempts returned `Unable to launch com.leandrofajardo.carina because
-the device was not, or could not be, unlocked.`
+✅ Presence-enabled CARINA launched successfully on `17promax`; CoreDevice
+confirmed the application process remained active after launch.
 
 ⚠️ The updated Swift test bundle compiled, but Xcode 27 again stopped at the
 exact runner state `waiting for workers to materialize`; the run was terminated
@@ -225,8 +224,8 @@ remains 13 passed.
 - Developer Mode: enabled by user; CoreDevice status field is stale
 - Trust: confirmed; Local Network permission allowed
 - CARINA installed: yes
-- Latest launch attempt: blocked only because the phone was locked; the app was
-  installed successfully before that launch request
+- Latest launch: succeeded; CARINA process confirmed active on the physical
+  iPhone
 - Bridge token: saved in device Keychain without exposing it
 - Appium session: restartable; foreground control requires CARINA to remain the
   active app while `Fast App Termination` is enabled
