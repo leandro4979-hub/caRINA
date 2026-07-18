@@ -1,7 +1,7 @@
 XCODE_DEVELOPER_DIR ?= $(HOME)/Downloads/Xcode-beta.app/Contents/Developer
 CARINA_DERIVED_DATA ?= /tmp/CARINA-DerivedData
 
-.PHONY: dashboard dashboard-install dashboard-status verify archive-dry-run forge forge-status forge-install deployment-guardian-install deployment-guardian-status deployment-guardian-run iphone-live-view device-control-install device-control-start ios-device-build
+.PHONY: dashboard dashboard-install dashboard-status verify archive-dry-run forge forge-status forge-install deployment-guardian-install deployment-guardian-status deployment-guardian-run iphone-live-view device-control-install device-control-start ios-device-build system-update-log
 
 dashboard:
 	python3 src/build_dashboard.py
