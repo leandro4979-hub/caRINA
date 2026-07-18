@@ -68,6 +68,60 @@ final class AgentArchitectureTests: XCTestCase {
         XCTAssertNotEqual(AgentRoute.apple, .openclaw)
     }
 
+    func testProviderAndDelegateRemainSeparate() {
+        XCTAssertEqual(AgentRoute.maya.providerRoute, .openclaw)
+        XCTAssertEqual(AgentRoute.maya.delegate, .maya)
+        XCTAssertNil(AgentRoute.openai.delegate)
+        XCTAssertEqual(AgentRoute.openai.providerRoute, .openai)
+    }
+
+    func testVoiceSessionStatePriority() {
+        XCTAssertEqual(
+            VoiceSessionState.resolve(
+                isListening: true,
+                transcript: "",
+                isThinking: false,
+                isSpeaking: false,
+                wasInterrupted: false,
+                hasError: false
+            ),
+            .listening
+        )
+        XCTAssertEqual(
+            VoiceSessionState.resolve(
+                isListening: true,
+                transcript: "hello",
+                isThinking: false,
+                isSpeaking: false,
+                wasInterrupted: false,
+                hasError: false
+            ),
+            .transcribing
+        )
+        XCTAssertEqual(
+            VoiceSessionState.resolve(
+                isListening: false,
+                transcript: "",
+                isThinking: true,
+                isSpeaking: true,
+                wasInterrupted: false,
+                hasError: false
+            ),
+            .speaking
+        )
+        XCTAssertEqual(
+            VoiceSessionState.resolve(
+                isListening: false,
+                transcript: "",
+                isThinking: false,
+                isSpeaking: false,
+                wasInterrupted: false,
+                hasError: true
+            ),
+            .failed
+        )
+    }
+
     func testApprovalExpiresAndCannotReplay() async throws {
         let store = ApprovalStore()
         let action = makeAction(expiresAt: Date().addingTimeInterval(60))

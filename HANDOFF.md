@@ -96,16 +96,24 @@ restore its authenticated Mac connection.
   `karina` routes and rejection for mixed or unsupported delegate payloads.
 - Passed 24 focused bridge routing tests and a generic iOS Simulator build for
   the voice-first routing milestone.
+- Replaced the default command-center screen with a CARINA-first Conversation
+  home using an original warm editorial design and retained network,
+  transcript, provider, delegate, and approval controls under Control.
+- Added native Apple speech synthesis, tap-to-talk transcription, response
+  playback, interruption, Reduce Motion handling, and a deterministic voice
+  state machine covering idle, listening, transcribing, thinking, speaking,
+  interrupted, and failed states.
+- Visually verified the voice-first home on an iPhone 17 Pro Max simulator and
+  confirmed CARINA remains the permanent conversation header.
 
 ## Current Task
 
-Build CARINA's voice-first Conversation home while retaining the current
-command center as the secondary Control view.
+Add the approved Clever AI return-import flow without granting clipboard reads
+or execution authority until the user explicitly taps.
 
 ## Next Task
 
-Add the approved Clever AI return-import flow, then deploy and verify the full
-voice-first build on the physical iPhone.
+Deploy and verify the complete voice-first build on the physical iPhone.
 
 ## Known Issues
 
@@ -143,7 +151,7 @@ voice-first build on the physical iPhone.
 
 ## Last Commit
 
-Pending routing milestone commit.
+`ad40b1d refactor(agents): keep CARINA primary across delegates`
 
 Previous bridge milestone: `7049841 fix(bridge): support iPhone IPv4 websocket
 connections`
@@ -161,6 +169,14 @@ connections`
 ✅ Focused bridge routing tests: 24 passed.
 
 ✅ Voice-first routing milestone generic Simulator build succeeded.
+
+✅ Voice-first Conversation and Control build succeeded.
+
+✅ Voice-first simulator launch and screenshot inspection succeeded.
+
+⚠️ The updated Swift test bundle compiled, but Xcode 27 again stopped at the
+exact runner state `waiting for workers to materialize`; the run was terminated
+after the repeated toolchain failure rather than reported as passed.
 
 ⚠️ Current Swift test bundle compiled, but Xcode 27 beta again stopped at
 `waiting for workers to materialize`; the most recent completed Swift run

@@ -159,7 +159,8 @@ final class CarinaAgentService: ObservableObject {
     @Published private(set) var messages: [AgentMessage] = []
     @Published private(set) var state: State = .idle
     @Published private(set) var pendingApproval: PreparedAction?
-    @Published var route: AgentRoute = .openclaw
+    @Published var providerRoute: ProviderRoute = .openclaw
+    @Published var selectedDelegate: CarinaDelegate?
 
     let conversationID = UUID()
     private let permissionEngine = CommandPermissionEngine()
@@ -177,8 +178,8 @@ final class CarinaAgentService: ObservableObject {
         state = .sending
         let request = AgentRequest(
             conversationID: conversationID,
-            route: route.providerRoute,
-            delegate: route.delegate == .clever ? nil : route.delegate,
+            route: providerRoute,
+            delegate: selectedDelegate == .clever ? nil : selectedDelegate,
             message: clean,
             systemInstruction: "You are CARINA, Leandro's truthful iPhone agent interface. Route through OpenClaw when available. Never claim an action executed unless the trusted bridge confirms it."
         )
