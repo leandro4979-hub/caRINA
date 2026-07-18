@@ -92,6 +92,7 @@ Python, Swift, iOS, API integrations, automation tooling, GitHub workflows
 
 - Open an issue in a project repo for collaboration
 - Use GitHub Discussions where enabled
+```
 
 ## 5) Repo README Quality Standard
 

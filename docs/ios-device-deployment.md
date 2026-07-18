@@ -58,7 +58,7 @@ unless that app adds a documented export, Shortcut, App Intent, or API.
 ## Permission model
 
 | Level | Behavior | Examples |
-|---|---|---|
+| --- | --- | --- |
 | `read` | Runs after registry validation | system, bridge, OpenClaw, and agent status |
 | `prepare` | Produces a preview without a side effect | prepare a Shortcut |
 | `execute` | Requires trusted confirmation and a single-use approval | run an allow-listed Shortcut or open Clever AI with a prepared prompt |
