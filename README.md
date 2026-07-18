@@ -88,6 +88,27 @@ LaunchAgent refreshes a privacy-safe snapshot and
 `forge.status` or `forge.search deployment` in CARINA to query it without model
 execution.
 
+### Deployment Guardian
+
+The guardian keeps the Personal Team build fresh without weakening Apple
+signing, trust, or device security. It checks the paired `17promax` every six
+hours and rebuilds only when the iOS source snapshot changes, CARINA is missing,
+the development profile is within 48 hours of expiry, or four days have passed
+since the last successful refresh.
+
+```sh
+make deployment-guardian-install
+make deployment-guardian-status
+make deployment-guardian-run
+```
+
+The LaunchAgent builds from a privacy-safe snapshot under
+`~/Library/Application Support/CARINA/deployment`, so macOS Documents privacy
+does not break unattended signing refreshes. Re-run
+`make deployment-guardian-install` after changing iOS source to update that
+snapshot. If the phone is locked, installation remains valid and launch is
+deferred until the phone is unlocked.
+
 ### Hands-On iPhone Live View
 
 Apple ends an iPhone Mirroring session as soon as the physical iPhone is used.

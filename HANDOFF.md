@@ -130,15 +130,21 @@ live project-performance dashboard for the next planning decision.
 - Indexed 16 local project documents with zero quarantined or failed inputs.
 - Restarted the live CARINA bridge with Forge support and verified authenticated
   health and search responses on HTTP port `51001`.
+- Added a native deployment guardian that checks the paired phone, installed
+  bundle, iOS snapshot revision, provisioning expiration, and refresh age.
+- Installed `com.leandrofajardo.carina.deployment-guardian` with a six-hour
+  schedule and a private Application Support source/build snapshot.
+- Verified the guardian adopted the existing signed install without rebuilding,
+  detected `17promax` over its wired tunnel, and recorded 5.48 signing days
+  remaining with exit code `0`.
 
 ## Current Task
 
-Install and verify the automatic physical-device deployment guardian.
+Upgrade and open the live project-performance dashboard.
 
 ## Next Task
 
-Upgrade and open the live project-performance dashboard using Forge, deployment,
-Git, service, and test telemetry.
+Run the final combined service, dashboard, Python, bridge, and device checks.
 
 ## Known Issues
 
