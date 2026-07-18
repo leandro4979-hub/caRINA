@@ -57,3 +57,6 @@ ios-device-build:
 		-derivedDataPath "$(CARINA_DERIVED_DATA)" \
 		-allowProvisioningUpdates \
 		build
+
+system-update-log:
+	python3 scripts/update_system_log.py
