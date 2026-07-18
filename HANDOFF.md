@@ -15,8 +15,9 @@
 
 ## Current Objective
 
-Keep CARINA deployed, continuously feed it safe project material, and expose a
-live project-performance dashboard for the next planning decision.
+Operational baseline complete: CARINA remains deployed, receives safe project
+material, and exposes a live project-performance dashboard for the next
+planning decision.
 
 ## Completed
 
@@ -150,12 +151,12 @@ live project-performance dashboard for the next planning decision.
 
 ## Current Task
 
-Run the final combined verification and operational health checks.
+Use the live dashboard to choose and execute the next project milestone.
 
 ## Next Task
 
-Keep the guardian and dashboard snapshots current after future iOS or repository
-changes.
+Re-run `make deployment-guardian-install` after iOS source changes and
+`make dashboard-install` after adding or moving repositories.
 
 ## Known Issues
 
@@ -193,7 +194,7 @@ changes.
 
 ## Last Commit
 
-`fa80699 feat(ios): keep CARINA device signing fresh`
+`15a0ca4 feat(ops): add live project performance dashboard`
 
 Previous bridge milestone: `7049841 fix(bridge): support iPhone IPv4 websocket
 connections`

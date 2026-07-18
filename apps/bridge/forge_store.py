@@ -9,7 +9,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterator, Mapping
 
 
 DEFAULT_FORGE_DB = Path.home() / "Library/Application Support/CARINA/forge/forge.db"
@@ -122,7 +122,7 @@ class ForgeStore:
                     pass
 
     @contextmanager
-    def _session(self) -> Iterable[sqlite3.Connection]:
+    def _session(self) -> Iterator[sqlite3.Connection]:
         connection = self._connect()
         try:
             yield connection

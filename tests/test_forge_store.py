@@ -43,10 +43,13 @@ class ForgeStoreTests(unittest.TestCase):
 
     def test_secret_document_is_quarantined_and_content_is_not_stored(self):
         source = self.root / "secret.txt"
-        source.write_text("OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz123456", encoding="utf-8")
+        source.write_text(
+            "OPENAI_API_KEY=" + "synthetic-test-secret-value",
+            encoding="utf-8",
+        )
 
         self.assertEqual(carina_forge.ingest_file(self.store, source), "quarantined")
-        self.assertEqual(self.store.search("abcdefghijklmnopqrstuvwxyz"), [])
+        self.assertEqual(self.store.search("synthetic-test-secret-value"), [])
         status = self.store.status()
         self.assertEqual(status["ready"], 0)
         self.assertEqual(status["quarantined"], 1)

@@ -261,7 +261,15 @@ class DeploymentGuardian:
         now = dt.datetime.now(dt.timezone.utc)
         self.runtime.mkdir(parents=True, exist_ok=True, mode=0o700)
         with self.lock_path.open("a+", encoding="utf-8") as lock_handle:
-            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            try:
+                fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return {
+                    "success": True,
+                    "outcome": "already-running",
+                    "checked_at": iso8601(),
+                    "duration_ms": round((time.monotonic() - started) * 1000),
+                }
             state = self._load_state()
             try:
                 device = self.device()
@@ -311,7 +319,7 @@ class DeploymentGuardian:
                     "device": {key: value for key, value in device.items() if key != "identifier"},
                     "duration_ms": round((time.monotonic() - started) * 1000),
                 }
-            except (OSError, RuntimeError, subprocess.TimeoutExpired, BlockingIOError) as exc:
+            except (OSError, RuntimeError, subprocess.TimeoutExpired) as exc:
                 result = {
                     "success": False,
                     "outcome": "failed",
