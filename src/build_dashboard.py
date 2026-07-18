@@ -295,6 +295,7 @@ def build_html(
         ("MagnoliaOS Runtime", "7420", status_for_port("7420", listeners)),
         ("Ollama", "11434", status_for_port("11434", listeners)),
     ]
+    online_count = sum(1 for _, _, state in cards if state == "online")
     card_html = "\n".join(
         f"""
         <article class="status-card {state}">
@@ -327,77 +328,168 @@ def build_html(
   <title>caRINA AgentOps</title>
   <style>
     :root {{
-      color-scheme: light;
-      --ink: #17212b;
-      --muted: #647083;
-      --line: #d9dee7;
-      --paper: #f7f8fb;
-      --panel: #ffffff;
-      --green: #11875d;
-      --amber: #a76305;
-      --blue: #1e5aa8;
-      --rose: #ad3158;
+      color-scheme: dark;
+      --ink: #f3f6ff;
+      --muted: #929cb8;
+      --line: rgba(155, 168, 220, .16);
+      --paper: #070a17;
+      --panel: rgba(17, 22, 46, .76);
+      --panel-strong: rgba(21, 28, 59, .94);
+      --green: #45e6a6;
+      --amber: #ffb764;
+      --blue: #62c8ff;
+      --violet: #997dff;
+      --rose: #ff6b9d;
+      --shadow: 0 24px 70px rgba(0, 0, 0, .3);
     }}
     * {{ box-sizing: border-box; }}
+    html {{ scroll-behavior: smooth; }}
     body {{
       margin: 0;
-      background: var(--paper);
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 88% -8%, rgba(104, 72, 255, .28), transparent 36rem),
+        radial-gradient(circle at -8% 70%, rgba(25, 192, 225, .14), transparent 32rem),
+        var(--paper);
       color: var(--ink);
-      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font: 15px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
     }}
     header {{
-      padding: 28px clamp(18px, 4vw, 56px) 20px;
-      background: #ffffff;
+      position: relative;
+      overflow: hidden;
+      padding: 48px clamp(22px, 6vw, 84px) 38px;
+      background: linear-gradient(145deg, rgba(19, 25, 57, .92), rgba(8, 11, 28, .7));
       border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(28px) saturate(135%);
+    }}
+    header::after {{
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      right: -90px;
+      top: -260px;
+      border-radius: 50%;
+      background: conic-gradient(from 30deg, var(--blue), var(--violet), transparent, var(--blue));
+      filter: blur(42px);
+      opacity: .28;
+      pointer-events: none;
+    }}
+    .eyebrow {{
+      margin: 0 0 10px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .22em;
+      text-transform: uppercase;
     }}
     header h1 {{
       margin: 0;
-      font-size: clamp(28px, 4vw, 44px);
-      letter-spacing: 0;
+      font-size: clamp(36px, 6vw, 70px);
+      line-height: 1;
+      letter-spacing: -.045em;
+      background: linear-gradient(110deg, #fff 20%, #9ce9ff 55%, #b7a6ff 90%);
+      -webkit-background-clip: text;
+      color: transparent;
     }}
-    header p {{ margin: 8px 0 0; color: var(--muted); }}
+    header p {{ margin: 14px 0 0; color: var(--muted); max-width: 760px; }}
+    .hero-meta {{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }}
+    .hero-meta span {{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .045);
+      color: #c8d0e8;
+      font-size: 12px;
+    }}
+    .hero-meta .live::before {{
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 14px var(--green);
+    }}
     main {{
-      width: min(1180px, calc(100% - 28px));
-      margin: 22px auto 48px;
+      width: min(1320px, calc(100% - 32px));
+      margin: 26px auto 70px;
       display: grid;
-      gap: 18px;
+      gap: 20px;
     }}
     section {{
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 18px;
+      border-radius: 24px;
+      padding: clamp(18px, 2.5vw, 28px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(22px) saturate(125%);
     }}
-    h2 {{ margin: 0 0 12px; font-size: 20px; letter-spacing: 0; }}
+    h2 {{ margin: 0 0 18px; font-size: 19px; letter-spacing: -.015em; }}
+    h2::before {{
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin: 0 10px 2px 0;
+      border-radius: 50%;
+      background: var(--violet);
+      box-shadow: 0 0 14px rgba(153, 125, 255, .7);
+    }}
     .grid {{
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
     }}
     .status-card {{
-      min-height: 104px;
+      position: relative;
+      overflow: hidden;
+      min-height: 122px;
       border: 1px solid var(--line);
-      border-left: 5px solid var(--amber);
-      border-radius: 8px;
-      padding: 14px;
+      border-radius: 19px;
+      padding: 18px;
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      background: #fbfcff;
+      background: linear-gradient(145deg, rgba(255, 255, 255, .065), rgba(255, 255, 255, .02));
+      transition: transform .18s ease, border-color .18s ease;
     }}
-    .status-card.online {{ border-left-color: var(--green); }}
-    .status-card p {{ margin: 0 0 6px; color: var(--muted); }}
-    .status-card strong {{ display: block; font-size: 22px; }}
+    .status-card:hover {{ transform: translateY(-2px); border-color: rgba(153, 125, 255, .38); }}
+    .status-card::after {{
+      content: "";
+      position: absolute;
+      inset: auto -30px -45px auto;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: var(--amber);
+      filter: blur(38px);
+      opacity: .12;
+    }}
+    .status-card.online::after {{ background: var(--green); opacity: .16; }}
+    .status-card p {{ margin: 0 0 12px; color: var(--muted); font-size: 13px; }}
+    .status-card strong {{ display: block; font-size: 23px; letter-spacing: -.03em; }}
     .status-card span {{
       height: 26px;
-      padding: 2px 8px;
+      padding: 4px 9px;
       border-radius: 999px;
-      background: #edf3ff;
-      color: var(--blue);
-      font-size: 12px;
+      background: rgba(255, 183, 100, .1);
+      color: var(--amber);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .08em;
       text-transform: uppercase;
     }}
-    .status-card.online span {{ background: #e8f6ef; color: var(--green); }}
+    .status-card.online span {{ background: rgba(69, 230, 166, .1); color: var(--green); }}
+    .status-card.online span::before {{ content: "● "; }}
     table {{
       width: 100%;
       border-collapse: collapse;
@@ -406,16 +498,19 @@ def build_html(
     th, td {{
       text-align: left;
       vertical-align: top;
-      border-bottom: 1px solid var(--line);
-      padding: 10px 8px;
+      border-bottom: 1px solid rgba(155, 168, 220, .1);
+      padding: 12px 10px;
     }}
-    th {{ color: var(--muted); font-size: 13px; }}
+    th {{ color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }}
+    tbody tr {{ transition: background .15s ease; }}
+    tbody tr:hover {{ background: rgba(255, 255, 255, .025); }}
     code {{
       font-family: "SFMono-Regular", Consolas, monospace;
       font-size: 0.92em;
-      background: #f0f2f6;
-      padding: 1px 4px;
-      border-radius: 4px;
+      background: rgba(98, 200, 255, .08);
+      color: #a8e4ff;
+      padding: 2px 6px;
+      border-radius: 6px;
     }}
     ul {{ margin: 0; padding-left: 20px; }}
     li + li {{ margin-top: 6px; }}
@@ -425,23 +520,22 @@ def build_html(
       gap: 18px;
     }}
     .notice {{
-      border-left: 5px solid var(--rose);
-      background: #fff8fa;
+      border-color: rgba(255, 107, 157, .22);
+      background: linear-gradient(145deg, rgba(255, 107, 157, .08), var(--panel));
     }}
     .archive-summary {{
       margin: 12px 0 16px;
-      padding: 12px;
+      padding: 14px;
       border: 1px solid var(--line);
-      border-left: 5px solid var(--blue);
-      border-radius: 8px;
-      background: #f8fbff;
+      border-radius: 15px;
+      background: rgba(98, 200, 255, .045);
     }}
     .archive-summary p {{ margin: 4px 0; }}
     .metric {{
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px;
-      background: #fbfcff;
+      border-radius: 16px;
+      padding: 15px;
+      background: rgba(255, 255, 255, .035);
     }}
     .metric strong {{
       display: block;
@@ -460,22 +554,30 @@ def build_html(
       border-radius: 999px;
       font-size: 12px;
       text-align: center;
-      background: #edf3ff;
+      background: rgba(98, 200, 255, .1);
       color: var(--blue);
     }}
-    .pill.keep {{ background: #e8f6ef; color: var(--green); }}
-    .pill.archive {{ background: #fff6e8; color: var(--amber); }}
-    .pill.delete-candidate {{ background: #fff0f4; color: var(--rose); }}
+    .pill.keep {{ background: rgba(69, 230, 166, .1); color: var(--green); }}
+    .pill.archive {{ background: rgba(255, 183, 100, .1); color: var(--amber); }}
+    .pill.delete-candidate {{ background: rgba(255, 107, 157, .1); color: var(--rose); }}
     @media (max-width: 820px) {{
       .two-col {{ grid-template-columns: 1fr; }}
       th, td {{ padding: 8px 6px; }}
+      header {{ padding-top: 34px; }}
     }}
   </style>
 </head>
 <body>
   <header>
-    <h1>caRINA AgentOps</h1>
-    <p>Generated {html.escape(now)} from <code>{html.escape(str(agentops_dir))}</code></p>
+    <p class="eyebrow">MagnoliaOS · Autonomous systems console</p>
+    <h1>CARINA Command Core</h1>
+    <p>One truthful view of agents, services, local models and live Mac operations.</p>
+    <div class="hero-meta">
+      <span class="live">{online_count} of {len(cards)} core services online</span>
+      <span>OpenClaw + Ollama preferred</span>
+      <span>Generated {html.escape(now)}</span>
+      <span>{html.escape(str(agentops_dir))}</span>
+    </div>
   </header>
   <main>
     <section>
