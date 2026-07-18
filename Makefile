@@ -1,4 +1,7 @@
-.PHONY: dashboard verify archive-dry-run iphone-live-view device-control-install device-control-start
+XCODE_DEVELOPER_DIR ?= $(HOME)/Downloads/Xcode-beta.app/Contents/Developer
+CARINA_DERIVED_DATA ?= /tmp/CARINA-DerivedData
+
+.PHONY: dashboard verify archive-dry-run iphone-live-view device-control-install device-control-start ios-device-build
 
 dashboard:
 	python3 src/build_dashboard.py
@@ -20,3 +23,13 @@ device-control-install:
 
 device-control-start:
 	./scripts/carina_device_control.py start
+
+ios-device-build:
+	DEVELOPER_DIR="$(XCODE_DEVELOPER_DIR)" xcodebuild \
+		-project apps/ios/Carina.xcodeproj \
+		-scheme Carina \
+		-configuration Debug \
+		-destination 'generic/platform=iOS' \
+		-derivedDataPath "$(CARINA_DERIVED_DATA)" \
+		-allowProvisioningUpdates \
+		build

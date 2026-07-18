@@ -15,8 +15,8 @@
 
 ## Current Objective
 
-Keep the deployed CARINA iPhone build operational and finish the two optional
-on-device visual checks when the phone can remain on CARINA/Shortcuts.
+Redeploy the rebuilt CARINA experience to the restored physical iPhone and
+restore its authenticated Mac connection.
 
 ## Completed
 
@@ -54,15 +54,28 @@ on-device visual checks when the phone can remain on CARINA/Shortcuts.
 - Rebuilt the signed physical-device Debug app successfully after the final
   source changes.
 - Confirmed there are no CARINA crash reports on the physical iPhone.
+- Added a verified Clever AI handoff using its universal link, custom URL
+  scheme, and App Store fallback after a phone restore.
+- Added an iOS 26+ Apple Intelligence route using Foundation Models for private,
+  on-device responses without OpenAI API usage.
+- Rebuilt the iPhone interface as an adaptive native command core with Liquid
+  Glass on iOS 26+ and an iOS 17 material fallback.
+- Rebuilt the Mac AgentOps dashboard with the same dark command-core design and
+  only real listener and repository data.
+- Passed the iOS generic simulator build after the interface and local-model
+  changes.
+- Passed the signed generic iPhone build with the Personal Team provisioning
+  profile after moving DerivedData outside iCloud Drive.
+- Passed all 28 Python tests after the Mac dashboard redesign.
 
 ## Current Task
 
-Deployment implementation and automated verification are complete.
+Build and install the signed app on the restored `DINO’s iPhone`.
 
 ## Next Task
 
-When the iPhone can remain in one foreground app, visually confirm CARINA's
-intents in Shortcuts and read back Microphone/Speech permission state.
+Enable Developer Mode after the restore, then install CARINA, save the bridge
+token again, and verify Apple Intelligence, Clever AI, and OpenClaw routing.
 
 ## Known Issues
 
@@ -75,24 +88,39 @@ intents in Shortcuts and read back Microphone/Speech permission state.
   whenever another app takes foreground focus during XCTest control. This is
   not a crash; the device produced zero CARINA crash reports.
 - A final simulator re-run on the Xcode/iOS 27 beta was interrupted after the
-  simulator test worker failed to materialize for 668 seconds. The immediately
-  preceding 13-test Swift run passed with the same Swift source, and the final
-  physical-device build passed.
+  simulator test worker failed to materialize. The same Xcode 27 runner issue
+  repeated after the UI update and was stopped after 70 seconds with the exact
+  state `waiting for workers to materialize`. The immediately preceding
+  13-test Swift run passed, while current simulator and signed-device builds
+  both compile successfully.
 - The privileged RemoteXPC tunnel reconnects after device interruptions but
   must be authenticated once again after a Mac reboot.
 - OpenAI is optional and currently unavailable to the LaunchAgent because
   macOS privacy blocks its external environment file. OpenClaw and Ollama are
   ready and remain the working local route.
+- The restored phone currently reports Developer Mode `disabled`; Xcode cannot
+  install the development build until the post-restore Developer Mode restart
+  has completed.
+- Clever AI is not installed on the restored phone. CARINA now opens Clever's
+  App Store page and copies the prepared prompt when the app is absent.
+- Restoring the phone cleared CARINA's device-only Keychain token; it must be
+  pasted once after reinstalling CARINA.
+- Building inside this iCloud-backed checkout can add Finder metadata to the
+  generated app and make codesign report `resource fork, Finder information,
+  or similar detritus not allowed`. Use `make ios-device-build`; it places
+  DerivedData in `/tmp/CARINA-DerivedData` and the signed build succeeds.
 
 ## Last Commit
 
-Current deployment milestone is the branch HEAD; run `git log -1 --oneline` to
-display its immutable hash.
+`305cc33 feat(mac): redesign live CARINA command center`
 
 ## Build Status
 
-✅ Physical-device Debug build succeeded for the current source using automatic
-signing and destination `leandros 17pro max`.
+✅ Generic iOS Simulator Debug build succeeded with Xcode 27 beta.
+
+✅ Signed generic iPhone Debug build succeeded with automatic provisioning.
+
+⏳ Restored-device build/install pending Developer Mode availability.
 
 ✅ Python tests: 28 passed.
 
@@ -100,13 +128,13 @@ signing and destination `leandros 17pro max`.
 
 ## Device Status
 
-- Device: `leandros 17pro max`
+- Device: `DINO’s iPhone`
 - Model: iPhone 17 Pro Max
 - Pairing: available and paired
 - Current transport: USB RemoteXPC tunnel active
-- Developer Mode: enabled
+- Developer Mode: disabled after restore; post-restore enable/restart pending
 - Trust: confirmed
-- CARINA installed: yes
+- CARINA installed: no after restore
 - Appium session: restartable; foreground control requires CARINA to remain the
   active app while `Fast App Termination` is enabled
 
