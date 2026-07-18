@@ -67,15 +67,17 @@ restore its authenticated Mac connection.
 - Passed the signed generic iPhone build with the Personal Team provisioning
   profile after moving DerivedData outside iCloud Drive.
 - Passed all 28 Python tests after the Mac dashboard redesign.
+- Built for `DINO’s iPhone`, installed bundle `com.leandrofajardo.carina`, and
+  confirmed Xcode accepts the restored phone as a physical destination.
 
 ## Current Task
 
-Build and install the signed app on the restored `DINO’s iPhone`.
+Trust the Personal Team developer profile once, then launch and verify CARINA.
 
 ## Next Task
 
-Enable Developer Mode after the restore, then install CARINA, save the bridge
-token again, and verify Apple Intelligence, Clever AI, and OpenClaw routing.
+Launch CARINA, save the bridge token again, and verify Apple Intelligence,
+Clever AI, and OpenClaw routing.
 
 ## Known Issues
 
@@ -98,9 +100,11 @@ token again, and verify Apple Intelligence, Clever AI, and OpenClaw routing.
 - OpenAI is optional and currently unavailable to the LaunchAgent because
   macOS privacy blocks its external environment file. OpenClaw and Ollama are
   ready and remain the working local route.
-- The restored phone currently reports Developer Mode `disabled`; Xcode cannot
-  install the development build until the post-restore Developer Mode restart
-  has completed.
+- CoreDevice's `developerModeStatus` field remains stale at `disabled`, but
+  Xcode lists `DINO’s iPhone` as a compatible destination and successfully
+  built and installed CARINA on it.
+- The first post-restore launch is blocked until the user trusts the Personal
+  Team profile under Settings > General > VPN & Device Management.
 - Clever AI is not installed on the restored phone. CARINA now opens Clever's
   App Store page and copies the prepared prompt when the app is absent.
 - Restoring the phone cleared CARINA's device-only Keychain token; it must be
@@ -120,7 +124,9 @@ token again, and verify Apple Intelligence, Clever AI, and OpenClaw routing.
 
 ✅ Signed generic iPhone Debug build succeeded with automatic provisioning.
 
-⏳ Restored-device build/install pending Developer Mode availability.
+✅ Restored-device build and installation succeeded.
+
+⏳ First launch pending one-time trust of the Personal Team profile.
 
 ✅ Python tests: 28 passed.
 
@@ -132,9 +138,9 @@ token again, and verify Apple Intelligence, Clever AI, and OpenClaw routing.
 - Model: iPhone 17 Pro Max
 - Pairing: available and paired
 - Current transport: USB RemoteXPC tunnel active
-- Developer Mode: disabled after restore; post-restore enable/restart pending
+- Developer Mode: enabled by user; CoreDevice status field is stale
 - Trust: confirmed
-- CARINA installed: no after restore
+- CARINA installed: yes
 - Appium session: restartable; foreground control requires CARINA to remain the
   active app while `Fast App Termination` is enabled
 
