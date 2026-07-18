@@ -69,15 +69,21 @@ restore its authenticated Mac connection.
 - Passed all 28 Python tests after the Mac dashboard redesign.
 - Built for `DINO’s iPhone`, installed bundle `com.leandrofajardo.carina`, and
   confirmed Xcode accepts the restored phone as a physical destination.
+- Switched macOS iPhone Mirroring from `Old phone ios 14` to the restored
+  `17promax` iPhone selection.
+- Installed and validated the personal Codex skill `build-personal-skills`.
+- Created the non-destructive staging workspace at
+  `~/Documents/CARINA-Workspace`.
 
 ## Current Task
 
-Trust the Personal Team developer profile once, then launch and verify CARINA.
+Reconnect the restored iPhone to the same iCloud account as the Mac, then use
+iPhone Mirroring to save CARINA's bridge token.
 
 ## Next Task
 
-Launch CARINA, save the bridge token again, and verify Apple Intelligence,
-Clever AI, and OpenClaw routing.
+Verify CARINA's authenticated HTTP and WebSocket connection, then verify Apple
+Intelligence, Clever AI, and OpenClaw routing.
 
 ## Known Issues
 
@@ -113,6 +119,9 @@ Clever AI, and OpenClaw routing.
   generated app and make codesign report `resource fork, Finder information,
   or similar detritus not allowed`. Use `make ios-device-build`; it places
   DerivedData in `/tmp/CARINA-DerivedData` and the signed build succeeds.
+- iPhone Mirroring now targets the restored phone, but currently reports:
+  `iPhone Not Found To use iPhone Mirroring, make sure “17promax” is signed in
+  with the same iCloud account as this Mac.`
 
 ## Last Commit
 
@@ -136,8 +145,9 @@ Clever AI, and OpenClaw routing.
 
 - Device: `DINO’s iPhone`
 - Model: iPhone 17 Pro Max
-- Pairing: available and paired
-- Current transport: USB RemoteXPC tunnel active
+- Pairing: previously paired; CoreDevice currently reports unavailable
+- Current transport: iPhone Mirroring selected but blocked by iCloud account
+  mismatch; Tailscale currently reports the restored phone offline
 - Developer Mode: enabled by user; CoreDevice status field is stale
 - Trust: confirmed
 - CARINA installed: yes
@@ -162,3 +172,6 @@ Clever AI, and OpenClaw routing.
 - Do not push, merge, or open a pull request without explicit authorization.
 - Resume foreground control with `make device-control-start` after confirming
   the iPhone is unlocked and CARINA may remain in the foreground.
+- Create future personal skills with `$build-personal-skills`; place loose
+  inputs in `~/Documents/CARINA-Workspace/00-Inbox` only when intentionally
+  staging them.
