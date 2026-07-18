@@ -16,6 +16,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
+from forge_store import ForgeStore
+
 
 LOGGER = logging.getLogger("CarinaBridge.API")
 MAX_MESSAGE_LENGTH = 16_000
@@ -219,8 +221,13 @@ class ActionStore:
 
 
 class AgentRouter:
-    def __init__(self, action_store: ActionStore | None = None) -> None:
+    def __init__(
+        self,
+        action_store: ActionStore | None = None,
+        forge_store: ForgeStore | None = None,
+    ) -> None:
         self.action_store = action_store or ActionStore()
+        self.forge_store = forge_store or ForgeStore()
         self.openai_model = os.environ.get("OPENAI_MODEL", DEFAULT_OPENAI_MODEL).strip()
         self.ollama_model = os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL).strip()
 
@@ -246,6 +253,7 @@ class AgentRouter:
             "ports": {"http": 51001, "websocket": 51002},
             "authentication": "bearer",
             "execute_approval": "single-use, five-minute expiry",
+            "forge": self.forge_store.status(),
         }
 
     def message(self, payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -274,6 +282,12 @@ class AgentRouter:
                 text=f"Prepared for approval: {prepared.summary}",
                 status="waiting_for_approval",
                 prepared_action=prepared.public_view(),
+            )
+
+        forge_context = self.forge_store.context_for(message)
+        if forge_context:
+            system_instruction = "\n\n".join(
+                part for part in (system_instruction, forge_context) if part
             )
 
         if delegate == "maya":
@@ -336,6 +350,43 @@ class AgentRouter:
                 model=None,
                 text=f"Prepared {value}. Nothing was executed.",
                 status="prepared",
+            )
+        if normalized == "forge.status":
+            if value:
+                raise BridgeAPIError(400, "forge.status does not accept a payload")
+            status = self.forge_store.status()
+            return self._response(
+                request_id=request.request_id,
+                conversation_id=request.conversation_id,
+                route=request.route,
+                agent="CARINA",
+                provider="forge-index",
+                model=None,
+                text=(
+                    f"Forge is ready with {status['ready']} searchable documents and "
+                    f"{status['quarantined']} quarantined documents."
+                ),
+                status="informational",
+            )
+        if normalized == "forge.search":
+            if not value or len(value) > 500:
+                raise BridgeAPIError(400, "forge.search requires a query up to 500 characters")
+            results = self.forge_store.search(value, limit=5)
+            if results:
+                text = "\n".join(
+                    f"• {item['title']}: {item['excerpt']}" for item in results
+                )
+            else:
+                text = "No matching Forge material was found."
+            return self._response(
+                request_id=request.request_id,
+                conversation_id=request.conversation_id,
+                route=request.route,
+                agent="CARINA",
+                provider="forge-index",
+                model=None,
+                text=text,
+                status="informational",
             )
         return None
 

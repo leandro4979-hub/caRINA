@@ -68,6 +68,26 @@ global App Transport Security enabled and permits authenticated local-network
 development traffic only. See `docs/ios-device-deployment.md` for routing,
 permissions, deployment, and troubleshooting.
 
+### Forge Knowledge Feed
+
+CARINA's Forge index feeds approved project notes to the bridge without giving
+raw files execution authority. It reads text only, quarantines detected secrets,
+limits indexed size, and labels every retrieved excerpt as untrusted reference
+material. Imported content cannot approve or increase an action's permission.
+
+```sh
+make forge
+make forge-status
+make forge-install
+```
+
+`make forge` refreshes the index from `~/Documents/CARINA-Workspace/00-Inbox`,
+the CARINA deployment documentation, and local AgentOps notes. The background
+LaunchAgent refreshes a privacy-safe snapshot and
+`~/Library/Application Support/CARINA/forge/inbox` every five minutes. Use
+`forge.status` or `forge.search deployment` in CARINA to query it without model
+execution.
+
 ### Hands-On iPhone Live View
 
 Apple ends an iPhone Mirroring session as soon as the physical iPhone is used.

@@ -1,7 +1,7 @@
 XCODE_DEVELOPER_DIR ?= $(HOME)/Downloads/Xcode-beta.app/Contents/Developer
 CARINA_DERIVED_DATA ?= /tmp/CARINA-DerivedData
 
-.PHONY: dashboard verify archive-dry-run iphone-live-view device-control-install device-control-start ios-device-build
+.PHONY: dashboard verify archive-dry-run forge forge-status forge-install iphone-live-view device-control-install device-control-start ios-device-build
 
 dashboard:
 	python3 src/build_dashboard.py
@@ -14,6 +14,15 @@ verify:
 
 archive-dry-run:
 	python3 src/archive_codex_review.py --dry-run
+
+forge:
+	python3 scripts/carina_forge.py ingest
+
+forge-status:
+	python3 scripts/carina_forge.py status
+
+forge-install:
+	./scripts/install_carina_forge_launch_agent.sh
 
 iphone-live-view:
 	./scripts/open_iphone_hands_on_view.sh

@@ -15,8 +15,8 @@
 
 ## Current Objective
 
-Redeploy the rebuilt CARINA experience to the restored physical iPhone and
-restore its authenticated Mac connection.
+Keep CARINA deployed, continuously feed it safe project material, and expose a
+live project-performance dashboard for the next planning decision.
 
 ## Completed
 
@@ -119,16 +119,26 @@ restore its authenticated Mac connection.
   classified commands.
 - Passed all four focused Presence classifier tests, compiled the complete
   Swift test bundle, passed all 34 Python tests, and rebuilt the Simulator app.
+- Added the Forge SQLite knowledge feed with bounded retrieval, secret
+  quarantine, duplicate suppression, and explicit untrusted-context labeling.
+- Added `forge.status` and `forge.search` as read-only bridge commands that do
+  not invoke a model or create an approval.
+- Verified Forge material containing execute-like instructions remains
+  informational and cannot authorize execution.
+- Installed `com.leandrofajardo.carina.forge`; it refreshes its privacy-safe
+  runtime sources every five minutes and last exited successfully.
+- Indexed 16 local project documents with zero quarantined or failed inputs.
+- Restarted the live CARINA bridge with Forge support and verified authenticated
+  health and search responses on HTTP port `51001`.
 
 ## Current Task
 
-Run the final live voice, bridge, delegation, and approval checks on
-`17promax`.
+Install and verify the automatic physical-device deployment guardian.
 
 ## Next Task
 
-Verify microphone permission, Presence routing, Maya delegation, Clever return,
-and execute approval on-device.
+Upgrade and open the live project-performance dashboard using Forge, deployment,
+Git, service, and test telemetry.
 
 ## Known Issues
 
