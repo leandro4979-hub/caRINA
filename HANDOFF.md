@@ -148,10 +148,18 @@ planning decision.
 - Verified the live dashboard reports 12 Git projects, 46 commits over seven
   days, 6 dirty worktrees, 16 Forge sources, 5.5 signing days, and 6/6 services
   online.
+- Updated the iPhone bridge default to the verified Mac Tailscale address
+  `100.89.229.56` while preserving authenticated HTTP `51001` and WebSocket
+  `51002` routing.
+- Rebuilt CARINA with Xcode 27 beta for the connected `17promax`, installed the
+  signed app, and launched bundle `com.leandrofajardo.carina` successfully.
+- Installed and verified Agent!, Cline, Continue, and Aider on the Mac; Aider
+  completed a local `ollama_chat/qwen3:8b` response without OpenAI usage.
 
 ## Current Task
 
-Use the live dashboard to choose and execute the next project milestone.
+Verify CARINA's authenticated bridge connection from the restored iPhone and
+finish optional companion-app setup without changing the working deployment.
 
 ## Next Task
 
@@ -188,9 +196,13 @@ Re-run `make deployment-guardian-install` after iOS source changes and
   generated app and make codesign report `resource fork, Finder information,
   or similar detritus not allowed`. Use `make ios-device-build`; it places
   DerivedData in `/tmp/CARINA-DerivedData` and the signed build succeeds.
-- CoreDevice currently marks the physical phone unavailable while iPhone
-  Mirroring owns the locked-device session. The redesigned app is signed and
-  ready at `/tmp/CARINA-DerivedData/Build/Products/Debug-iphoneos/Carina.app`.
+- Automation Control requires the user's App Store download confirmation on the
+  restored iPhone. Its verified listing is open on the device.
+- The third-party MacPilot checkout imports successfully but its upstream test
+  suite cannot start because `tests/helpers/state_helpers.py` is absent from the
+  repository. No placeholder helper was fabricated.
+- No verified upstream project matching the requested ODS bundle or a local app
+  named Leandro Solve has been identified.
 
 ## Last Commit
 
@@ -205,7 +217,8 @@ connections`
 
 ✅ Signed generic iPhone Debug build succeeded with automatic provisioning.
 
-⏳ Redesigned physical-device install is pending CoreDevice availability.
+✅ Current signed physical-device build, install, and launch succeeded on
+`17promax`.
 
 ✅ Python tests: 30 passed.
 
@@ -279,8 +292,8 @@ remains 13 passed.
 - Keep OpenAI credentials on the Mac; the iOS app stores only the bridge token
   in the device-only Keychain.
 - `127.0.0.1` on iOS points to the iPhone, not the Mac.
-- Prefer `leandros-MacBook-Air.local` until a bindable Tailscale interface is
-  active.
+- Prefer the verified Mac Tailscale address `100.89.229.56`; use the LAN host as
+  fallback only when the tailnet is unavailable.
 - Do not push, merge, or open a pull request without explicit authorization.
 - Resume foreground control with `make device-control-start` after confirming
   the iPhone is unlocked and CARINA may remain in the foreground.

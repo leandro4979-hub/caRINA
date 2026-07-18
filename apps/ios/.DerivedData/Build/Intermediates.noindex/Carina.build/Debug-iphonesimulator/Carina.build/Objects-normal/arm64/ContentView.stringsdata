@@ -1,0 +1,168 @@
+{
+  "source": "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Views/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "CARINA",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 37
+        }
+      },
+      {
+        "comment": "",
+        "key": "CARINA Settings",
+        "location": {
+          "startingColumn": 41,
+          "startingLine": 48
+        }
+      },
+      {
+        "comment": "",
+        "key": "CARINA IS THINKING",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 84
+        }
+      },
+      {
+        "comment": "",
+        "key": "CARINA COMMAND CORE",
+        "location": {
+          "startingColumn": 75,
+          "startingLine": 84
+        }
+      },
+      {
+        "comment": "",
+        "key": "CHOOSE THE BRAIN",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 103
+        }
+      },
+      {
+        "comment": "",
+        "key": "Agent Network",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 141
+        }
+      },
+      {
+        "comment": "",
+        "key": "(BridgeConfiguration.httpPort) / (BridgeConfiguration.webSocketPort)",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 165
+        }
+      },
+      {
+        "comment": "",
+        "key": "Refresh Connection",
+        "location": {
+          "startingColumn": 59,
+          "startingLine": 163
+        }
+      },
+      {
+        "comment": "",
+        "key": "Connect Mac + OpenClaw",
+        "location": {
+          "startingColumn": 82,
+          "startingLine": 163
+        }
+      },
+      {
+        "comment": "",
+        "key": "Conversation",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 191
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ready for (agent.route.displayName)",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 206
+        }
+      },
+      {
+        "comment": "",
+        "key": "Routing through (agent.route.displayName)…",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "APPROVAL REQUIRED",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 249
+        }
+      },
+      {
+        "comment": "",
+        "key": "Deny",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 273
+        }
+      },
+      {
+        "comment": "",
+        "key": "Approve Once",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 277
+        }
+      },
+      {
+        "comment": "",
+        "key": "Stop listening",
+        "location": {
+          "startingColumn": 58,
+          "startingLine": 301
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speak",
+        "location": {
+          "startingColumn": 77,
+          "startingLine": 301
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ask (agent.route.displayName)…",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 303
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 63,
+          "startingLine": 323
+        }
+      },
+      {
+        "comment": "",
+        "key": "Send",
+        "location": {
+          "startingColumn": 74,
+          "startingLine": 323
+        }
+      }
+    ]
+  },
+  "version": 1
+}

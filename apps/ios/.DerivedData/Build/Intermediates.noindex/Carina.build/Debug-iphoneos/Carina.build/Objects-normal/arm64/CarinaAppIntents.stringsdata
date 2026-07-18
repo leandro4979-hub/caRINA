@@ -1,0 +1,248 @@
+{
+  "source": "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/AppIntents/CarinaAppIntents.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "CARINA Command",
+        "location": {
+          "startingColumn": 76,
+          "startingLine": 12
+        }
+      },
+      {
+        "comment": "",
+        "key": "System Status",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 14
+        }
+      },
+      {
+        "comment": "",
+        "key": "Agent Status",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 15
+        }
+      },
+      {
+        "comment": "",
+        "key": "Bridge Status",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 16
+        }
+      },
+      {
+        "comment": "",
+        "key": "OpenClaw Status",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "Prepare Shortcut",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 18
+        }
+      },
+      {
+        "comment": "",
+        "key": "Run Shortcut",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 19
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open CARINA",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 24
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open the CARINA iPhone agent center.",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 25
+        }
+      },
+      {
+        "comment": "",
+        "key": "Configure CARINA Bridge",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "Set the Mac LAN or Tailscale address used by CARINA.",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mac Address",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 35
+        }
+      },
+      {
+        "comment": "",
+        "key": "A LAN hostname, LAN address, or Tailscale address",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 35
+        }
+      },
+      {
+        "comment": "",
+        "key": "CARINA will connect to %@ on ports 51001 and 51002.",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 41
+        }
+      },
+      {
+        "comment": "",
+        "key": "Check CARINA Bridge",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 46
+        }
+      },
+      {
+        "comment": "",
+        "key": "Check the authenticated CARINA bridge on the configured Mac.",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 47
+        }
+      },
+      {
+        "comment": "",
+        "key": "The CARINA bridge is online at %@.",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "The CARINA bridge did not return a healthy response.",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 63
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open CARINA Settings and save the bridge token first.",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "Run CARINA Command",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 70
+        }
+      },
+      {
+        "comment": "",
+        "key": "Validate and route an allow-listed CARINA command.",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "Command",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "Value",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "Agent name or Shortcut name when required",
+        "location": {
+          "startingColumn": 45,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "CARINA rejected the command: %@",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 109
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open CARINA",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 153
+        }
+      },
+      {
+        "comment": "",
+        "key": "Check Bridge",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 159
+        }
+      },
+      {
+        "comment": "",
+        "key": "Run Command",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 165
+        }
+      }
+    ]
+  },
+  "version": 1
+}

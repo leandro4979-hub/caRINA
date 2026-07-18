@@ -1,0 +1,12 @@
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/App/CarinaApp.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Views/ContentView.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Views/SettingsView.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Models/BridgeConfiguration.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Services/BridgeClient.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Services/SpeechRecognitionService.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/PermissionEngine/PermissionManager.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/AppIntents/CarinaAppIntents.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Models/AgentModels.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/PermissionEngine/CommandAuthorization.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Services/SecureCredentialStore.swift
+/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Services/AgentProvider.swift

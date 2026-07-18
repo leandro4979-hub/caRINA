@@ -1,0 +1,129 @@
+{
+  "" : {
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/Carina-primary.dia",
+    "emit-module-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/Carina-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/Carina-primary-emit-module.dia",
+    "pch" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/Carina-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/Carina-primary.swiftdeps"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/App/CarinaApp.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaApp.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaApp.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaApp.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaApp.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaApp.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaApp.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaApp.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaApp~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/AppIntents/CarinaAppIntents.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaAppIntents.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaAppIntents.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaAppIntents.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaAppIntents.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaAppIntents.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaAppIntents.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaAppIntents.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CarinaAppIntents~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Models/AgentModels.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentModels.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentModels.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentModels.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentModels.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentModels.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentModels.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentModels.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentModels~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Models/BridgeConfiguration.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeConfiguration.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeConfiguration.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeConfiguration.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeConfiguration.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeConfiguration.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeConfiguration.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeConfiguration.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeConfiguration~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/PermissionEngine/CommandAuthorization.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CommandAuthorization.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CommandAuthorization.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CommandAuthorization.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CommandAuthorization.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CommandAuthorization.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CommandAuthorization.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CommandAuthorization.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/CommandAuthorization~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/PermissionEngine/PermissionManager.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/PermissionManager.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/PermissionManager.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/PermissionManager.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/PermissionManager.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/PermissionManager.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/PermissionManager.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/PermissionManager.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/PermissionManager~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Services/AgentProvider.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentProvider.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentProvider.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentProvider.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentProvider.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentProvider.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentProvider.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentProvider.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/AgentProvider~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Services/BridgeClient.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeClient.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeClient.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeClient.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeClient.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeClient.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeClient.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeClient.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/BridgeClient~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Services/SecureCredentialStore.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SecureCredentialStore.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SecureCredentialStore.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SecureCredentialStore.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SecureCredentialStore.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SecureCredentialStore.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SecureCredentialStore.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SecureCredentialStore.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SecureCredentialStore~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Services/SpeechRecognitionService.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SpeechRecognitionService.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SpeechRecognitionService.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SpeechRecognitionService.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SpeechRecognitionService.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SpeechRecognitionService.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SpeechRecognitionService.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SpeechRecognitionService.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SpeechRecognitionService~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Views/ContentView.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Views/SettingsView.swift" : {
+    "const-values" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SettingsView.swiftconstvalues",
+    "dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SettingsView.d",
+    "diagnostics" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SettingsView.dia",
+    "index-unit-output-path" : "/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SettingsView.o",
+    "swift-dependencies" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SettingsView.swiftdeps",
+    "swiftmodule" : "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/.DerivedData/Build/Intermediates.noindex/Carina.build/Debug-iphonesimulator/Carina.build/Objects-normal/arm64/SettingsView~partial.swiftmodule"
+  }
+}

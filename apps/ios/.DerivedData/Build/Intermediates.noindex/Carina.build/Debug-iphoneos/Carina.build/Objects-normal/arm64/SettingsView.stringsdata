@@ -1,0 +1,120 @@
+{
+  "source": "/Users/leandrojoelfajardomatute/Documents/CARINA/apps/ios/Carina/Views/SettingsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Settings",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 25
+        }
+      },
+      {
+        "comment": "",
+        "key": "Close",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 30
+        }
+      },
+      {
+        "comment": "",
+        "key": "CARINA SECURE LINK",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 47
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your AI keys never live in this app.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "Only the device bridge token is stored in Keychain.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 53
+        }
+      },
+      {
+        "comment": "",
+        "key": "Mac + OpenClaw Bridge",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 64
+        }
+      },
+      {
+        "comment": "",
+        "key": "leandros-MacBook-Air.local",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "Paste the device bridge token",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove Saved Bridge Token",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 97
+        }
+      },
+      {
+        "comment": "",
+        "key": "Execute commands always pause for your explicit approval.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 117
+        }
+      },
+      {
+        "comment": "",
+        "key": "Device Permissions",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 108
+        }
+      },
+      {
+        "comment": "",
+        "key": "Local HTTP and WebSocket access is limited to the authenticated Mac development bridge. OpenAI requests originate on your Mac over HTTPS.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "Transport Security",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save Secure Connection",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 146
+        }
+      }
+    ]
+  },
+  "version": 1
+}

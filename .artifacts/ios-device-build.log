@@ -1,0 +1,3 @@
+Command line invocation:
+    /Users/leandrojoelfajardomatute/Downloads/Xcode-beta.app/Contents/Developer/usr/bin/xcodebuild -project apps/ios/Carina.xcodeproj -scheme Carina -configuration Debug -destination id=00008150-001C44461E98C01C -derivedDataPath /tmp/CarinaDerivedData build
+

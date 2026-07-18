@@ -1,0 +1,69 @@
+apiVersion: ssu/v1
+nlu:
+  shortcuts:
+    bundleIdentifier: com.leandrofajardo.carina
+    intents:
+    - metadata:
+        name: OpenCarinaIntent_0
+        title: Open CARINA
+      corpuses:
+        training:
+        - locale: en
+          utterances:
+          - '{${+prefix} }Open ${+applicationName}'
+          - '{${+prefix} }Talk to ${+applicationName}'
+          - '{${+prefix} }Ask ${+applicationName}'
+    - metadata:
+        name: CheckCarinaBridgeIntent_1
+        title: Check CARINA Bridge
+      corpuses:
+        training:
+        - locale: en
+          utterances:
+          - '{${+prefix} }Check ${+applicationName} bridge'
+          - '{${+prefix} }Check ${+applicationName} status'
+    - metadata:
+        name: RunCarinaCommandIntent_2
+        title: Run CARINA Command
+      corpuses:
+        training:
+        - locale: en
+          utterances:
+          - '{${+prefix} }Run a ${+applicationName} command'
+    - metadata:
+        name: +negative
+      corpuses:
+        training:
+        - locale: en
+          utterances:
+          - '{${+prefix} }${+standardAppShortcutNegatives}'
+variables:
+- name: +applicationName
+  type: ssu/expansion
+  definitions:
+  - locale: en
+    synomyms:
+    - CARINA
+- name: CarinaIntentCommand
+  type: ssu/parameter
+  definitions:
+  - locale: en
+    synomyms:
+    - System Status
+    - Agent Status
+    - Bridge Status
+    - OpenClaw Status
+    - Prepare Shortcut
+    - Run Shortcut
+- name: +prefix
+  type: ssu/expansion
+  definitions:
+  - locale: en
+    synomyms:
+      $ref: ssu://Resources/prefix/en.yaml
+- name: +standardAppShortcutNegatives
+  type: ssu/expansion
+  definitions:
+  - locale: en
+    synomyms:
+      $ref: ssu://Resources/standardAppShortcutNegatives/en.yaml

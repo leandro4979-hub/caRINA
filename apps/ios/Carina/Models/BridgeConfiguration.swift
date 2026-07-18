@@ -87,7 +87,7 @@ struct BridgeConfiguration: Codable, Equatable, Sendable {
 
 enum BridgeDefaults {
     static let hostKey = "carina.bridge.host"
-    static let defaultHost = "leandros-MacBook-Air.local"
+    static let defaultHost = "100.89.229.56"
 }
 
 @MainActor

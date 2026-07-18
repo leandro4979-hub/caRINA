@@ -1,0 +1,87 @@
+{
+  "source" : "\/Users\/leandrojoelfajardomatute\/Documents\/CARINA\/apps\/ios\/Carina\/AppIntents\/CarinaAppIntents.swift",
+  "tables" : {
+    "AppShortcuts" : [
+      {
+        "appShortcutMetadata" : [
+          {
+            "actionIdentifier" : "OpenCarinaIntent",
+            "index" : 0,
+            "parameterDisplayRepresentations" : {
+
+            },
+            "parameterTypes" : {
+
+            },
+            "title" : "Open CARINA"
+          }
+        ],
+        "key" : "Open ${applicationName}",
+        "location" : {
+          "startingColumn" : 0,
+          "startingLine" : 149
+        },
+        "values" : [
+          "Open ${applicationName}",
+          "Talk to ${applicationName}",
+          "Ask ${applicationName}"
+        ]
+      },
+      {
+        "appShortcutMetadata" : [
+          {
+            "actionIdentifier" : "CheckCarinaBridgeIntent",
+            "index" : 1,
+            "parameterDisplayRepresentations" : {
+
+            },
+            "parameterTypes" : {
+
+            },
+            "title" : "Check CARINA Bridge"
+          }
+        ],
+        "key" : "Check ${applicationName} bridge",
+        "location" : {
+          "startingColumn" : 0,
+          "startingLine" : 149
+        },
+        "values" : [
+          "Check ${applicationName} bridge",
+          "Check ${applicationName} status"
+        ]
+      },
+      {
+        "appShortcutMetadata" : [
+          {
+            "actionIdentifier" : "RunCarinaCommandIntent",
+            "index" : 2,
+            "parameterDisplayRepresentations" : {
+              "CarinaIntentCommand" : [
+                "System Status",
+                "Agent Status",
+                "Bridge Status",
+                "OpenClaw Status",
+                "Prepare Shortcut",
+                "Run Shortcut"
+              ]
+            },
+            "parameterTypes" : {
+              "command" : "CarinaIntentCommand"
+            },
+            "title" : "Run CARINA Command"
+          }
+        ],
+        "key" : "Run a ${applicationName} command",
+        "location" : {
+          "startingColumn" : 0,
+          "startingLine" : 149
+        },
+        "values" : [
+          "Run a ${applicationName} command"
+        ]
+      }
+    ]
+  },
+  "version" : 2
+}

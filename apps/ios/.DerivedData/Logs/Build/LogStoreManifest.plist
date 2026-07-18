@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>13</integer>
+	<key>logs</key>
+	<dict>
+		<key>180CA4CD-ED85-43E5-B82C-CB26D8663C65</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>180CA4CD-ED85-43E5-B82C-CB26D8663C65.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Carina project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>Carina</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project Carina with scheme Carina and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>806044029.11129606</real>
+			<key>timeStoppedRecording</key>
+			<real>806044035.64534903</real>
+			<key>title</key>
+			<string>Building project Carina with scheme Carina and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>180CA4CD-ED85-43E5-B82C-CB26D8663C65</string>
+		</dict>
+		<key>7D687E31-C920-4E23-A5DF-F083007F4180</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>7D687E31-C920-4E23-A5DF-F083007F4180.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>E</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>1</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Carina project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>Carina</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project Carina with scheme Carina and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>806044206.98084104</real>
+			<key>timeStoppedRecording</key>
+			<real>806044242.16267705</real>
+			<key>title</key>
+			<string>Building project Carina with scheme Carina and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>7D687E31-C920-4E23-A5DF-F083007F4180</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -64,7 +64,7 @@ struct SettingsView: View {
         SettingsSection(title: "Mac bridge", detail: "Local or Tailscale address", symbol: "macbook.and.iphone") {
             VStack(alignment: .leading, spacing: 16) {
                 fieldLabel("Host address")
-                TextField("leandros-MacBook-Air.local", text: $settings.host)
+                TextField("100.89.229.56", text: $settings.host)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .keyboardType(.URL)
