@@ -10,24 +10,28 @@ struct SettingsView: View {
         NavigationStack {
             ZStack {
                 CarinaBackground()
+
                 ScrollView {
-                    VStack(spacing: 18) {
-                        identityCard
-                        bridgeCard
-                        permissionsCard
-                        securityCard
+                    VStack(spacing: 20) {
+                        identityHeader
+                        bridgeSection
+                        permissionsSection
+                        securitySection
                         saveButton
                     }
-                    .padding(16)
-                    .padding(.bottom, 24)
+                    .padding(.horizontal, 18)
+                    .padding(.top, 14)
+                    .padding(.bottom, 30)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
-            .navigationTitle("Settings")
+            .navigationTitle("Secure link")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
+                        .foregroundStyle(CarinaTheme.signal)
                 }
             }
             .onAppear { permissions.refresh() }
@@ -35,49 +39,58 @@ struct SettingsView: View {
         .preferredColorScheme(.dark)
     }
 
-    private var identityCard: some View {
-        CarinaSurface(accent: .cyan) {
-            HStack(spacing: 15) {
-                Image(systemName: "shield.lefthalf.filled.badge.checkmark")
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(.cyan)
-                    .frame(width: 54, height: 54)
-                    .background(Color.cyan.opacity(0.12), in: RoundedRectangle(cornerRadius: 17))
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("CARINA SECURE LINK")
-                        .font(.caption.weight(.bold))
-                        .tracking(1.2)
-                        .foregroundStyle(.cyan)
-                    Text("Your AI keys never live in this app.")
-                        .font(.headline)
-                    Text("Only the device bridge token is stored in Keychain.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
+    private var identityHeader: some View {
+        HStack(alignment: .center, spacing: 15) {
+            Image(systemName: "checkmark.shield.fill")
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundStyle(CarinaTheme.ink)
+                .frame(width: 54, height: 54)
+                .background(CarinaTheme.signal, in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text("Private by design")
+                    .font(.title3.weight(.semibold))
+                Text("The iPhone stores only the bridge token. Provider keys remain on your Mac.")
+                    .font(.footnote)
+                    .foregroundStyle(CarinaTheme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 5)
     }
 
-    private var bridgeCard: some View {
-        CarinaSurface {
-            VStack(alignment: .leading, spacing: 15) {
-                Label("Mac + OpenClaw Bridge", systemImage: "macbook.and.iphone")
-                    .font(.headline)
-
-                fieldLabel("MAC LAN OR TAILSCALE ADDRESS")
+    private var bridgeSection: some View {
+        SettingsSection(title: "Mac bridge", detail: "Local or Tailscale address", symbol: "macbook.and.iphone") {
+            VStack(alignment: .leading, spacing: 16) {
+                fieldLabel("Host address")
                 TextField("leandros-MacBook-Air.local", text: $settings.host)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .keyboardType(.URL)
-                    .padding(13)
-                    .background(Color.white.opacity(0.075), in: RoundedRectangle(cornerRadius: 14))
+                    .textContentType(.URL)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 50)
+                    .background(CarinaTheme.recessed, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(CarinaTheme.hairline)
+                    }
+                    .accessibilityLabel("Mac LAN or Tailscale address")
 
-                fieldLabel("BRIDGE TOKEN")
-                SecureField("Paste the device bridge token", text: $credentials.bridgeToken)
+                fieldLabel("Device bridge token")
+                SecureField("Paste the current bridge token", text: $credentials.bridgeToken)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .padding(13)
-                    .background(Color.white.opacity(0.075), in: RoundedRectangle(cornerRadius: 14))
+                    .textContentType(.password)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 50)
+                    .background(CarinaTheme.recessed, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(CarinaTheme.hairline)
+                    }
+                    .accessibilityLabel("Bridge token")
 
                 HStack(spacing: 10) {
                     portMetric("HTTP", BridgeConfiguration.httpPort)
@@ -87,51 +100,50 @@ struct SettingsView: View {
                 if let message = settings.validationMessage ?? credentials.errorMessage {
                     Label(message, systemImage: "exclamationmark.triangle.fill")
                         .font(.footnote)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(CarinaTheme.warning)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(CarinaTheme.warning.opacity(0.09), in: RoundedRectangle(cornerRadius: 13))
                 }
 
                 if credentials.hasBridgeToken {
                     Button(role: .destructive) {
                         Task { await credentials.delete() }
                     } label: {
-                        Label("Remove Saved Bridge Token", systemImage: "trash")
+                        Label("Remove saved bridge token", systemImage: "trash")
+                            .font(.subheadline.weight(.semibold))
                     }
-                    .font(.subheadline.weight(.semibold))
+                    .buttonStyle(.plain)
+                    .foregroundStyle(CarinaTheme.danger)
+                    .accessibilityHint("Removes the device token from Keychain")
                 }
             }
         }
     }
 
-    private var permissionsCard: some View {
-        CarinaSurface(accent: .purple) {
-            VStack(alignment: .leading, spacing: 14) {
-                Label("Device Permissions", systemImage: "hand.raised.fill")
-                    .font(.headline)
+    private var permissionsSection: some View {
+        SettingsSection(title: "Device access", detail: "Granted by iOS", symbol: "hand.raised.fill") {
+            VStack(spacing: 0) {
                 permissionRow("Microphone", icon: "mic.fill", value: permissions.microphone.rawValue)
-                Divider().opacity(0.25)
-                permissionRow("Speech Recognition", icon: "waveform", value: permissions.speechRecognition.rawValue)
-                Divider().opacity(0.25)
-                permissionRow("Local Network", icon: "network", value: "Requested on connect")
-                Divider().opacity(0.25)
-                permissionRow("App Intents", icon: "shortcuts", value: "Available in Shortcuts")
-                Text("Execute commands always pause for your explicit approval.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                separator
+                permissionRow("Speech recognition", icon: "waveform", value: permissions.speechRecognition.rawValue)
+                separator
+                permissionRow("Local network", icon: "network", value: "Requested on connect")
+                separator
+                permissionRow("App Intents", icon: "shortcuts", value: "Available")
             }
         }
     }
 
-    private var securityCard: some View {
-        CarinaSurface(accent: .green) {
-            VStack(alignment: .leading, spacing: 10) {
-                Label("Transport Security", systemImage: "lock.shield.fill")
-                    .font(.headline)
-                    .foregroundStyle(.green)
-                Text("Local HTTP and WebSocket access is limited to the authenticated Mac development bridge. OpenAI requests originate on your Mac over HTTPS.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+    private var securitySection: some View {
+        SettingsSection(title: "Execution safety", detail: "Always enforced", symbol: "lock.shield.fill") {
+            VStack(alignment: .leading, spacing: 11) {
+                Label("Read actions can run automatically", systemImage: "checkmark")
+                Label("Prepared actions show a preview", systemImage: "doc.text.magnifyingglass")
+                Label("Execute actions require approval", systemImage: "hand.tap.fill")
             }
+            .font(.footnote.weight(.medium))
+            .foregroundStyle(CarinaTheme.secondaryText)
         }
     }
 
@@ -143,46 +155,97 @@ struct SettingsView: View {
                 if hostSaved && tokenSaved { dismiss() }
             }
         } label: {
-            Label("Save Secure Connection", systemImage: "checkmark.shield.fill")
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .background(
-                    LinearGradient(colors: [.indigo, .purple], startPoint: .leading, endPoint: .trailing),
-                    in: RoundedRectangle(cornerRadius: 18)
-                )
+            HStack {
+                Image(systemName: "checkmark")
+                Text("Save secure connection")
+                Spacer()
+                Image(systemName: "arrow.right")
+            }
+            .font(.headline)
+            .foregroundStyle(CarinaTheme.ink)
+            .padding(.horizontal, 18)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(CarinaTheme.signal, in: RoundedRectangle(cornerRadius: 17, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(CarinaPressButtonStyle())
+    }
+
+    private var separator: some View {
+        Rectangle()
+            .fill(CarinaTheme.hairline)
+            .frame(height: 1)
+            .padding(.leading, 36)
     }
 
     private func fieldLabel(_ text: String) -> some View {
         Text(text)
-            .font(.caption2.weight(.bold))
-            .tracking(1)
-            .foregroundStyle(.secondary)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(CarinaTheme.secondaryText)
     }
 
     private func portMetric(_ title: String, _ port: Int) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(title).font(.caption2).foregroundStyle(.secondary)
-            Text(String(port)).font(.subheadline.monospacedDigit().weight(.semibold))
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.caption2)
+                    .foregroundStyle(CarinaTheme.secondaryText)
+                Text(String(port))
+                    .font(.subheadline.monospacedDigit().weight(.semibold))
+            }
+            Spacer()
+            Circle()
+                .fill(CarinaTheme.signal)
+                .frame(width: 6, height: 6)
         }
-        .padding(11)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.055), in: RoundedRectangle(cornerRadius: 13))
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(CarinaTheme.recessed, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
     }
 
     private func permissionRow(_ title: String, icon: String, value: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundStyle(.purple)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(CarinaTheme.signal)
                 .frame(width: 24)
-            Text(title).font(.subheadline.weight(.medium))
-            Spacer()
+            Text(title)
+                .font(.subheadline.weight(.medium))
+            Spacer(minLength: 8)
             Text(value)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(CarinaTheme.secondaryText)
                 .multilineTextAlignment(.trailing)
+        }
+        .padding(.vertical, 12)
+    }
+}
+
+private struct SettingsSection<Content: View>: View {
+    let title: String
+    let detail: String
+    let symbol: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        CarinaSurface {
+            VStack(alignment: .leading, spacing: 17) {
+                HStack(spacing: 11) {
+                    Image(systemName: symbol)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(CarinaTheme.signal)
+                        .frame(width: 34, height: 34)
+                        .background(CarinaTheme.signalSoft, in: RoundedRectangle(cornerRadius: 11))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(.headline)
+                        Text(detail)
+                            .font(.caption)
+                            .foregroundStyle(CarinaTheme.secondaryText)
+                    }
+                }
+                content
+            }
         }
     }
 }
