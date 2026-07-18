@@ -3,6 +3,14 @@ import os
 import UIKit
 import UniformTypeIdentifiers
 
+enum CleverAIHandoff {
+    static let bundleIdentifier = "com.turbofasttools.geniusai"
+    static let universalURL = URL(string: "https://cleverai.app/app")!
+    static let schemeURL = URL(string: "com.turbofasttools.geniusai://")!
+    static let appStoreURL = URL(string: "itms-apps://apps.apple.com/app/id1667722375")!
+    static let webStoreURL = URL(string: "https://apps.apple.com/app/id1667722375")!
+}
+
 protocol AgentProvider: Sendable {
     func send(_ request: AgentRequest) async throws -> AgentResponse
     func execute(_ action: PreparedAction, conversationID: UUID) async throws -> AgentResponse
@@ -151,7 +159,7 @@ final class CarinaAgentService: ObservableObject {
         messages.append(AgentMessage(role: .user, text: clean))
         let payload = [
             "prompt": String(clean.prefix(16_000)),
-            "url": "com.turbofasttools.geniusai://",
+            "url": CleverAIHandoff.universalURL.absoluteString,
         ]
         let request = CommandRequest(name: "clever.open", payload: payload)
         let now = Date()
@@ -219,7 +227,7 @@ final class CarinaAgentService: ObservableObject {
 
     private func openClever(_ action: PreparedAction) async throws {
         guard let prompt = action.payload["prompt"], !prompt.isEmpty,
-              let schemeURL = URL(string: action.payload["url"] ?? "") else {
+              URL(string: action.payload["url"] ?? "") != nil else {
             throw AgentError.approval("The Clever AI handoff payload is invalid.")
         }
         UIPasteboard.general.setItems(
@@ -229,17 +237,38 @@ final class CarinaAgentService: ObservableObject {
                 .expirationDate: Date().addingTimeInterval(600),
             ]
         )
-        var opened = await UIApplication.shared.open(schemeURL)
-        if !opened, let fallbackURL = URL(string: "https://apps.apple.com/app/id1667722375") {
-            opened = await UIApplication.shared.open(fallbackURL)
+        let application = UIApplication.shared
+        var openedClever = await application.open(
+            CleverAIHandoff.universalURL,
+            options: [.universalLinksOnly: true]
+        )
+        if !openedClever, application.canOpenURL(CleverAIHandoff.schemeURL) {
+            openedClever = await application.open(CleverAIHandoff.schemeURL)
         }
-        guard opened else {
-            throw AgentError.approval("Clever AI could not be opened. Confirm it is installed on this iPhone.")
+        if openedClever {
+            messages.append(
+                AgentMessage(
+                    role: .assistant,
+                    text: "Opened Clever AI and copied your prompt. Paste it there to use your paid plan.",
+                    agent: "Clever AI",
+                    route: .clever
+                )
+            )
+            state = .idle
+            return
+        }
+
+        var openedStore = await application.open(CleverAIHandoff.appStoreURL)
+        if !openedStore {
+            openedStore = await application.open(CleverAIHandoff.webStoreURL)
+        }
+        guard openedStore else {
+            throw AgentError.approval("Clever AI and its App Store page could not be opened.")
         }
         messages.append(
             AgentMessage(
                 role: .assistant,
-                text: "Opened Clever AI and copied your prompt. Paste it there to use your paid plan.",
+                text: "Clever AI is not installed after the phone restore. Its App Store page is open and your prompt is copied for after installation.",
                 agent: "Clever AI",
                 route: .clever
             )

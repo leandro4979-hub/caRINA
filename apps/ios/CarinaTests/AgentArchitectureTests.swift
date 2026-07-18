@@ -54,6 +54,14 @@ final class AgentArchitectureTests: XCTestCase {
         }
     }
 
+    func testCleverAIHandoffUsesVerifiedUniversalLinkAndStoreFallback() {
+        XCTAssertEqual(CleverAIHandoff.bundleIdentifier, "com.turbofasttools.geniusai")
+        XCTAssertEqual(CleverAIHandoff.universalURL.host, "cleverai.app")
+        XCTAssertEqual(CleverAIHandoff.universalURL.path, "/app")
+        XCTAssertEqual(CleverAIHandoff.appStoreURL.scheme, "itms-apps")
+        XCTAssertTrue(CleverAIHandoff.appStoreURL.absoluteString.contains("1667722375"))
+    }
+
     func testApprovalExpiresAndCannotReplay() async throws {
         let store = ApprovalStore()
         let action = makeAction(expiresAt: Date().addingTimeInterval(60))
