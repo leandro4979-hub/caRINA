@@ -74,16 +74,31 @@ restore its authenticated Mac connection.
 - Installed and validated the personal Codex skill `build-personal-skills`.
 - Created the non-destructive staging workspace at
   `~/Documents/CARINA-Workspace`.
+- Repaired the restored-iPhone bridge timeout by making WebSocket port `51002`
+  explicitly dual-stack instead of IPv6-only.
+- Verified authenticated HTTP on `192.168.1.129:51001`, WebSocket connections
+  over LAN IPv4, IPv4 loopback, and IPv6, and OpenClaw on `127.0.0.1:18789`.
+- Verified the full Mac bridge -> OpenClaw -> `ollama/qwen3:8b` path returns
+  HTTP `200` with the expected response.
+- Rebuilt CARINA's SwiftUI command center and secure-link settings around a
+  single high-contrast signal color, clearer hierarchy, larger controls,
+  Dynamic Type-safe copy, and visible connection/approval states.
+- Corrected literal Swift interpolation defects in route, port, loading, empty,
+  and composer labels and added a source regression test.
+- Visually verified the redesigned app on an iPhone 17 Pro Max simulator.
+- Passed all 30 Python tests after the bridge and interface changes.
+- Built and signed the redesigned physical-device app with automatic
+  provisioning and Personal Team certificate `863R3427Q3`.
 
 ## Current Task
 
-Reconnect the restored iPhone to the same iCloud account as the Mac, then use
-iPhone Mirroring to save CARINA's bridge token.
+Install the newly signed redesigned build on `DINO's iPhone`, retry **Connect
+Mac + OpenClaw**, and verify the live connected state through iPhone Mirroring.
 
 ## Next Task
 
-Verify CARINA's authenticated HTTP and WebSocket connection, then verify Apple
-Intelligence, Clever AI, and OpenClaw routing.
+Verify Apple Intelligence, Clever AI, and OpenClaw routes on the redesigned
+physical-device build.
 
 ## Known Issues
 
@@ -109,23 +124,22 @@ Intelligence, Clever AI, and OpenClaw routing.
 - CoreDevice's `developerModeStatus` field remains stale at `disabled`, but
   Xcode lists `DINO’s iPhone` as a compatible destination and successfully
   built and installed CARINA on it.
-- The first post-restore launch is blocked until the user trusts the Personal
-  Team profile under Settings > General > VPN & Device Management.
 - Clever AI is not installed on the restored phone. CARINA now opens Clever's
   App Store page and copies the prepared prompt when the app is absent.
-- Restoring the phone cleared CARINA's device-only Keychain token; it must be
-  pasted once after reinstalling CARINA.
 - Building inside this iCloud-backed checkout can add Finder metadata to the
   generated app and make codesign report `resource fork, Finder information,
   or similar detritus not allowed`. Use `make ios-device-build`; it places
   DerivedData in `/tmp/CARINA-DerivedData` and the signed build succeeds.
-- iPhone Mirroring now targets the restored phone, but currently reports:
-  `iPhone Not Found To use iPhone Mirroring, make sure “17promax” is signed in
-  with the same iCloud account as this Mac.`
+- CoreDevice currently marks the physical phone unavailable while iPhone
+  Mirroring owns the locked-device session. The redesigned app is signed and
+  ready at `/tmp/CARINA-DerivedData/Build/Products/Debug-iphoneos/Carina.app`.
 
 ## Last Commit
 
-`305cc33 feat(mac): redesign live CARINA command center`
+`10cdad0 feat(ios): redesign CARINA agent command center`
+
+Previous bridge milestone: `7049841 fix(bridge): support iPhone IPv4 websocket
+connections`
 
 ## Build Status
 
@@ -133,24 +147,25 @@ Intelligence, Clever AI, and OpenClaw routing.
 
 ✅ Signed generic iPhone Debug build succeeded with automatic provisioning.
 
-✅ Restored-device build and installation succeeded.
+⏳ Redesigned physical-device install is pending CoreDevice availability.
 
-⏳ First launch pending one-time trust of the Personal Team profile.
+✅ Python tests: 30 passed.
 
-✅ Python tests: 28 passed.
-
-✅ Swift tests: 13 passed before the later Xcode beta simulator-worker hang.
+⚠️ Current Swift test bundle compiled, but Xcode 27 beta again stopped at
+`waiting for workers to materialize`; the most recent completed Swift run
+remains 13 passed.
 
 ## Device Status
 
 - Device: `DINO’s iPhone`
 - Model: iPhone 17 Pro Max
-- Pairing: previously paired; CoreDevice currently reports unavailable
-- Current transport: iPhone Mirroring selected but blocked by iCloud account
-  mismatch; Tailscale currently reports the restored phone offline
+- Pairing: paired; CoreDevice currently reports unavailable while Mirroring is
+  active
+- Current transport: iPhone Mirroring is connected to the restored phone
 - Developer Mode: enabled by user; CoreDevice status field is stale
-- Trust: confirmed
+- Trust: confirmed; Local Network permission allowed
 - CARINA installed: yes
+- Bridge token: saved in device Keychain without exposing it
 - Appium session: restartable; foreground control requires CARINA to remain the
   active app while `Fast App Termination` is enabled
 
@@ -158,7 +173,7 @@ Intelligence, Clever AI, and OpenClaw routing.
 
 - OpenClaw gateway: ready
 - CARINA HTTP bridge: installed on port `51001`
-- CARINA WebSocket bridge: installed on port `51002`
+- CARINA WebSocket bridge: installed with dual-stack IPv4/IPv6 on port `51002`
 - Appium: loopback only on port `4723`
 - RemoteXPC: privileged retrying tunnel active
 
