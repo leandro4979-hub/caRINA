@@ -6,19 +6,28 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
 import re
+import sqlite3
 import subprocess
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any, Mapping
 
 
-DEFAULT_AGENTOPS_DIR = Path("/Users/leandrofajardo/Documents/AgentOps")
-DEFAULT_CODEX_DIR = Path("/Users/leandrofajardo/Documents/Codex")
+DEFAULT_DOCUMENTS_DIR = Path.home() / "Documents"
+DEFAULT_AGENTOPS_DIR = Path(os.environ.get("CARINA_AGENTOPS_DIR", DEFAULT_DOCUMENTS_DIR / "AgentOps"))
+DEFAULT_CODEX_DIR = Path(os.environ.get("CARINA_CODEX_DIR", DEFAULT_DOCUMENTS_DIR / "Codex"))
 DEFAULT_ARCHIVE_MANIFEST = (
     DEFAULT_CODEX_DIR / "_archive" / "2026-07-04-agentops-review" / "manifest.json"
 )
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / "dist" / "dashboard.html"
+DEFAULT_FORGE_DB = Path.home() / "Library/Application Support/CARINA/forge/forge.db"
+DEFAULT_GUARDIAN_STATE = (
+    Path.home() / "Library/Application Support/CARINA/deployment/state.json"
+)
+DEFAULT_PROJECT_SNAPSHOT = os.environ.get("CARINA_PROJECT_SNAPSHOT", "").strip()
 DOC_ORDER = (
     "agents.md",
     "projects.md",
@@ -58,6 +67,158 @@ class ArchiveSummary:
     generated_at: str
 
 
+@dataclass
+class ProjectSnapshot:
+    name: str
+    path: str
+    branch: str
+    dirty_files: int
+    commits_7d: int
+    ahead: int
+    behind: int
+    last_commit_at: str
+    last_commit: str
+
+
+def run_git(path: Path, arguments: list[str], timeout: int = 5) -> str:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(path), *arguments],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    return completed.stdout.strip() if completed.returncode == 0 else ""
+
+
+def discover_repositories(root: Path, max_depth: int = 4, limit: int = 20) -> list[Path]:
+    if not root.is_dir():
+        return []
+    ignored = {
+        ".artifacts", ".codex", ".deriveddata", ".venv", "deriveddata",
+        "library", "node_modules", "build", "dist", "vendor",
+    }
+    found: list[Path] = []
+    root_depth = len(root.parts)
+    for current, directories, _ in os.walk(root):
+        current_path = Path(current)
+        depth = len(current_path.parts) - root_depth
+        directories[:] = [
+            name for name in directories
+            if name.casefold() not in ignored and not name.startswith(".")
+        ]
+        if (current_path / ".git").exists():
+            found.append(current_path)
+            directories[:] = []
+            continue
+        if depth >= max_depth:
+            directories[:] = []
+    found.sort(
+        key=lambda path: (path / ".git").stat().st_mtime if (path / ".git").exists() else 0,
+        reverse=True,
+    )
+    return found[:limit]
+
+
+def collect_projects(root: Path = DEFAULT_DOCUMENTS_DIR) -> list[ProjectSnapshot]:
+    projects: list[ProjectSnapshot] = []
+    for path in discover_repositories(root):
+        status = run_git(path, ["status", "--porcelain=v1", "--branch"])
+        lines = status.splitlines()
+        header = lines[0] if lines else ""
+        branch, ahead, behind = parse_git_status_header(header)
+        commits_text = run_git(path, ["rev-list", "--count", "--since=7.days", "HEAD"])
+        last = run_git(path, ["log", "-1", "--format=%cI|%h %s"])
+        last_at, separator, last_summary = last.partition("|")
+        projects.append(
+            ProjectSnapshot(
+                name=path.name,
+                path=str(path),
+                branch=branch,
+                dirty_files=max(0, len(lines) - 1),
+                commits_7d=int(commits_text) if commits_text.isdigit() else 0,
+                ahead=ahead,
+                behind=behind,
+                last_commit_at=last_at if separator else "",
+                last_commit=last_summary if separator else last,
+            )
+        )
+    return projects
+
+
+def write_project_snapshot(path: Path, projects: list[ProjectSnapshot]) -> None:
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "projects": [project.__dict__ for project in projects],
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def read_project_snapshot(path: Path) -> tuple[list[ProjectSnapshot], str]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return [], "unavailable"
+    raw_projects = payload.get("projects", []) if isinstance(payload, Mapping) else []
+    projects: list[ProjectSnapshot] = []
+    for item in raw_projects:
+        if not isinstance(item, Mapping):
+            continue
+        try:
+            projects.append(ProjectSnapshot(**{field: item[field] for field in ProjectSnapshot.__dataclass_fields__}))
+        except (KeyError, TypeError):
+            continue
+    generated_at = str(payload.get("generated_at", "unknown")) if isinstance(payload, Mapping) else "unknown"
+    return projects, generated_at
+
+
+def read_json_object(path: Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    return dict(payload) if isinstance(payload, Mapping) else {}
+
+
+def collect_forge_metrics(path: Path = DEFAULT_FORGE_DB) -> dict[str, Any]:
+    if not path.is_file():
+        return {"total": 0, "ready": 0, "quarantined": 0, "latest_ingest": None, "operations": []}
+    try:
+        connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=3)
+        connection.row_factory = sqlite3.Row
+        counts = connection.execute(
+            """
+            SELECT COUNT(*) total,
+                   SUM(CASE WHEN trust_state='ready' THEN 1 ELSE 0 END) ready,
+                   SUM(CASE WHEN trust_state='quarantined' THEN 1 ELSE 0 END) quarantined,
+                   MAX(ingested_at) latest_ingest
+            FROM documents
+            """
+        ).fetchone()
+        operations = connection.execute(
+            """
+            SELECT component, success, duration_ms, item_count, detail, created_at
+            FROM operations ORDER BY id DESC LIMIT 12
+            """
+        ).fetchall()
+    except (OSError, sqlite3.Error):
+        return {"total": 0, "ready": 0, "quarantined": 0, "latest_ingest": None, "operations": []}
+    finally:
+        if "connection" in locals():
+            connection.close()
+    return {
+        "total": int(counts["total"] or 0),
+        "ready": int(counts["ready"] or 0),
+        "quarantined": int(counts["quarantined"] or 0),
+        "latest_ingest": counts["latest_ingest"],
+        "operations": [dict(row) for row in operations],
+    }
+
+
 def read_docs(agentops_dir: Path) -> dict[str, str]:
     docs: dict[str, str] = {}
     for name in DOC_ORDER:
@@ -78,12 +239,16 @@ def collect_listeners() -> list[Listener]:
     except (OSError, subprocess.TimeoutExpired):
         return []
 
+    return parse_lsof_listeners(result.stdout)
+
+
+def parse_lsof_listeners(output: str) -> list[Listener]:
     listeners: list[Listener] = []
-    for line in result.stdout.splitlines()[1:]:
+    for line in output.splitlines()[1:]:
         parts = line.split()
         if len(parts) < 9:
             continue
-        name = parts[-1]
+        name = " ".join(parts[8:])
         match = re.search(r":(\d+)\s+\(LISTEN\)$", name)
         if not match:
             continue
@@ -91,6 +256,21 @@ def collect_listeners() -> list[Listener]:
             Listener(command=parts[0], pid=parts[1], port=match.group(1), address=name)
         )
     return listeners
+
+
+def parse_git_status_header(header: str) -> tuple[str, int, int]:
+    no_commit_match = re.match(r"## No commits yet on (.+)$", header)
+    if no_commit_match:
+        return no_commit_match.group(1).strip(), 0, 0
+    branch_match = re.match(r"##\s+(.+?)(?:\.\.\.|$)", header)
+    branch = branch_match.group(1).strip() if branch_match else "detached"
+    ahead_match = re.search(r"ahead (\d+)", header)
+    behind_match = re.search(r"behind (\d+)", header)
+    return (
+        branch,
+        int(ahead_match.group(1)) if ahead_match else 0,
+        int(behind_match.group(1)) if behind_match else 0,
+    )
 
 
 def collect_codex_folders(codex_dir: Path) -> list[CodexFolder]:
@@ -273,12 +453,95 @@ def status_for_port(port: str, listeners: list[Listener]) -> str:
     return "online" if any(listener.port == port for listener in listeners) else "check"
 
 
+def render_project_table(projects: list[ProjectSnapshot]) -> str:
+    rows = []
+    for project in projects:
+        state = "clean" if project.dirty_files == 0 else f"{project.dirty_files} changed"
+        sync = "synced"
+        if project.ahead or project.behind:
+            sync = f"+{project.ahead} / -{project.behind}"
+        rows.append(
+            "<tr>"
+            f"<td><strong>{inline(project.name)}</strong><br><small>{inline(project.path)}</small></td>"
+            f"<td><code>{inline(project.branch)}</code></td>"
+            f"<td><span class='pill {'keep' if project.dirty_files == 0 else 'archive'}'>{inline(state)}</span></td>"
+            f"<td>{project.commits_7d}</td>"
+            f"<td>{inline(sync)}</td>"
+            f"<td>{inline(project.last_commit or 'No commit')}</td>"
+            "</tr>"
+        )
+    if not rows:
+        rows.append("<tr><td colspan='6'>No Git project snapshot is available.</td></tr>")
+    return (
+        "<table><thead><tr><th>Project</th><th>Branch</th><th>Worktree</th>"
+        "<th>Commits 7d</th><th>Ahead / Behind</th><th>Latest</th></tr></thead><tbody>"
+        + "".join(rows)
+        + "</tbody></table>"
+    )
+
+
+def render_operations(operations: list[Mapping[str, Any]]) -> str:
+    rows = []
+    for operation in operations:
+        success = bool(operation.get("success"))
+        rows.append(
+            "<tr>"
+            f"<td>{inline(str(operation.get('created_at', '')))}</td>"
+            f"<td>{inline(str(operation.get('component', 'unknown')))}</td>"
+            f"<td><span class='pill {'keep' if success else 'delete-candidate'}'>{'passed' if success else 'failed'}</span></td>"
+            f"<td>{int(operation.get('duration_ms', 0))} ms</td>"
+            f"<td>{int(operation.get('item_count', 0))}</td>"
+            "</tr>"
+        )
+    if not rows:
+        rows.append("<tr><td colspan='5'>No recorded operations.</td></tr>")
+    return (
+        "<table><thead><tr><th>Time</th><th>Operation</th><th>Result</th>"
+        "<th>Duration</th><th>Items</th></tr></thead><tbody>"
+        + "".join(rows)
+        + "</tbody></table>"
+    )
+
+
+def planning_priorities(
+    projects: list[ProjectSnapshot],
+    forge: Mapping[str, Any],
+    guardian: Mapping[str, Any],
+    services_online: int,
+    services_total: int,
+) -> list[str]:
+    priorities: list[str] = []
+    if not guardian.get("success"):
+        priorities.append("Restore the deployment guardian before expanding device features.")
+    days = guardian.get("profile_days_remaining")
+    if isinstance(days, (int, float)) and days <= 2:
+        priorities.append(f"Refresh CARINA signing now; only {days:.1f} days remain.")
+    dirty = sum(1 for project in projects if project.dirty_files)
+    if dirty:
+        priorities.append(f"Close or commit work in {dirty} dirty repositories before a broad integration move.")
+    behind = sum(1 for project in projects if project.behind)
+    if behind:
+        priorities.append(f"Review {behind} repositories that are behind their tracked remote.")
+    quarantined = int(forge.get("quarantined", 0) or 0)
+    if quarantined:
+        priorities.append(f"Review {quarantined} quarantined Forge documents without exposing their contents.")
+    if services_online < services_total:
+        priorities.append(f"Recover {services_total - services_online} offline core services before load testing.")
+    if not priorities:
+        priorities.append("Core operations are stable; plan the next CARINA capability around the highest-activity project.")
+    return priorities[:5]
+
+
 def build_html(
     docs: dict[str, str],
     listeners: list[Listener],
     folders: list[CodexFolder],
     archive_summary: ArchiveSummary | None,
     agentops_dir: Path,
+    projects: list[ProjectSnapshot] | None = None,
+    project_snapshot_generated: str = "live",
+    forge: Mapping[str, Any] | None = None,
+    guardian: Mapping[str, Any] | None = None,
 ) -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     agent_tables = parse_markdown_tables(docs.get("agents.md", ""))
@@ -288,12 +551,17 @@ def build_html(
     token_tables = parse_markdown_tables(docs.get("tokens.md", ""))
     inbox_items = parse_bullets(docs.get("inbox.md", ""))
     counts = folder_counts(folders)
+    projects = projects or []
+    forge = forge or {}
+    guardian = guardian or {}
 
     cards = [
-        ("Codex Control", "5000/7000", status_for_port("5000", listeners)),
+        ("CARINA HTTP", "51001", status_for_port("51001", listeners)),
+        ("CARINA WebSocket", "51002", status_for_port("51002", listeners)),
         ("OpenClaw Gateway", "18789", status_for_port("18789", listeners)),
-        ("MagnoliaOS Runtime", "7420", status_for_port("7420", listeners)),
         ("Ollama", "11434", status_for_port("11434", listeners)),
+        ("Device Control", "4723", status_for_port("4723", listeners)),
+        ("Dashboard", "51003", status_for_port("51003", listeners)),
     ]
     online_count = sum(1 for _, _, state in cards if state == "online")
     card_html = "\n".join(
@@ -319,12 +587,33 @@ def build_html(
         f"<article class='metric'><strong>{count}</strong><span>{inline(label)}</span></article>"
         for label, count in counts.items()
     )
+    total_commits = sum(project.commits_7d for project in projects)
+    dirty_projects = sum(1 for project in projects if project.dirty_files)
+    profile_days = guardian.get("profile_days_remaining")
+    profile_display = f"{profile_days:.1f}d" if isinstance(profile_days, (int, float)) else "—"
+    operations = forge.get("operations", [])
+    operations = operations if isinstance(operations, list) else []
+    priorities = planning_priorities(projects, forge, guardian, online_count, len(cards))
+    priority_html = "".join(f"<li>{inline(item)}</li>" for item in priorities)
+    top_metrics = [
+        (str(len(projects)), "Git projects"),
+        (str(total_commits), "Commits · 7 days"),
+        (str(dirty_projects), "Dirty worktrees"),
+        (str(forge.get("ready", 0)), "Forge sources"),
+        (profile_display, "Signing runway"),
+        (f"{online_count}/{len(cards)}", "Services online"),
+    ]
+    top_metric_html = "".join(
+        f"<article class='metric'><strong>{inline(value)}</strong><span>{inline(label)}</span></article>"
+        for value, label in top_metrics
+    )
 
     return f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="60">
   <title>caRINA AgentOps</title>
   <style>
     :root {{
@@ -547,6 +836,8 @@ def build_html(
       text-transform: uppercase;
       font-size: 12px;
     }}
+    small {{ color: var(--muted); font-size: 11px; }}
+    .source-note {{ color: var(--muted); font-size: 12px; margin: -8px 0 16px; }}
     .pill {{
       display: inline-block;
       min-width: 70px;
@@ -571,18 +862,45 @@ def build_html(
   <header>
     <p class="eyebrow">MagnoliaOS · Autonomous systems console</p>
     <h1>CARINA Command Core</h1>
-    <p>One truthful view of agents, services, local models and live Mac operations.</p>
+    <p>One truthful view of projects, delivery health, local models, and live Mac operations.</p>
     <div class="hero-meta">
       <span class="live">{online_count} of {len(cards)} core services online</span>
       <span>OpenClaw + Ollama preferred</span>
       <span>Generated {html.escape(now)}</span>
-      <span>{html.escape(str(agentops_dir))}</span>
+      <span>Project snapshot {html.escape(project_snapshot_generated)}</span>
     </div>
   </header>
   <main>
     <section>
+      <h2>Operating Pulse</h2>
+      <div class="grid">{top_metric_html}</div>
+    </section>
+    <section>
       <h2>Live Services</h2>
       <div class="grid">{card_html}</div>
+    </section>
+    <section>
+      <h2>Project Performance</h2>
+      <p class="source-note">Source: local Git metadata · snapshot {html.escape(project_snapshot_generated)}</p>
+      {render_project_table(projects)}
+    </section>
+    <section class="two-col">
+      <div>
+        <h2>Next Big Move</h2>
+        <ol>{priority_html}</ol>
+      </div>
+      <div>
+        <h2>Device Delivery</h2>
+        <p><strong>{inline(str(guardian.get('outcome', 'unavailable')))}</strong></p>
+        <p>iPhone: {inline(str(guardian.get('device', {}).get('name', 'unavailable')) if isinstance(guardian.get('device'), Mapping) else 'unavailable')}</p>
+        <p>Last check: <code>{inline(str(guardian.get('checked_at', 'unavailable')))}</code></p>
+        <p>Profile expires: <code>{inline(str(guardian.get('profile_expires_at', 'unavailable')))}</code></p>
+      </div>
+    </section>
+    <section>
+      <h2>Operational Performance</h2>
+      <p class="source-note">Source: Forge operation ledger · latest ingest {inline(str(forge.get('latest_ingest', 'unavailable')))}</p>
+      {render_operations(operations)}
     </section>
     <section>
       <h2>Codex Folder Review</h2>
@@ -634,14 +952,43 @@ def build_html(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build the caRINA AgentOps dashboard.")
     parser.add_argument("--agentops-dir", type=Path, default=DEFAULT_AGENTOPS_DIR)
+    parser.add_argument("--codex-dir", type=Path, default=DEFAULT_CODEX_DIR)
+    parser.add_argument("--documents-root", type=Path, default=DEFAULT_DOCUMENTS_DIR)
+    parser.add_argument(
+        "--project-snapshot",
+        type=Path,
+        default=Path(DEFAULT_PROJECT_SNAPSHOT) if DEFAULT_PROJECT_SNAPSHOT else None,
+    )
+    parser.add_argument("--write-project-snapshot", type=Path, default=None)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
 
     docs = read_docs(args.agentops_dir)
     listeners = collect_listeners()
-    folders = collect_codex_folders(DEFAULT_CODEX_DIR)
-    archive_summary = read_archive_summary()
-    html_text = build_html(docs, listeners, folders, archive_summary, args.agentops_dir)
+    folders = collect_codex_folders(args.codex_dir)
+    archive_manifest = args.codex_dir / "_archive/2026-07-04-agentops-review/manifest.json"
+    archive_summary = read_archive_summary(archive_manifest)
+    if args.project_snapshot and args.project_snapshot.is_file():
+        projects, project_snapshot_generated = read_project_snapshot(args.project_snapshot)
+    else:
+        projects = collect_projects(args.documents_root)
+        project_snapshot_generated = "live " + datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    if args.write_project_snapshot:
+        write_project_snapshot(args.write_project_snapshot, projects)
+        project_snapshot_generated = read_project_snapshot(args.write_project_snapshot)[1]
+    forge = collect_forge_metrics()
+    guardian = read_json_object(DEFAULT_GUARDIAN_STATE)
+    html_text = build_html(
+        docs,
+        listeners,
+        folders,
+        archive_summary,
+        args.agentops_dir,
+        projects,
+        project_snapshot_generated,
+        forge,
+        guardian,
+    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(html_text, encoding="utf-8")
     print(args.output)

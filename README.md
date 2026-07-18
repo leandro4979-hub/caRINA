@@ -136,20 +136,23 @@ The Appium service is restricted to `127.0.0.1:4723`, and the control session is
 restricted to `com.leandrofajardo.carina`. See the deployment guide for status,
 screenshot, tap, and shutdown commands.
 
-The first working build is a local dashboard generator. It reads the Markdown
-files in `/Users/leandrofajardo/Documents/AgentOps`, checks local listening
-services, and writes a browser-ready dashboard to `dist/dashboard.html`.
+The dashboard reads local Git metadata, AgentOps notes, listening services,
+Forge ingestion history, and the deployment guardian state. It shows project
+activity, dirty worktrees, seven-day commits, service readiness, signing runway,
+and source-backed priorities for the next move.
 
 ## Run
 
 ```sh
 make dashboard
+make dashboard-install
+make dashboard-status
 ```
 
-Open the generated file:
+`make dashboard-install` opens and keeps the live dashboard available at:
 
 ```text
-dist/dashboard.html
+http://127.0.0.1:51003/
 ```
 
 You can also run the script directly:
@@ -186,9 +189,12 @@ The verification gate checks:
 - Token-counter smoke behavior with direct text input.
 
 `dist/dashboard.html` is generated output and is ignored by git. Running
-`make verify` or `make dashboard` rewrites it from the current AgentOps
-Markdown notes and live local listener data. Commit source and documentation
-changes, not the generated dashboard file.
+`make verify` or `make dashboard` rewrites it from current local sources. The
+installed dashboard copies a Git project snapshot into Application Support so
+macOS privacy does not break its background service, while listeners, Forge,
+and signing state remain live. Re-run `make dashboard-install` after adding or
+moving repositories. Commit source and documentation changes, not generated
+dashboard files.
 
 The token counter uses `tiktoken` when it is installed. If `tiktoken` is not
 available, it falls back to a conservative character-based estimate so local
@@ -215,7 +221,7 @@ make archive-dry-run
 Estimate prompt or AgentOps note size:
 
 ```sh
-python3 src/token_counter.py --file /Users/leandrofajardo/Documents/AgentOps/skills.md
+python3 src/token_counter.py --file "$HOME/Documents/AgentOps/skills.md"
 ```
 
 The helper uses `tiktoken` when installed. Without it, it returns a conservative

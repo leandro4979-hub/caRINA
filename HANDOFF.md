@@ -137,14 +137,25 @@ live project-performance dashboard for the next planning decision.
 - Verified the guardian adopted the existing signed install without rebuilding,
   detected `17promax` over its wired tunnel, and recorded 5.48 signing days
   remaining with exit code `0`.
+- Replaced hardcoded legacy home paths in the dashboard with portable current
+  user paths and a bounded local Git repository inventory.
+- Added source-backed project activity, seven-day commit counts, worktree state,
+  remote divergence, Forge ingestion performance, service readiness, signing
+  runway, and derived next-move priorities.
+- Installed `com.leandrofajardo.carina.dashboard` as a loopback-only read-only
+  service on `127.0.0.1:51003` and opened it on the Mac.
+- Verified the live dashboard reports 12 Git projects, 46 commits over seven
+  days, 6 dirty worktrees, 16 Forge sources, 5.5 signing days, and 6/6 services
+  online.
 
 ## Current Task
 
-Upgrade and open the live project-performance dashboard.
+Run the final combined verification and operational health checks.
 
 ## Next Task
 
-Run the final combined service, dashboard, Python, bridge, and device checks.
+Keep the guardian and dashboard snapshots current after future iOS or repository
+changes.
 
 ## Known Issues
 
@@ -182,7 +193,7 @@ Run the final combined service, dashboard, Python, bridge, and device checks.
 
 ## Last Commit
 
-`0a9135b feat(ios): gate voice transcripts with presence classifier`
+`fa80699 feat(ios): keep CARINA device signing fresh`
 
 Previous bridge milestone: `7049841 fix(bridge): support iPhone IPv4 websocket
 connections`
@@ -214,6 +225,11 @@ connections`
 ✅ Presence Layer focused Swift tests: 4 passed.
 
 ✅ Current Python bridge tests: 34 passed.
+
+✅ Current full Python suite: 49 passed with no database resource warnings.
+
+✅ Live dashboard health check passed on `127.0.0.1:51003` with 6/6 tracked
+services online.
 
 ✅ Presence-enabled signed physical-device build succeeded with Personal Team
 `863R3427Q3`.
@@ -253,6 +269,9 @@ remains 13 passed.
 - CARINA WebSocket bridge: installed with dual-stack IPv4/IPv6 on port `51002`
 - Appium: loopback only on port `4723`
 - RemoteXPC: privileged retrying tunnel active
+- Forge background ingestion: installed; five-minute refresh; last exit `0`
+- Deployment guardian: installed; six-hour check; last exit `0`
+- Project dashboard: ready at `http://127.0.0.1:51003/`
 
 ## Notes
 

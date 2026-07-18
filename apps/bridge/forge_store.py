@@ -6,6 +6,7 @@ import re
 import sqlite3
 import threading
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -120,10 +121,18 @@ class ForgeStore:
                 except OSError:
                     pass
 
+    @contextmanager
+    def _session(self) -> Iterable[sqlite3.Connection]:
+        connection = self._connect()
+        try:
+            yield connection
+        finally:
+            connection.close()
+
     def upsert(self, document: ForgeDocument) -> str:
         if document.trust_state not in {"ready", "quarantined"}:
             raise ValueError("trust_state must be ready or quarantined")
-        with self._connect() as connection:
+        with self._session() as connection:
             existing = connection.execute(
                 "SELECT sha256, trust_state FROM documents WHERE source_path = ?",
                 (document.source_path,),
@@ -189,7 +198,7 @@ class ForgeStore:
             ORDER BY MAX(ingested_at) DESC, MIN(title) COLLATE NOCASE
             LIMIT ?
         """
-        with self._connect() as connection:
+        with self._session() as connection:
             rows = connection.execute(sql, parameters).fetchall()
         return [dict(row) for row in rows]
 
@@ -208,7 +217,7 @@ class ForgeStore:
         return "\n\n".join(sections)[:max(500, min(max_characters, MAX_CONTEXT_CHARACTERS))]
 
     def status(self) -> dict[str, Any]:
-        with self._connect() as connection:
+        with self._session() as connection:
             counts = connection.execute(
                 """
                 SELECT
@@ -237,7 +246,7 @@ class ForgeStore:
         item_count: int,
         detail: str,
     ) -> None:
-        with self._connect() as connection:
+        with self._session() as connection:
             connection.execute(
                 """
                 INSERT INTO operations (
@@ -257,7 +266,7 @@ class ForgeStore:
 
     def recent_operations(self, limit: int = 20) -> list[dict[str, Any]]:
         bounded_limit = max(1, min(int(limit), 100))
-        with self._connect() as connection:
+        with self._session() as connection:
             rows = connection.execute(
                 """
                 SELECT component, success, duration_ms, item_count, detail, created_at
