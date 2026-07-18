@@ -159,6 +159,8 @@ final class CarinaAgentService: ObservableObject {
     @Published private(set) var messages: [AgentMessage] = []
     @Published private(set) var state: State = .idle
     @Published private(set) var pendingApproval: PreparedAction?
+    @Published private(set) var canImportCleverResponse = false
+    @Published private(set) var cleverImportError: String?
     @Published var providerRoute: ProviderRoute = .openclaw
     @Published var selectedDelegate: CarinaDelegate?
 
@@ -166,6 +168,7 @@ final class CarinaAgentService: ObservableObject {
     private let permissionEngine = CommandPermissionEngine()
     private let approvalStore = ApprovalStore()
     private var activeTask: Task<Void, Never>?
+    private var cleverHandoffActive = false
     private let logger = Logger(subsystem: "com.leandrofajardo.carina", category: "AgentService")
 
     deinit { activeTask?.cancel() }
@@ -300,6 +303,7 @@ final class CarinaAgentService: ObservableObject {
             ]
         )
         let application = UIApplication.shared
+        beginCleverHandoff()
         var openedClever = await application.open(
             CleverAIHandoff.universalURL,
             options: [.universalLinksOnly: true]
@@ -325,6 +329,7 @@ final class CarinaAgentService: ObservableObject {
             openedStore = await application.open(CleverAIHandoff.webStoreURL)
         }
         guard openedStore else {
+            cleverHandoffActive = false
             throw AgentError.approval("Clever AI and its App Store page could not be opened.")
         }
         messages.append(
@@ -336,6 +341,58 @@ final class CarinaAgentService: ObservableObject {
             )
         )
         state = .idle
+    }
+
+    func beginCleverHandoff() {
+        cleverHandoffActive = true
+        canImportCleverResponse = false
+        cleverImportError = nil
+    }
+
+    func handleAppBecameActive() {
+        guard cleverHandoffActive else { return }
+        cleverHandoffActive = false
+        canImportCleverResponse = true
+        cleverImportError = nil
+    }
+
+    @discardableResult
+    func importCleverResponse(_ clipboardText: String?) -> Bool {
+        guard canImportCleverResponse else {
+            cleverImportError = "Start a Clever AI handoff before importing a response."
+            return false
+        }
+        guard let clipboardText else {
+            cleverImportError = "Copy Clever AI’s response, then tap Import copied response."
+            return false
+        }
+        let clean = clipboardText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else {
+            cleverImportError = "The copied Clever AI response is empty."
+            return false
+        }
+        guard clean.count <= 16_000 else {
+            cleverImportError = "The copied Clever AI response exceeds CARINA’s 16,000-character safety limit."
+            return false
+        }
+
+        messages.append(
+            AgentMessage(
+                role: .assistant,
+                text: clean,
+                agent: "CARINA",
+                route: .clever
+            )
+        )
+        canImportCleverResponse = false
+        cleverImportError = nil
+        state = .idle
+        return true
+    }
+
+    func dismissCleverImport() {
+        canImportCleverResponse = false
+        cleverImportError = nil
     }
 
     func deny() {

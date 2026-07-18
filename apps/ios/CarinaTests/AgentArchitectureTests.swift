@@ -122,6 +122,35 @@ final class AgentArchitectureTests: XCTestCase {
         )
     }
 
+    @MainActor
+    func testCleverReturnDoesNotReadOrImportUntilExplicitAction() {
+        let service = CarinaAgentService()
+        service.beginCleverHandoff()
+        service.handleAppBecameActive()
+
+        XCTAssertTrue(service.canImportCleverResponse)
+        XCTAssertTrue(service.messages.isEmpty)
+        XCTAssertNil(service.pendingApproval)
+    }
+
+    @MainActor
+    func testCleverResponseImportIsBoundedAndNeverApprovesExecution() {
+        let service = CarinaAgentService()
+        service.beginCleverHandoff()
+        service.handleAppBecameActive()
+
+        XCTAssertFalse(service.importCleverResponse(String(repeating: "x", count: 16_001)))
+        XCTAssertTrue(service.messages.isEmpty)
+        XCTAssertTrue(service.canImportCleverResponse)
+
+        XCTAssertTrue(service.importCleverResponse("  Clever result  "))
+        XCTAssertEqual(service.messages.last?.text, "Clever result")
+        XCTAssertEqual(service.messages.last?.agent, "CARINA")
+        XCTAssertEqual(service.messages.last?.route, .clever)
+        XCTAssertNil(service.pendingApproval)
+        XCTAssertFalse(service.canImportCleverResponse)
+    }
+
     func testApprovalExpiresAndCannotReplay() async throws {
         let store = ApprovalStore()
         let action = makeAction(expiresAt: Date().addingTimeInterval(60))

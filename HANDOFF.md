@@ -105,15 +105,20 @@ restore its authenticated Mac connection.
   interrupted, and failed states.
 - Visually verified the voice-first home on an iPhone 17 Pro Max simulator and
   confirmed CARINA remains the permanent conversation header.
+- Added an explicit Clever AI return flow that offers clipboard import only
+  after CARINA becomes active again following an approved handoff.
+- Bounded Clever imports to 16,000 characters, labeled imported content as
+  Clever-sourced, and verified imported text cannot approve execute actions.
+- Passed all 34 Python tests and a generic iOS Simulator build after the Clever
+  round-trip implementation.
 
 ## Current Task
 
-Add the approved Clever AI return-import flow without granting clipboard reads
-or execution authority until the user explicitly taps.
+Deploy and verify the complete voice-first build on the physical iPhone.
 
 ## Next Task
 
-Deploy and verify the complete voice-first build on the physical iPhone.
+Run final service, signed-device, installation, and launch verification.
 
 ## Known Issues
 
@@ -151,7 +156,7 @@ Deploy and verify the complete voice-first build on the physical iPhone.
 
 ## Last Commit
 
-`ad40b1d refactor(agents): keep CARINA primary across delegates`
+Pending Clever round-trip milestone commit.
 
 Previous bridge milestone: `7049841 fix(bridge): support iPhone IPv4 websocket
 connections`
@@ -173,6 +178,10 @@ connections`
 ✅ Voice-first Conversation and Control build succeeded.
 
 ✅ Voice-first simulator launch and screenshot inspection succeeded.
+
+✅ Clever round-trip Python suite: 34 passed.
+
+✅ Clever round-trip generic Simulator build succeeded.
 
 ⚠️ The updated Swift test bundle compiled, but Xcode 27 again stopped at the
 exact runner state `waiting for workers to materialize`; the run was terminated

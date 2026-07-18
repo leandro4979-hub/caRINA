@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 private enum CarinaArea: String, CaseIterable, Identifiable {
     case conversation
@@ -29,6 +30,7 @@ struct ContentView: View {
     @EnvironmentObject private var speech: SpeechRecognitionService
     @EnvironmentObject private var voice: NativeVoiceSynthesisService
     @EnvironmentObject private var permissions: PermissionManager
+    @Environment(\.scenePhase) private var scenePhase
 
     @AppStorage("carina.autoSpeakResponses") private var autoSpeakResponses = true
     @State private var area: CarinaArea = .conversation
@@ -62,6 +64,9 @@ struct ContentView: View {
             }
             .onChange(of: speech.transcript) { _, transcript in command = transcript }
             .onChange(of: agent.messages.count) { _, _ in speakLatestResponseIfNeeded() }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { agent.handleAppBecameActive() }
+            }
         }
         .preferredColorScheme(.dark)
     }
@@ -157,6 +162,10 @@ struct ContentView: View {
 
             if let approval = agent.pendingApproval {
                 approvalPanel(approval)
+            }
+
+            if agent.canImportCleverResponse {
+                cleverReturnPanel
             }
 
             recentConversation
@@ -280,6 +289,7 @@ struct ContentView: View {
             connectionPanel
 
             if let approval = agent.pendingApproval { approvalPanel(approval) }
+            if agent.canImportCleverResponse { cleverReturnPanel }
 
             VStack(alignment: .leading, spacing: 14) {
                 SectionLabel(title: "Transcript", detail: "\(agent.messages.count) messages")
@@ -469,6 +479,48 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    private var cleverReturnPanel: some View {
+        CarinaSurface(accent: CarinaTheme.signal) {
+            VStack(alignment: .leading, spacing: 15) {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "arrow.uturn.backward.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(CarinaTheme.signal)
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Back from Clever AI")
+                            .font(.headline)
+                        Text("Copy the response in Clever, then import it into this CARINA conversation.")
+                            .font(.footnote)
+                            .foregroundStyle(CarinaTheme.secondaryText)
+                    }
+                }
+
+                if let error = agent.cleverImportError {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(CarinaTheme.warning)
+                }
+
+                HStack(spacing: 10) {
+                    Button("Not now") { agent.dismissCleverImport() }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .frame(maxWidth: .infinity)
+                    Button("Import copied response") {
+                        agent.importCleverResponse(UIPasteboard.general.string)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(CarinaTheme.signal)
+                    .foregroundStyle(CarinaTheme.ink)
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity)
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Import a copied Clever AI response into CARINA")
     }
 
     @ViewBuilder
