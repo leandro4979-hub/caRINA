@@ -3,6 +3,98 @@ import Foundation
 import Speech
 import os
 
+enum PresenceTarget: String, Codable, Equatable, Sendable {
+    case assistant
+    case background
+    case command
+}
+
+struct PresenceDecision: Codable, Equatable, Sendable {
+    let target: PresenceTarget
+    let confidence: Double
+    let actionableText: String
+
+    enum CodingKeys: String, CodingKey {
+        case target
+        case confidence
+        case actionableText = "actionable_text"
+    }
+}
+
+protocol PresenceClassifying: Sendable {
+    func classify(transcript: String) -> PresenceDecision
+}
+
+struct PresenceClassifier: PresenceClassifying {
+    private static let assistantOpeners = [
+        "can you ", "could you ", "would you ", "will you ", "please ",
+        "help me ", "i need ", "i want ", "let's ", "what ", "when ",
+        "where ", "who ", "why ", "how ", "is ", "are ", "do ", "does ",
+    ]
+    private static let backgroundPhrases = [
+        "talking to the cat", "the cat", "rink", "come here", "go over there",
+        "tell him", "tell her", "ask him", "ask her", "mom", "dad", "babe",
+        "baby", "the kids", "everyone",
+    ]
+    private static let commandOpeners = [
+        "evil run ", "drop the script", "run status check", "run system status",
+        "execute ", "launch ", "open shortcut ", "run shortcut ", "stop service ",
+        "start service ", "restart service ", "system.", "shortcut.",
+    ]
+    private static let wakeExpression = try! NSRegularExpression(
+        pattern: #"^(?:hey\s+)?(?:carina|karina)\b[\s,:-]*"#,
+        options: [.caseInsensitive]
+    )
+    private static let fillerExpression = try! NSRegularExpression(
+        pattern: #"^(?:(?:um+|uh+|erm+|hmm+|like|you know|okay|ok|well|so)\b[\s,.-]*)+"#,
+        options: [.caseInsensitive]
+    )
+
+    func classify(transcript: String) -> PresenceDecision {
+        let normalized = Self.normalizeWhitespace(transcript)
+        guard !normalized.isEmpty else {
+            return PresenceDecision(target: .background, confidence: 1, actionableText: "")
+        }
+
+        let withoutFillers = Self.replacingPrefix(in: normalized, using: Self.fillerExpression)
+        let wakeStripped = Self.replacingPrefix(in: withoutFillers, using: Self.wakeExpression)
+        let hadWakePhrase = wakeStripped != withoutFillers
+        let actionable = wakeStripped.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !actionable.isEmpty else {
+            return PresenceDecision(target: .background, confidence: 0.96, actionableText: "")
+        }
+
+        let folded = actionable.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+        if Self.commandOpeners.contains(where: folded.hasPrefix) {
+            return PresenceDecision(target: .command, confidence: hadWakePhrase ? 0.99 : 0.94, actionableText: actionable)
+        }
+        if hadWakePhrase {
+            return PresenceDecision(target: .assistant, confidence: 0.99, actionableText: actionable)
+        }
+        if Self.backgroundPhrases.contains(where: folded.contains),
+           !Self.assistantOpeners.contains(where: folded.hasPrefix) {
+            return PresenceDecision(target: .background, confidence: 0.9, actionableText: actionable)
+        }
+        if transcript.trimmingCharacters(in: .whitespacesAndNewlines).hasSuffix("?")
+            || Self.assistantOpeners.contains(where: folded.hasPrefix) {
+            return PresenceDecision(target: .assistant, confidence: 0.88, actionableText: actionable)
+        }
+        if actionable.split(separator: " ").count < 4 {
+            return PresenceDecision(target: .background, confidence: 0.68, actionableText: actionable)
+        }
+        return PresenceDecision(target: .assistant, confidence: 0.62, actionableText: actionable)
+    }
+
+    private static func normalizeWhitespace(_ text: String) -> String {
+        text.split(whereSeparator: { $0.isWhitespace }).joined(separator: " ")
+    }
+
+    private static func replacingPrefix(in text: String, using expression: NSRegularExpression) -> String {
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        return expression.stringByReplacingMatches(in: text, range: range, withTemplate: "")
+    }
+}
+
 enum VoiceSessionState: String, Equatable, Sendable {
     case idle
     case listening

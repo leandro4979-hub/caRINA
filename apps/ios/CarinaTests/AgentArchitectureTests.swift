@@ -122,6 +122,35 @@ final class AgentArchitectureTests: XCTestCase {
         )
     }
 
+    func testPresenceClassifierKeepsCarinaAsExplicitTarget() throws {
+        let decision = PresenceClassifier().classify(
+            transcript: "Um, hey Carina, can you summarize my deployment status?"
+        )
+        XCTAssertEqual(decision.target, .assistant)
+        XCTAssertGreaterThan(decision.confidence, 0.9)
+        XCTAssertEqual(decision.actionableText, "can you summarize my deployment status?")
+        let data = try JSONEncoder().encode(decision)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual(Set(object.keys), ["target", "confidence", "actionable_text"])
+    }
+
+    func testPresenceClassifierDropsBackgroundConversation() {
+        let decision = PresenceClassifier().classify(transcript: "Rink come here, the cat is by the door")
+        XCTAssertEqual(decision.target, .background)
+        XCTAssertGreaterThanOrEqual(decision.confidence, 0.8)
+    }
+
+    func testPresenceClassifierIsolatesSystemCommands() {
+        let decision = PresenceClassifier().classify(transcript: "Okay, run status check")
+        XCTAssertEqual(decision.target, .command)
+        XCTAssertEqual(decision.actionableText, "run status check")
+    }
+
+    func testPresenceClassifierTreatsShortHalfSentenceAsBackground() {
+        let decision = PresenceClassifier().classify(transcript: "yeah maybe later")
+        XCTAssertEqual(decision.target, .background)
+    }
+
     @MainActor
     func testCleverReturnDoesNotReadOrImportUntilExplicitAction() {
         let service = CarinaAgentService()

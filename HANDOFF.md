@@ -111,14 +111,23 @@ restore its authenticated Mac connection.
   Clever-sourced, and verified imported text cannot approve execute actions.
 - Passed all 34 Python tests and a generic iOS Simulator build after the Clever
   round-trip implementation.
+- Added a local Presence Layer that classifies explicitly captured microphone
+  transcripts as assistant, background, or command before bridge/OpenClaw
+  serialization; it does not enable continuous background listening.
+- Kept room conversation off the agent channel, cleaned verbal fillers and
+  wake phrases locally, and preserved permission/approval enforcement for
+  classified commands.
+- Passed all four focused Presence classifier tests, compiled the complete
+  Swift test bundle, passed all 34 Python tests, and rebuilt the Simulator app.
 
 ## Current Task
 
-Deploy and verify the complete voice-first build on the physical iPhone.
+Rebuild, install, and launch the Presence-enabled app on the connected physical
+iPhone.
 
 ## Next Task
 
-Run final service, signed-device, installation, and launch verification.
+Run final live voice, bridge, delegation, and approval checks.
 
 ## Known Issues
 
@@ -156,7 +165,7 @@ Run final service, signed-device, installation, and launch verification.
 
 ## Last Commit
 
-Pending Clever round-trip milestone commit.
+`2dea94e feat(ios): round-trip Clever responses through CARINA`
 
 Previous bridge milestone: `7049841 fix(bridge): support iPhone IPv4 websocket
 connections`
@@ -183,6 +192,12 @@ connections`
 
 ✅ Clever round-trip generic Simulator build succeeded.
 
+✅ Presence Layer generic Simulator build and Swift test bundle build succeeded.
+
+✅ Presence Layer focused Swift tests: 4 passed.
+
+✅ Current Python bridge tests: 34 passed.
+
 ⚠️ The updated Swift test bundle compiled, but Xcode 27 again stopped at the
 exact runner state `waiting for workers to materialize`; the run was terminated
 after the repeated toolchain failure rather than reported as passed.
@@ -193,14 +208,15 @@ remains 13 passed.
 
 ## Device Status
 
-- Device: `DINO’s iPhone`
+- Device: `17promax`
 - Model: iPhone 17 Pro Max
-- Pairing: paired; CoreDevice currently reports unavailable while Mirroring is
-  active
-- Current transport: iPhone Mirroring is connected to the restored phone
+- Pairing: paired and connected; Xcode lists it as a compatible destination
+- Current transport: physical iPhone connection available to CoreDevice
 - Developer Mode: enabled by user; CoreDevice status field is stale
 - Trust: confirmed; Local Network permission allowed
 - CARINA installed: yes
+- Latest launch attempt: blocked only because the phone was locked; the app was
+  installed successfully before that launch request
 - Bridge token: saved in device Keychain without exposing it
 - Appium session: restartable; foreground control requires CARINA to remain the
   active app while `Fast App Termination` is enabled

@@ -22,6 +22,11 @@ private enum CarinaArea: String, CaseIterable, Identifiable {
     }
 }
 
+private enum ComposerInputOrigin {
+    case typed
+    case speech
+}
+
 struct ContentView: View {
     @EnvironmentObject private var settings: BridgeSettings
     @EnvironmentObject private var bridge: BridgeClient
@@ -35,7 +40,10 @@ struct ContentView: View {
     @AppStorage("carina.autoSpeakResponses") private var autoSpeakResponses = true
     @State private var area: CarinaArea = .conversation
     @State private var command = ""
+    @State private var inputOrigin: ComposerInputOrigin = .typed
+    @State private var presenceDecision: PresenceDecision?
     @State private var showingSettings = false
+    private let presenceClassifier = PresenceClassifier()
 
     var body: some View {
         NavigationStack {
@@ -62,7 +70,13 @@ struct ContentView: View {
             .sheet(isPresented: $showingSettings) {
                 SettingsView(settings: settings, permissions: permissions, credentials: credentials)
             }
-            .onChange(of: speech.transcript) { _, transcript in command = transcript }
+            .onChange(of: speech.transcript) { _, transcript in
+                command = transcript
+                if !transcript.isEmpty {
+                    inputOrigin = .speech
+                    presenceDecision = nil
+                }
+            }
             .onChange(of: agent.messages.count) { _, _ in speakLatestResponseIfNeeded() }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { agent.handleAppBecameActive() }
@@ -158,6 +172,7 @@ struct ContentView: View {
                 .accessibilityLabel("CARINA is \(voiceState.label.lowercased())")
 
             liveThought
+            if let presenceDecision { presencePanel(presenceDecision) }
             delegateRail
 
             if let approval = agent.pendingApproval {
@@ -214,6 +229,36 @@ struct ContentView: View {
                     .lineSpacing(4)
                     .padding(.horizontal, 14)
             }
+        }
+    }
+
+    private func presencePanel(_ decision: PresenceDecision) -> some View {
+        CarinaSurface(accent: decision.target == .background ? CarinaTheme.muted : CarinaTheme.signal) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: decision.target == .background ? "ear.badge.checkmark" : "scope")
+                    .foregroundStyle(decision.target == .background ? CarinaTheme.secondaryText : CarinaTheme.signal)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(decision.target == .background ? "Not sent" : "Presence gate")
+                        .font(.caption.weight(.bold))
+                        .tracking(0.8)
+                    Text(presenceDescription(decision))
+                        .font(.subheadline)
+                        .foregroundStyle(CarinaTheme.secondaryText)
+                }
+                Spacer(minLength: 0)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func presenceDescription(_ decision: PresenceDecision) -> String {
+        switch decision.target {
+        case .assistant:
+            "Directed to CARINA and cleaned locally before sending."
+        case .background:
+            "CARINA treated that as room conversation and kept it off the agent channel."
+        case .command:
+            "Recognized as a system command. Existing permission and approval rules still apply."
         }
     }
 
@@ -557,7 +602,18 @@ struct ContentView: View {
             .buttonStyle(CarinaPressButtonStyle())
             .accessibilityLabel(speech.isListening ? "Stop listening" : "Talk to CARINA")
 
-            TextField("Message CARINA", text: $command, axis: .vertical)
+            TextField(
+                "Message CARINA",
+                text: Binding(
+                    get: { command },
+                    set: { value in
+                        command = value
+                        if !speech.isListening { inputOrigin = .typed }
+                        presenceDecision = nil
+                    }
+                ),
+                axis: .vertical
+            )
                 .lineLimit(1...5)
                 .textFieldStyle(.plain)
                 .padding(.horizontal, 15)
@@ -668,6 +724,8 @@ struct ContentView: View {
             speech.stop()
             return
         }
+        presenceDecision = nil
+        inputOrigin = .speech
         voice.stop()
         voice.clearInterruption()
         Task { await speech.start() }
@@ -680,9 +738,21 @@ struct ContentView: View {
     }
 
     private func send() {
-        let trimmed = command.trimmingCharacters(in: .whitespacesAndNewlines)
+        var trimmed = command.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+        if inputOrigin == .speech {
+            let decision = presenceClassifier.classify(transcript: trimmed)
+            presenceDecision = decision
+            trimmed = decision.actionableText
+            if decision.target == .background || trimmed.isEmpty {
+                command = ""
+                inputOrigin = .typed
+                speech.stop()
+                return
+            }
+        }
         command = ""
+        inputOrigin = .typed
         speech.stop()
         voice.stop()
         voice.clearInterruption()
