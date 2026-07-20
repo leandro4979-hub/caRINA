@@ -131,12 +131,14 @@ class FolderStatsTests(unittest.TestCase):
 
 
 class FolderCountsTests(unittest.TestCase):
+    _DATE = "2026-01-01"
+
     def test_counts_each_status(self) -> None:
         from src.build_dashboard import CodexFolder
         folders = [
-            CodexFolder(name="a", path=Path("/a"), date="2026-01-01", size_bytes=0, files=0, status="keep", reason=""),
-            CodexFolder(name="b", path=Path("/b"), date="2026-01-01", size_bytes=0, files=0, status="archive", reason=""),
-            CodexFolder(name="c", path=Path("/c"), date="2026-01-01", size_bytes=0, files=0, status="archive", reason=""),
+            CodexFolder(name="a", path=Path("/a"), date=self._DATE, size_bytes=0, files=0, status="keep", reason=""),
+            CodexFolder(name="b", path=Path("/b"), date=self._DATE, size_bytes=0, files=0, status="archive", reason=""),
+            CodexFolder(name="c", path=Path("/c"), date=self._DATE, size_bytes=0, files=0, status="archive", reason=""),
         ]
         counts = folder_counts(folders)
         self.assertEqual(counts["keep"], 1)
