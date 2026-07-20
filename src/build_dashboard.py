@@ -169,6 +169,7 @@ def human_size(size_bytes: int) -> str:
         if value < 1024 or unit == units[-1]:
             return f"{value:.1f} {unit}" if unit != "B" else f"{int(value)} B"
         value /= 1024
+    return f"{value:.1f} {units[-1]}"  # unreachable; satisfies type checkers
 
 
 def parse_markdown_tables(markdown: str) -> list[list[list[str]]]:
