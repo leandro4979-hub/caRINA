@@ -62,10 +62,10 @@ final class BridgeClient: ObservableObject {
             webSocketTask = socket
             socket.resume()
             state = .connected
-            logger.info("Connected to CARINA bridge at \(configuration.host, privacy: .public)")
+            logger.info("Connected to CARINA bridge")
             startReceiving(from: socket)
         } catch {
-            logger.error("Bridge connection failed: \(error.localizedDescription, privacy: .public)")
+            logger.error("Bridge connection failed: \(error.localizedDescription, privacy: .private)")
             state = .failed(error.localizedDescription)
         }
     }
@@ -85,7 +85,7 @@ final class BridgeClient: ObservableObject {
             }
             try await socket.send(.string(text))
         } catch {
-            logger.error("Command send failed: \(error.localizedDescription, privacy: .public)")
+            logger.error("Command send failed: \(error.localizedDescription, privacy: .private)")
             state = .failed(error.localizedDescription)
         }
     }
@@ -114,7 +114,7 @@ final class BridgeClient: ObservableObject {
                     }
                 } catch {
                     guard !Task.isCancelled else { return }
-                    logger.error("WebSocket receive failed: \(error.localizedDescription, privacy: .public)")
+                    logger.error("WebSocket receive failed: \(error.localizedDescription, privacy: .private)")
                     state = .failed(error.localizedDescription)
                     return
                 }

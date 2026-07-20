@@ -283,7 +283,7 @@ final class CarinaAgentService: ObservableObject {
                 let response = try await provider.execute(action, conversationID: self.conversationID)
                 await self.accept(response)
             } catch {
-                self.logger.error("Approved action failed: \(error.localizedDescription, privacy: .public)")
+                self.logger.error("Approved action failed: \(error.localizedDescription, privacy: .private)")
                 self.pendingApproval = nil
                 self.state = .failed(error.localizedDescription)
             }

@@ -8,12 +8,13 @@ Implement the requested change in this repository using the smallest safe diff.
 
 Task request:
 - Use the user-provided request as the source of truth.
-- If the request is ambiguous, ask only the minimum clarifying question needed.
+- If the request is ambiguous, ask exactly one clarifying question covering the most critical unknown before proceeding.
 
 Execution requirements:
 1. Inspect relevant files before editing.
 2. Keep behavior unchanged outside requested scope.
 3. Prefer existing project patterns and naming.
+If the user's request explicitly requires deviating from existing project patterns, flag the deviation in the final response under 'Risks, assumptions, or follow-up actions' and proceed with the user's intent.
 4. Add or update tests when behavior changes.
 5. Run verification and report concrete results.
 

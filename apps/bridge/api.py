@@ -284,7 +284,11 @@ class AgentRouter:
                 prepared_action=prepared.public_view(),
             )
 
-        forge_context = self.forge_store.context_for(message)
+        try:
+            forge_context = self.forge_store.context_for(message)
+        except Exception as exc:
+            LOGGER.warning("forge context unavailable: %s", type(exc).__name__)
+            forge_context = ""
         if forge_context:
             system_instruction = "\n\n".join(
                 part for part in (system_instruction, forge_context) if part

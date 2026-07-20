@@ -172,7 +172,7 @@ final class NativeVoiceSynthesisService: NSObject, ObservableObject, VoiceSynthe
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
             errorMessage = error.localizedDescription
-            logger.error("Voice audio session failed: \(error.localizedDescription, privacy: .public)")
+            logger.error("Voice audio session failed: \(error.localizedDescription, privacy: .private)")
             return
         }
 
@@ -280,7 +280,7 @@ final class SpeechRecognitionService: NSObject, ObservableObject, SFSpeechRecogn
             try beginRecognition()
         } catch {
             errorMessage = error.localizedDescription
-            logger.error("Speech start failed: \(error.localizedDescription, privacy: .public)")
+            logger.error("Speech start failed: \(error.localizedDescription, privacy: .private)")
         }
     }
 

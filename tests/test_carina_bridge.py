@@ -52,6 +52,13 @@ class CarinaBridgeTests(unittest.TestCase):
         self.assertEqual(result["status"], "informational")
         self.assertEqual(result["text"], "openai:hello")
 
+    def test_openai_route_continues_when_forge_context_is_unavailable(self):
+        router = StubRouter()
+        with patch.object(router.forge_store, "context_for", side_effect=RuntimeError("forge unavailable")):
+            result = router.message(request())
+        self.assertEqual(result["provider"], "openai")
+        self.assertEqual(result["text"], "openai:hello")
+
     def test_unknown_route_is_rejected(self):
         with self.assertRaisesRegex(BridgeAPIError, "unsupported route"):
             StubRouter().message(request(route="shell"))
