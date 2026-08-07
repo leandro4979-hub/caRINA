@@ -1,0 +1,31 @@
+name: CARINA approval boundary
+
+on:
+  push:
+    branches:
+      - agent/approval-boundary
+  pull_request:
+    paths:
+      - "CARINAApprovalBoundary/**"
+      - ".github/workflows/carina-approval-boundary.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  swift-tests:
+    runs-on: macos-15
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: CARINAApprovalBoundary
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify Swift toolchain
+        run: swift --version
+
+      - name: Run approval-boundary tests
+        run: swift test --parallel
