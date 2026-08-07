@@ -21,14 +21,12 @@ final class AuthorizationTokenTests: XCTestCase {
         let adapter = RecordingAdapter()
         let executor = ProtectedExecutionService(vault: vault, adapter: adapter)
 
-        XCTAssertEqual(
-            try await executor.execute(
-                envelope: envelope,
-                authorization: token,
-                now: now
-            ),
-            "workspaceSync"
+        let output = try await executor.execute(
+            envelope: envelope,
+            authorization: token,
+            now: now
         )
+        XCTAssertEqual(output, "workspaceSync")
         do {
             _ = try await executor.execute(
                 envelope: envelope,
