@@ -1,29 +1,27 @@
-# CARINA Codex
+# caRINA
 
-A meticulously organized compilation of engineering knowledge: reusable code,
-architectural patterns, productivity shortcuts, and tooling references.
+caRINA is Leandro's local AgentOps dashboard project and engineering codex.
 
-## Navigation
+## Dashboard
+
+Build and verify the local dashboard:
+
+```sh
+make verify
+```
+
+The dashboard reads AgentOps Markdown notes and writes `dist/dashboard.html`.
+
+## Codex
 
 | Section | Purpose |
 | --- | --- |
-| [Glossary](glossary.md) | Definitions of key terms, defined precisely |
-| [Snippets](snippets/README.md) | Reusable, runnable code organized by language |
-| [Patterns](patterns/README.md) | Architectural and design patterns with tradeoffs |
+| [Glossary](glossary.md) | Definitions of key terms |
+| [Snippets](snippets/README.md) | Reusable, runnable code by language |
+| [Patterns](patterns/README.md) | Architectural patterns and tradeoffs |
 | [Shortcuts](shortcuts/README.md) | Keyboard, terminal, and IDE productivity |
-| [Tools](tools/git-basics.md) | Setup and operation guides for development tooling |
+| [Tools](tools/git-basics.md) | Development tooling references |
 
-## Principles
+## Development
 
-1. **Runnable over illustrative.** Every code sample executes as written.
-2. **Terse over exhaustive.** One line of description per entry.
-3. **Linked over duplicated.** Concepts are defined once, in the glossary.
-4. **Dated over assumed current.** Entries carry a `Last verified` date.
-
-## Adding an entry
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for file naming, entry format, and the lint rules enforced on every push.
-
-## License
-
-Personal reference. Reuse freely.
+Run `make verify` before committing. Commit source and documentation changes, not generated dashboard output. See [CONTRIBUTING.md](CONTRIBUTING.md) for project and codex conventions.

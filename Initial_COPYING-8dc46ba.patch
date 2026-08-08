@@ -1,0 +1,31 @@
+From 8dc46ba733b88778738020edf728a4679b98578b Mon Sep 17 00:00:00 2001
+From: Leandro Fajardo matute <leandro4979@icloud.com>
+Date: Wed, 22 Jul 2026 18:49:49 -0700
+Subject: [PATCH] Initial COPYING
+
+---
+ .gitmodules    | 3 +++
+ CARINA-COPYING | 1 +
+ 2 files changed, 4 insertions(+)
+ create mode 100644 .gitmodules
+ create mode 160000 CARINA-COPYING
+
+diff --git a/.gitmodules b/.gitmodules
+new file mode 100644
+index 0000000..406d553
+--- /dev/null
++++ b/.gitmodules
+@@ -0,0 +1,3 @@
++[submodule "CARINA-COPYING"]
++	path = CARINA-COPYING
++	url = https://github.com/leandro4979-hub/CARINA-COPYING
+diff --git a/CARINA-COPYING b/CARINA-COPYING
+new file mode 160000
+index 0000000..fb07766
+--- /dev/null
++++ b/CARINA-COPYING
+@@ -0,0 +1 @@
++Subproject commit fb077665a6ab9f3ce5660897d43288636212c15a
+--
+Working Copy 6.9.2
+

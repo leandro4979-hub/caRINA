@@ -3,6 +3,10 @@
 .AppleDouble
 .LSOverride
 
+# Python
+__pycache__/
+*.py[cod]
+
 # Node
 node_modules/
 npm-debug.log*
@@ -11,8 +15,10 @@ npm-debug.log*
 .vscode/
 .idea/
 *.swp
+.*.swp
 
-# Jekyll / GitHub Pages
+# Build output
+dist/dashboard.html
 _site/
 .jekyll-cache/
 .jekyll-metadata

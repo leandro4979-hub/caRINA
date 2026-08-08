@@ -1,51 +1,23 @@
-# Contributing to the CARINA Codex
+# Contributing to caRINA
 
-## File naming
+## Development flow
 
-- Lowercase, hyphen-separated: `async-await.md`, not `Async Await.md`.
-- One topic per file. Split when a file exceeds approximately 200 lines.
-- Place language-specific snippets under `snippets/<language>/`.
+1. Create a short-lived branch from `main`.
+2. Make the smallest source or documentation edit that solves the task.
+3. Run `make verify` from the repository root.
+4. Review `git status --short` and commit only intentional changes.
 
-## Entry format
+## Codex entries
 
-Every entry follows this shape:
+- Use lowercase, hyphen-separated filenames.
+- Keep one topic per file; split files exceeding approximately 200 lines.
+- Put language-specific snippets in `snippets/<language>/`.
+- Every code sample must run as written, with imports and invocation included.
+- Define recurring terms in [glossary.md](glossary.md) and use relative links.
+- Update `Last verified` whenever you touch an entry.
 
-````markdown
-### Entry title
+## Safety
 
-One sentence describing what it does and when to use it.
-
-```language
-Runnable code
-```
-
-**Notes:** Optional non-obvious caveats.
-````
-
-## Required front matter
-
-Each file opens with:
-
-````markdown
-# Title
-
-> One-line summary.
-> Last verified: YYYY-MM-DD
-````
-
-## Rules
-
-1. Code must run as written — no placeholders, pseudocode, or `TODO` comments.
-2. Define a term once in [glossary.md](glossary.md) and link to it elsewhere.
-3. Do not explain self-evident code. Comment non-obvious logic only.
-4. Update `Last verified` whenever you touch an entry.
-5. All internal links must resolve; CI fails otherwise.
-
-## Commit messages
-
-```text
-<section>: <imperative summary>
-
-snippets: add Swift URLSession retry helper
-tools: correct git rebase --onto argument order
-```
+- Do not commit credentials, tokens, passwords, or generated dashboard output.
+- Do not delete generated or archived material without explicit approval.
+- Do not start or stop services only to make verification pass.
