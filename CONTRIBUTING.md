@@ -1,19 +1,51 @@
-# Contributing
+# Contributing to the CARINA Codex
 
-## Adding an entry
+## File naming
 
-1. Put the entry in the most relevant section.
-2. Use a descriptive heading and keep the explanation focused on one idea.
-3. Test every command and code sample before committing it.
-4. Link to related local entries with relative Markdown links.
+- Lowercase, hyphen-separated: `async-await.md`, not `Async Await.md`.
+- One topic per file. Split when a file exceeds approximately 200 lines.
+- Place language-specific snippets under `snippets/<language>/`.
 
-## Style
+## Entry format
 
-- Use sentence case for headings.
-- Prefer short paragraphs and fenced code blocks with a language identifier.
-- Do not include credentials, personal data, or machine-specific paths.
-- Update [the glossary](glossary.md) when an unfamiliar term becomes recurring vocabulary.
+Every entry follows this shape:
 
-## Pull requests
+````markdown
+### Entry title
 
-Explain what problem the entry solves and how you verified any executable example.
+One sentence describing what it does and when to use it.
+
+```language
+Runnable code
+```
+
+**Notes:** Optional non-obvious caveats.
+````
+
+## Required front matter
+
+Each file opens with:
+
+````markdown
+# Title
+
+> One-line summary.
+> Last verified: YYYY-MM-DD
+````
+
+## Rules
+
+1. Code must run as written — no placeholders, pseudocode, or `TODO` comments.
+2. Define a term once in [glossary.md](glossary.md) and link to it elsewhere.
+3. Do not explain self-evident code. Comment non-obvious logic only.
+4. Update `Last verified` whenever you touch an entry.
+5. All internal links must resolve; CI fails otherwise.
+
+## Commit messages
+
+```text
+<section>: <imperative summary>
+
+snippets: add Swift URLSession retry helper
+tools: correct git rebase --onto argument order
+```

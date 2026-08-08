@@ -1,11 +1,22 @@
 # macOS
 .DS_Store
+.AppleDouble
+.LSOverride
 
-# Python
-__pycache__/
-*.py[cod]
-.venv/
+# Node
+node_modules/
+npm-debug.log*
 
-# Editor files
-.idea/
+# Editors
 .vscode/
+.idea/
+*.swp
+
+# Jekyll / GitHub Pages
+_site/
+.jekyll-cache/
+.jekyll-metadata
+
+# Environment
+.env
+.env.local

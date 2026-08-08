@@ -1,27 +1,29 @@
-# Engineering Codex
+# CARINA Codex
 
-A personal reference for recurring engineering tasks, implementation patterns, and productivity workflows.
+A meticulously organized compilation of engineering knowledge: reusable code,
+architectural patterns, productivity shortcuts, and tooling references.
 
-## Contents
+## Navigation
 
-- [Contributing](CONTRIBUTING.md)
-- [Glossary](glossary.md)
-- [Snippets](snippets/README.md)
-- [Patterns](patterns/README.md)
-- [Shortcuts](shortcuts/README.md)
-- [Git basics](tools/git-basics.md)
+| Section | Purpose |
+| --- | --- |
+| [Glossary](glossary.md) | Definitions of key terms, defined precisely |
+| [Snippets](snippets/README.md) | Reusable, runnable code organized by language |
+| [Patterns](patterns/README.md) | Architectural and design patterns with tradeoffs |
+| [Shortcuts](shortcuts/README.md) | Keyboard, terminal, and IDE productivity |
+| [Tools](tools/git-basics.md) | Setup and operation guides for development tooling |
 
-## Use
+## Principles
 
-Browse by topic, copy an entry into your work, and update it when a better practice emerges. Keep each entry concise, practical, and verifiable.
+1. **Runnable over illustrative.** Every code sample executes as written.
+2. **Terse over exhaustive.** One line of description per entry.
+3. **Linked over duplicated.** Concepts are defined once, in the glossary.
+4. **Dated over assumed current.** Entries carry a `Last verified` date.
 
-## Structure
+## Adding an entry
 
-```text
-.
-├── glossary.md       # Shared engineering terminology
-├── snippets/         # Copy-ready code examples
-├── patterns/         # Reusable design patterns
-├── shortcuts/        # Keyboard and command-line references
-└── tools/            # Tool-specific guides
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for file naming, entry format, and the lint rules enforced on every push.
+
+## License
+
+Personal reference. Reuse freely.
