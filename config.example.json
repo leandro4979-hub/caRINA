@@ -1,0 +1,20 @@
+{
+  "clipboard_restore": true,
+  "paste_settle_seconds": 0.15,
+  "templates": {
+    "signature": "Best,\nCarina"
+  },
+  "profiles": {
+    "rewrite": {"instruction": "Rewrite warmly and concisely."},
+    "reply": {"instruction": "Write a brief, helpful response."}
+  },
+  "forms": {
+    "contact": ["Ada Lovelace", "ada@example.com", "Notes"]
+  },
+  "ai": {
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "keychain_service": "carina-type",
+    "keychain_account": "openai_api_key"
+  }
+}

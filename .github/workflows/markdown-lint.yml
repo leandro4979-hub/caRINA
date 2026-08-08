@@ -1,0 +1,50 @@
+name: Markdown lint
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate local Markdown links
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          failures = []
+          for source in Path('.').rglob('*.md'):
+              text = source.read_text(encoding='utf-8')
+              for target in re.findall(r'\[[^]]+\]\(([^)#]+)(?:#[^)]+)?\)', text):
+                  if '://' not in target and not target.startswith('mailto:'):
+                      destination = (source.parent / target).resolve()
+                      if not destination.exists():
+                          failures.append(f'{source}: missing link target {target}')
+          if failures:
+              print('\n'.join(failures), file=sys.stderr)
+              raise SystemExit(1)
+          PY
+      - name: Configure Pages
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/deploy-pages@v4
