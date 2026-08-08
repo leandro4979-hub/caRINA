@@ -1,41 +1,68 @@
 # GitHub CLI
 
-## Authenticate
+> Verified `gh` commands for authentication, pull requests, and CI inspection.
+> Last verified: 2026-08-07
 
-```sh
-gh auth login
+## Setup
+
+### Authenticate
+
+```bash
+gh auth login --hostname github.com --git-protocol https --web
+gh auth status
 ```
 
-Authenticates the GitHub CLI with a browser-based sign-in flow.
+Stores a token and configures Git to use it for HTTPS.
 
-## Clone a repository
+### Set the default repository
 
-```sh
-gh repo clone OWNER/REPOSITORY
+```bash
+gh repo set-default leandro4979-hub/caRINA
 ```
 
-Clones a GitHub repository into the current directory.
+Removes the need to pass `--repo` on every subsequent command.
 
-## Create a pull request
+## Pull requests
 
-```sh
-gh pr create --fill
+### Create a pull request
+
+```bash
+git push -u origin HEAD
+gh pr create --fill --base main
 ```
 
-Opens a pull request using the current branch and commit metadata.
+Pushes the branch if needed, then opens the pull request.
 
-## Check pull-request status
+### Watch checks
 
-```sh
-gh pr status
+```bash
+gh pr checks --watch
 ```
 
-Lists pull requests relevant to the authenticated user and repository.
+Blocks until every required check concludes.
 
-## View workflow runs
+### Merge once checks pass
 
-```sh
+```bash
+gh pr merge --squash --delete-branch --auto
+```
+
+Queues a squash merge and deletes the branch afterward.
+
+## Actions
+
+### List recent workflow runs
+
+```bash
 gh run list --limit 10
 ```
 
-Shows the ten most recent GitHub Actions workflow runs.
+Lists the ten most recent workflow runs.
+
+### Show failing logs
+
+```bash
+gh run view --log-failed
+```
+
+Prints the failing log lines from the selected run.

@@ -7,7 +7,7 @@
 
 | Language | Directory | Status |
 | --- | --- | --- |
-| Swift | `swift/` | Seeded |
+| Swift | [`swift/networking.md`](swift/networking.md) | Seeded |
 | JavaScript / TypeScript | `javascript/` | Pending |
 | Python | `python/` | Pending |
 | Shell | `shell/` | Pending |

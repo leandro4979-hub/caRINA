@@ -7,8 +7,8 @@
 
 | File | Scope | Status |
 | --- | --- | --- |
-| `terminal.md` | Shell navigation and history | Seeded |
-| `xcode.md` | Xcode navigation, build, debug | Seeded |
+| [`terminal.md`](terminal.md) | Shell navigation and history | Seeded |
+| [`xcode.md`](xcode.md) | Xcode navigation, build, debug | Seeded |
 | `vscode.md` | VS Code editing and multi-cursor | Pending |
 | `macos.md` | System-level window and text handling | Pending |
 

@@ -21,6 +21,7 @@ The dashboard reads AgentOps Markdown notes and writes `dist/dashboard.html`.
 | [Patterns](patterns/README.md) | Architectural patterns and tradeoffs |
 | [Shortcuts](shortcuts/README.md) | Keyboard, terminal, and IDE productivity |
 | [Tools](tools/git-basics.md) | Development tooling references |
+| [GitHub CLI](tools/github-cli.md) | Authentication, pull requests, and CI inspection |
 
 ## Development
 

@@ -1,31 +1,33 @@
-# Xcode shortcuts
+# Xcode Shortcuts
 
-## Open Quick Open
+> Navigation, build, and debug operations used daily in Xcode.
+> Last verified: 2026-08-07
 
-Press `Command-Shift-O`.
+## Navigation
 
-Searches and opens files, symbols, and project items.
+| Action | Shortcut | Notes |
+| --- | --- | --- |
+| Open Quickly | `⇧⌘O` | Fuzzy-matches files, types, and symbols |
+| Jump to definition | `⌃⌘J` | `⌥⌘←` returns to the previous location |
+| Go back / forward | `⌃⌘←` / `⌃⌘→` | Traverses navigation history |
+| Reveal current file | `⇧⌘J` | Shows it in the navigator |
+| Find in workspace | `⇧⌘F` | `⌥⌘F` opens replace |
 
-## Build
+## Editing
 
-Press `Command-B`.
+| Action | Shortcut | Notes |
+| --- | --- | --- |
+| Re-indent selection | `⌃I` | Select all first to format the file |
+| Comment / uncomment | `⌘/` | Operates on the selection |
+| Add cursor above / below | `⌃⇧↑` / `⌃⇧↓` | Multi-cursor editing |
+| Rename symbol everywhere | `⌃⌘E` | Refactor-aware, not textual |
 
-Builds the active scheme.
+## Build and run
 
-## Run
-
-Press `Command-R`.
-
-Builds and runs the active scheme.
-
-## Show the library
-
-Press `Command-Shift-L`.
-
-Opens the SwiftUI and interface component library.
-
-## Fix indentation
-
-Press `Control-I`.
-
-Re-indents the current selection or source file.
+| Action | Shortcut | Notes |
+| --- | --- | --- |
+| Build | `⌘B` | |
+| Run | `⌘R` | Builds first if needed |
+| Stop | `⌘.` | |
+| Run tests | `⌘U` | |
+| Show build report | `⌘9` | Fastest route to error text |
