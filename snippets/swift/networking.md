@@ -141,3 +141,147 @@ let url = URL(string: "https://example.com")!
 let (_, response) = try await URLSession.api.data(from: url)
 print(response.url?.absoluteString ?? "No URL")
 ```
+
+## URLProtocol request mocking
+
+Intercepts `URLSession` requests and supplies deterministic responses without reaching the network.
+
+```swift
+import Foundation
+
+final class MockURLProtocol: URLProtocol {
+    typealias Handler = (URLRequest) throws -> (HTTPURLResponse, Data)
+    static var requestHandler: Handler?
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        guard let handler = Self.requestHandler else {
+            client?.urlProtocol(self, didFailWithError: URLError(.unknown))
+            return
+        }
+        do {
+            let (response, data) = try handler(request)
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        } catch {
+            client?.urlProtocol(self, didFailWithError: error)
+        }
+    }
+
+    override func stopLoading() {}
+}
+```
+
+**Notes:** Reset `MockURLProtocol.requestHandler` in test teardown to avoid leaking state.
+
+## Test session factory
+
+Builds an isolated session that routes all requests through `MockURLProtocol`.
+
+```swift
+import Foundation
+
+func makeMockSession() -> URLSession {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [MockURLProtocol.self]
+    return URLSession(configuration: configuration)
+}
+
+let session = makeMockSession()
+print(session.configuration.protocolClasses?.contains { $0 == MockURLProtocol.self } ?? false)
+```
+
+## Deterministic JSON response test
+
+Injects a mocked GitHub repository response and verifies decoding without an internet connection.
+
+```swift
+import Foundation
+
+struct Repository: Decodable, Equatable { let name: String }
+
+func fetchRepository(from url: URL, session: URLSession) async throws -> Repository {
+    let (data, response) = try await session.data(from: url)
+    guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+        throw URLError(.badServerResponse)
+    }
+    return try JSONDecoder().decode(Repository.self, from: data)
+}
+
+MockURLProtocol.requestHandler = { request in
+    guard let url = request.url else { throw URLError(.badURL) }
+    let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil,
+                                   headerFields: ["Content-Type": "application/json"])!
+    return (response, Data(#"{"name":"CARINA"}"#.utf8))
+}
+
+let repository = try await fetchRepository(from: URL(string: "https://api.github.com/repos/leandro4979-hub/caRINA")!, session: makeMockSession())
+print(repository.name)
+```
+
+## Parse a GitHub Link header
+
+Extracts the URL identified by a relation such as `next` from a GitHub REST API `Link` header.
+
+```swift
+import Foundation
+
+func linkURL(rel: String, in header: String?) -> URL? {
+    guard let header else { return nil }
+    for part in header.split(separator: ",") {
+        let fields = part.split(separator: ";", maxSplits: 1)
+        guard fields.count == 2 else { continue }
+        let urlText = fields[0].trimmingCharacters(in: .whitespaces)
+        let relation = fields[1].trimmingCharacters(in: .whitespaces)
+        guard relation == "rel=\"\(rel)\"", urlText.first == "<", urlText.last == ">" else { continue }
+        return URL(string: String(urlText.dropFirst().dropLast()))
+    }
+    return nil
+}
+
+let header = "<https://api.github.com/resource?page=2>; rel=\"next\""
+print(linkURL(rel: "next", in: header)?.absoluteString ?? "no next page")
+```
+
+## Fetch every GitHub page
+
+Requests each `rel="next"` URL until none remains, returning one accumulated collection.
+
+```swift
+import Foundation
+
+func fetchAllPages<Item: Decodable>(from initialURL: URL, session: URLSession = .shared) async throws -> [Item] {
+    var nextURL: URL? = initialURL
+    var results: [Item] = []
+    while let url = nextURL {
+        let (data, response) = try await session.data(from: url)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+        results += try JSONDecoder().decode([Item].self, from: data)
+        nextURL = linkURL(rel: "next", in: http.value(forHTTPHeaderField: "Link"))
+    }
+    return results
+}
+```
+
+## Paginated GitHub repositories example
+
+Fetches all public repositories for a GitHub user, requesting 100 results per page.
+
+```swift
+import Foundation
+
+struct GitHubRepository: Decodable {
+    let name: String
+    let htmlURL: URL
+    enum CodingKeys: String, CodingKey { case name; case htmlURL = "html_url" }
+}
+
+let url = URL(string: "https://api.github.com/users/leandro4979-hub/repos?per_page=100")!
+let repositories: [GitHubRepository] = try await fetchAllPages(from: url)
+print(repositories.map(\.name).joined(separator: "\n"))
+```
