@@ -1,0 +1,12 @@
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionActivityJournal.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionControlPlane.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ApprovalFingerprint.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/Authorization.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/CommandModels.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/DurableActionLedger.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ExecutionBoundary.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaClient.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaConfig.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaError.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaHealth.swift
+/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ReplayProtector.swift

@@ -13,10 +13,13 @@ public enum CommandSource: String, Codable, Sendable {
 public struct CommandRequest: Codable, Sendable, Equatable {
     public let intentID: CommandIntentID
     public let payload: [String: String]
+    /// Human-readable target shown in the approval card and bound to its fingerprint.
+    public let target: String
 
-    public init(intentID: CommandIntentID, payload: [String: String]) {
+    public init(intentID: CommandIntentID, payload: [String: String], target: String? = nil) {
         self.intentID = intentID
         self.payload = payload
+        self.target = target ?? intentID.rawValue
     }
 }
 

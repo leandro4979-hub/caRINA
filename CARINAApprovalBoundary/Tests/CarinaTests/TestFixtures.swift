@@ -9,7 +9,8 @@ func makeEnvelope(
     payload: [String: String] = [
         "scope": "documents",
         "idempotencyKey": "sync-001"
-    ]
+    ],
+    target: String? = nil
 ) -> CommandEnvelope {
     CommandEnvelope(
         version: 1,
@@ -18,7 +19,7 @@ func makeEnvelope(
         sequence: sequence,
         nonce: nonce,
         source: .userInterface,
-        request: CommandRequest(intentID: .workspaceSync, payload: payload)
+        request: CommandRequest(intentID: .workspaceSync, payload: payload, target: target)
     )
 }
 

@@ -17,14 +17,17 @@ public enum CommandPermission: Sendable {
 public struct CommandDispatcher: Sendable {
     private let replayProtector: ReplayProtector
     private let approvalTTL: TimeInterval
+    private let journal: ActionActivityJournal?
 
     public init(
         replayProtector: ReplayProtector,
-        approvalTTL: TimeInterval = 60
+        approvalTTL: TimeInterval = 60,
+        journal: ActionActivityJournal? = nil
     ) {
         precondition(approvalTTL > 0)
         self.replayProtector = replayProtector
         self.approvalTTL = approvalTTL
+        self.journal = journal
     }
 
     public func dispatch(
@@ -39,12 +42,9 @@ public struct CommandDispatcher: Sendable {
         case .prepare:
             return .preparation
         case .execute:
-            return .approvalRequired(
-                ApprovalChallenge(
-                    envelope: envelope,
-                    expiresAt: now.addingTimeInterval(approvalTTL)
-                )
-            )
+            let challenge = ApprovalChallenge(envelope: envelope, expiresAt: now.addingTimeInterval(approvalTTL))
+            if let journal { try await journal.record(challenge: challenge, status: .prepared) }
+            return .approvalRequired(challenge)
         }
     }
 }
@@ -57,10 +57,12 @@ public protocol AppIntentAdapter: Sendable {
 public struct ProtectedExecutionService<Adapter: AppIntentAdapter>: Sendable {
     private let vault: AuthorizationTokenVault
     private let adapter: Adapter
+    private let journal: ActionActivityJournal?
 
-    public init(vault: AuthorizationTokenVault, adapter: Adapter) {
+    public init(vault: AuthorizationTokenVault, adapter: Adapter, journal: ActionActivityJournal? = nil) {
         self.vault = vault
         self.adapter = adapter
+        self.journal = journal
     }
 
     public func execute(
@@ -69,11 +71,20 @@ public struct ProtectedExecutionService<Adapter: AppIntentAdapter>: Sendable {
         now: Date = Date()
     ) async throws -> Adapter.Output {
         let currentFingerprint = ApprovalFingerprint.make(for: envelope)
-        try await vault.consume(
-            authorization,
-            expectedFingerprint: currentFingerprint,
-            now: now
-        )
-        return try await adapter.execute(envelope.request)
+        let challenge = ApprovalChallenge(envelope: envelope, expiresAt: authorization.expiresAt)
+        do {
+            try await vault.consume(authorization, expectedFingerprint: currentFingerprint, now: now)
+        } catch {
+            if let journal { try await journal.record(challenge: challenge, status: error as? AuthorizationError == .tokenExpired ? .expired : .failedBeforeExecution) }
+            throw error
+        }
+        do {
+            let output = try await adapter.execute(envelope.request)
+            if let journal { try await journal.record(challenge: challenge, status: .executed) }
+            return output
+        } catch {
+            if let journal { try await journal.record(challenge: challenge, status: .executedWithWarning) }
+            throw error
+        }
     }
 }

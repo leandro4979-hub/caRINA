@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "F3D0C881-6087-487E-A392-6716AF36E44D"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F32E4453-4214-4273-AD09-EE992EE58263"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Sources/Carina/OllamaConfig.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2"
+            endingLineNumber = "2"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "85F4CE83-EEEA-41A4-B998-ADAFF2FB05AF"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Sources/Carina/OllamaConfig.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "5"
+            endingLineNumber = "5"
+            landmarkName = "OllamaConfig"
+            landmarkType = "13">
+            <Locations>
+               <Location
+                  uuid = "85F4CE83-EEEA-41A4-B998-ADAFF2FB05AF - 9928ade3d18f50b2"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "one-time initialization function for baseURL"
+                  moduleName = "CarinaMacApp"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaConfig.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "5"
+                  endingLineNumber = "5">
+               </Location>
+               <Location
+                  uuid = "85F4CE83-EEEA-41A4-B998-ADAFF2FB05AF - 2e7560d21ccb9e95"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Carina.OllamaConfig.baseURL.unsafeMutableAddressor : Foundation.URL"
+                  moduleName = "CarinaMacApp"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaConfig.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "5"
+                  endingLineNumber = "5">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

@@ -1,0 +1,724 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.Carina-arm64-apple-macosx-release.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/sources",
+      "importPath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionActivityJournal.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionControlPlane.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ApprovalFingerprint.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/Authorization.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/CommandModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/DurableActionLedger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ExecutionBoundary.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaClient.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaConfig.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaHealth.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ReplayProtector.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Carina",
+      "moduleOutputPath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Modules/Carina.swiftmodule",
+      "objects" : [
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ActionActivityJournal.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ActionControlPlane.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ApprovalFingerprint.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/Authorization.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/CommandModels.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/DurableActionLedger.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ExecutionBoundary.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaClient.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaConfig.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaError.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaHealth.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ReplayProtector.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-whole-module-optimization",
+        "-num-threads",
+        "10",
+        "-serialize-diagnostics",
+        "-O",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/include/Carina-Swift.h",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "carinaapprovalboundary"
+      ],
+      "outputFileMapPath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ActionActivityJournal.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ActionControlPlane.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ApprovalFingerprint.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/Authorization.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/CommandModels.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/DurableActionLedger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ExecutionBoundary.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaClient.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaConfig.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaError.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaHealth.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ReplayProtector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Modules/Carina.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionActivityJournal.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionControlPlane.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ApprovalFingerprint.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/Authorization.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/CommandModels.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/DurableActionLedger.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ExecutionBoundary.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaClient.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaConfig.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaError.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaHealth.swift",
+        "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ReplayProtector.swift"
+      ],
+      "tempsPath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build",
+      "wholeModuleOptimization" : true
+    },
+    "C.CarinaMacApp-arm64-apple-macosx-release.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/sources",
+      "importPath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/CarinaMacApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/ConversationStore.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalConversationView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalDiagnostics.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalModelTestView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalOllamaViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/SlowStreamFixture.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Modules/Carina.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "CarinaMacApp",
+      "moduleOutputPath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Modules/CarinaMacApp.swiftmodule",
+      "objects" : [
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/CarinaMacApp.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/ConversationStore.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalConversationView.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalDiagnostics.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalModelTestView.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalOllamaViewModel.swift.o",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/SlowStreamFixture.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx13.0",
+        "-whole-module-optimization",
+        "-num-threads",
+        "10",
+        "-serialize-diagnostics",
+        "-O",
+        "-j10",
+        "-DSWIFT_PACKAGE",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "CarinaMacApp_main",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "carinamacapp"
+      ],
+      "outputFileMapPath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/CarinaMacApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/ConversationStore.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalConversationView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalDiagnostics.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalModelTestView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalOllamaViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/SlowStreamFixture.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Modules/CarinaMacApp.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/CarinaMacApp.swift",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/ConversationStore.swift",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalConversationView.swift",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalDiagnostics.swift",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalModelTestView.swift",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalOllamaViewModel.swift",
+        "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/SlowStreamFixture.swift"
+      ],
+      "tempsPath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build",
+      "wholeModuleOptimization" : true
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "Carina" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Carina",
+      "-package-name",
+      "carinaapprovalboundary",
+      "-c",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionActivityJournal.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionControlPlane.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ApprovalFingerprint.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/Authorization.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/CommandModels.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/DurableActionLedger.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ExecutionBoundary.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaClient.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaConfig.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaError.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaHealth.swift",
+      "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ReplayProtector.swift",
+      "-I",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-whole-module-optimization",
+      "-num-threads",
+      "10",
+      "-serialize-diagnostics",
+      "-O",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/include/Carina-Swift.h",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "carinaapprovalboundary",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "CarinaMacApp" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "CarinaMacApp",
+      "-package-name",
+      "carinamacapp",
+      "-c",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/CarinaMacApp.swift",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/ConversationStore.swift",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalConversationView.swift",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalDiagnostics.swift",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalModelTestView.swift",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalOllamaViewModel.swift",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/SlowStreamFixture.swift",
+      "-I",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Modules",
+      "-target",
+      "arm64-apple-macosx13.0",
+      "-whole-module-optimization",
+      "-num-threads",
+      "10",
+      "-serialize-diagnostics",
+      "-O",
+      "-j10",
+      "-DSWIFT_PACKAGE",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "CarinaMacApp_main",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "carinamacapp",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "Carina" : [
+
+    ],
+    "CarinaMacApp" : [
+      "Carina"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionActivityJournal.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ActionControlPlane.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ApprovalFingerprint.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/Authorization.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/CommandModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/DurableActionLedger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ExecutionBoundary.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaClient.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaConfig.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/OllamaHealth.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/Sources/Carina/ReplayProtector.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/sources"
+    },
+    "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/CarinaMacApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/ConversationStore.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalConversationView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalDiagnostics.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalModelTestView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalOllamaViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/SlowStreamFixture.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/sources"
+    },
+    "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ActionActivityJournal.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ActionControlPlane.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ApprovalFingerprint.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/Authorization.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/CommandModels.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/DurableActionLedger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ExecutionBoundary.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaClient.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaConfig.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaError.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/OllamaHealth.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/Carina.build/ReplayProtector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/CarinaMacApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/ConversationStore.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalConversationView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalDiagnostics.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalModelTestView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalOllamaViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/SlowStreamFixture.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.product/Objects.LinkFileList"
+    },
+    "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

@@ -16,6 +16,7 @@ public enum ApprovalFingerprint {
             envelope.nonce.uuidString.lowercased(),
             envelope.source.rawValue,
             envelope.request.intentID.rawValue,
+            escape(envelope.request.target),
             canonicalPayload
         ].joined(separator: "\u{001F}")
 

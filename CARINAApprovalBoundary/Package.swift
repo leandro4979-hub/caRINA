@@ -6,7 +6,7 @@ let package = Package(
     name: "Carina",
     platforms: [.macOS(.v13)],
     products: [
-        .library(name: "Carina", targets: ["Carina"])
+        .library(name: "CarinaCore", targets: ["Carina"])
     ],
     targets: [
         .target(name: "Carina"),

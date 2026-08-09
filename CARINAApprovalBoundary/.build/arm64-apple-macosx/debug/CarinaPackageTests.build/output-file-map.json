@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/.build/arm64-apple-macosx/debug/CarinaPackageTests.build/primary.swiftdeps"
+  },
+  "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/.build/arm64-apple-macosx/debug/CarinaPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/.build/arm64-apple-macosx/debug/CarinaPackageTests.build/runner.d",
+    "object": "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/.build/arm64-apple-macosx/debug/CarinaPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/.build/arm64-apple-macosx/debug/CarinaPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/.build/arm64-apple-macosx/debug/CarinaPackageTests.build/runner.swiftdeps",
+    "diagnostics": "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary/.build/arm64-apple-macosx/debug/CarinaPackageTests.build/runner.dia"
+  }
+}

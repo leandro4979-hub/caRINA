@@ -4,11 +4,15 @@ public struct ApprovalChallenge: Sendable, Equatable {
     public let id: UUID
     public let fingerprint: String
     public let expiresAt: Date
+    public let target: String
+    public let correlationID: UUID
 
     public init(id: UUID = UUID(), envelope: CommandEnvelope, expiresAt: Date) {
         self.id = id
         self.fingerprint = ApprovalFingerprint.make(for: envelope)
         self.expiresAt = expiresAt
+        self.target = envelope.request.target
+        self.correlationID = envelope.requestID
     }
 }
 
@@ -77,9 +81,11 @@ public actor AuthorizationTokenVault {
 
 public struct ApprovalVerifier: Sendable {
     private let vault: AuthorizationTokenVault
+    private let journal: ActionActivityJournal?
 
-    public init(vault: AuthorizationTokenVault) {
+    public init(vault: AuthorizationTokenVault, journal: ActionActivityJournal? = nil) {
         self.vault = vault
+        self.journal = journal
     }
 
     public func authorize(
@@ -87,13 +93,19 @@ public struct ApprovalVerifier: Sendable {
         approved: Bool,
         now: Date = Date()
     ) async throws -> AuthorizationToken? {
-        guard approved else { return nil }
+        guard approved else {
+            if let journal { try await journal.record(challenge: challenge, status: .denied) }
+            return nil
+        }
         guard challenge.expiresAt > now else {
+            if let journal { try await journal.record(challenge: challenge, status: .expired) }
             throw AuthorizationError.challengeExpired
         }
-        return await vault.issue(
+        let token = await vault.issue(
             fingerprint: challenge.fingerprint,
             expiresAt: challenge.expiresAt
         )
+        if let journal { try await journal.record(challenge: challenge, status: .approved) }
+        return token
     }
 }

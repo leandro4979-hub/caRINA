@@ -1,0 +1,11 @@
+{
+  "sqlite": {"journal_mode": "WAL", "busy_timeout_ms": 2000, "busy_retry_ms": [25, 100, 250]},
+  "identity": {"version": "v1", "tenant_id": "default", "require_source_event_or_object_version": false},
+  "expected_files": [{
+    "name": "daily-orders", "source": "erp", "schedule": "daily 06:00 UTC",
+    "filename_pattern": "orders-\\d{8}\\.csv", "extensions": [".csv"], "owner": "data-ops",
+    "sla_minutes": 60, "destination": "orders", "min_bytes": 1, "max_bytes": 1000000,
+    "required_columns": ["order_id", "amount"], "column_types": {"order_id": "int", "amount": "float"},
+    "min_rows": 1, "max_rows": 100000
+  }]
+}

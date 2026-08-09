@@ -1,0 +1,27 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "carinaapprovalboundary",
+          "kind" : "fileSystem",
+          "location" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary",
+          "name" : "Carina"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/dinosaur/Documents/CARINA/CARINAApprovalBoundary"
+        },
+        "subpath" : "carinaapprovalboundary"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

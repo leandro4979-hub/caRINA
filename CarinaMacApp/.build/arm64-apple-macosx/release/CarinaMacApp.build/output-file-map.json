@@ -1,0 +1,49 @@
+{
+  "": {
+    "dependencies": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/CarinaMacApp.d",
+    "object": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/CarinaMacApp.o",
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/primary.swiftdeps"
+  },
+  "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/CarinaMacApp.swift": {
+    "object": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/CarinaMacApp.swift.o",
+    "swiftmodule": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/CarinaMacApp~partial.swiftmodule",
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/CarinaMacApp.swiftdeps",
+    "diagnostics": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/CarinaMacApp.dia"
+  },
+  "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/ConversationStore.swift": {
+    "object": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/ConversationStore.swift.o",
+    "swiftmodule": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/ConversationStore~partial.swiftmodule",
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/ConversationStore.swiftdeps",
+    "diagnostics": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/ConversationStore.dia"
+  },
+  "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalConversationView.swift": {
+    "object": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalConversationView.swift.o",
+    "swiftmodule": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalConversationView~partial.swiftmodule",
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalConversationView.swiftdeps",
+    "diagnostics": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalConversationView.dia"
+  },
+  "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalDiagnostics.swift": {
+    "object": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalDiagnostics.swift.o",
+    "swiftmodule": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalDiagnostics~partial.swiftmodule",
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalDiagnostics.swiftdeps",
+    "diagnostics": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalDiagnostics.dia"
+  },
+  "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalModelTestView.swift": {
+    "object": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalModelTestView.swift.o",
+    "swiftmodule": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalModelTestView~partial.swiftmodule",
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalModelTestView.swiftdeps",
+    "diagnostics": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalModelTestView.dia"
+  },
+  "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/LocalOllamaViewModel.swift": {
+    "object": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalOllamaViewModel.swift.o",
+    "swiftmodule": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalOllamaViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalOllamaViewModel.swiftdeps",
+    "diagnostics": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/LocalOllamaViewModel.dia"
+  },
+  "/Users/dinosaur/Documents/CARINA/CarinaMacApp/Sources/CarinaMacApp/SlowStreamFixture.swift": {
+    "object": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/SlowStreamFixture.swift.o",
+    "swiftmodule": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/SlowStreamFixture~partial.swiftmodule",
+    "swift-dependencies": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/SlowStreamFixture.swiftdeps",
+    "diagnostics": "/Users/dinosaur/Documents/CARINA/CarinaMacApp/.build/arm64-apple-macosx/release/CarinaMacApp.build/SlowStreamFixture.dia"
+  }
+}
