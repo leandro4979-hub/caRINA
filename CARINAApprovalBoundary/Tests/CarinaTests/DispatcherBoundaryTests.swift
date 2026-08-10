@@ -5,8 +5,10 @@ final class DispatcherBoundaryTests: XCTestCase {
     func testExecuteDispatchProducesChallengeWithoutExecution() async throws {
         let now = Date(timeIntervalSince1970: 1_000)
         let envelope = makeEnvelope()
+        let verifier = ApprovalVerifier()
         let dispatcher = CommandDispatcher(
             replayProtector: ReplayProtector(),
+            approvalVerifier: verifier,
             approvalTTL: 30
         )
         let result = try await dispatcher.dispatch(
@@ -25,7 +27,11 @@ final class DispatcherBoundaryTests: XCTestCase {
     }
 
     func testDispatcherRejectsReplayedEnvelope() async throws {
-        let dispatcher = CommandDispatcher(replayProtector: ReplayProtector())
+        let verifier = ApprovalVerifier()
+        let dispatcher = CommandDispatcher(
+            replayProtector: ReplayProtector(),
+            approvalVerifier: verifier
+        )
         let envelope = makeEnvelope()
         _ = try await dispatcher.dispatch(
             envelope: envelope,
