@@ -2,12 +2,11 @@ import XCTest
 @testable import Carina
 
 final class AuthorizationTokenTests: XCTestCase {
-    func testValidTokenExecutesExactlyOnce() async throws {
+    func testValidTokenExecutesAtMostOnce() async throws {
         let now = Date(timeIntervalSince1970: 1_000)
         let envelope = makeEnvelope()
-        let vault = AuthorizationTokenVault()
-        let verifier = ApprovalVerifier(vault: vault)
-        let challenge = ApprovalChallenge(
+        let verifier = ApprovalVerifier()
+        let challenge = try await verifier.createChallenge(
             envelope: envelope,
             expiresAt: now.addingTimeInterval(30)
         )
@@ -19,7 +18,11 @@ final class AuthorizationTokenTests: XCTestCase {
             return XCTFail("Expected an authorization token")
         }
         let adapter = RecordingAdapter()
-        let executor = ProtectedExecutionService(vault: vault, adapter: adapter)
+        let executor = ProtectedExecutionService(
+            approvalVerifier: verifier,
+            idempotencyStore: IdempotencyStore(),
+            adapter: adapter
+        )
 
         let output = try await executor.execute(
             envelope: envelope,
@@ -37,15 +40,42 @@ final class AuthorizationTokenTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as? AuthorizationError, .tokenUnknownOrConsumed)
         }
-        let executionCount = await adapter.executionCount
-        XCTAssertEqual(executionCount, 1)
+        XCTAssertEqual(await adapter.executionCount, 1)
     }
 
-    func testExpiredChallengeCannotIssueToken() async {
+    func testApprovalChallengeCanMintOnlyOneToken() async throws {
         let now = Date(timeIntervalSince1970: 1_000)
-        let vault = AuthorizationTokenVault()
-        let verifier = ApprovalVerifier(vault: vault)
-        let challenge = ApprovalChallenge(
+        let verifier = ApprovalVerifier()
+        let challenge = try await verifier.createChallenge(
+            envelope: makeEnvelope(),
+            expiresAt: now.addingTimeInterval(30)
+        )
+
+        _ = try await verifier.authorize(
+            challenge: challenge,
+            approved: true,
+            now: now
+        )
+
+        do {
+            _ = try await verifier.authorize(
+                challenge: challenge,
+                approved: true,
+                now: now
+            )
+            XCTFail("A consumed approval challenge minted another token")
+        } catch {
+            XCTAssertEqual(
+                error as? AuthorizationError,
+                .challengeUnknownOrConsumed
+            )
+        }
+    }
+
+    func testExpiredChallengeCannotIssueToken() async throws {
+        let now = Date(timeIntervalSince1970: 1_000)
+        let verifier = ApprovalVerifier()
+        let challenge = try await verifier.createChallenge(
             envelope: makeEnvelope(),
             expiresAt: now
         )
@@ -64,20 +94,21 @@ final class AuthorizationTokenTests: XCTestCase {
     func testExpiredTokenCannotExecute() async throws {
         let now = Date(timeIntervalSince1970: 1_000)
         let envelope = makeEnvelope()
-        let vault = AuthorizationTokenVault()
-        let verifier = ApprovalVerifier(vault: vault)
+        let verifier = ApprovalVerifier()
+        let challenge = try await verifier.createChallenge(
+            envelope: envelope,
+            expiresAt: now.addingTimeInterval(1)
+        )
         guard let token = try await verifier.authorize(
-            challenge: ApprovalChallenge(
-                envelope: envelope,
-                expiresAt: now.addingTimeInterval(1)
-            ),
+            challenge: challenge,
             approved: true,
             now: now
         ) else {
             return XCTFail("Expected an authorization token")
         }
         let executor = ProtectedExecutionService(
-            vault: vault,
+            approvalVerifier: verifier,
+            idempotencyStore: IdempotencyStore(),
             adapter: RecordingAdapter()
         )
         do {
@@ -99,20 +130,21 @@ final class AuthorizationTokenTests: XCTestCase {
             "scope": "projects",
             "idempotencyKey": "sync-001"
         ])
-        let vault = AuthorizationTokenVault()
-        let verifier = ApprovalVerifier(vault: vault)
+        let verifier = ApprovalVerifier()
+        let challenge = try await verifier.createChallenge(
+            envelope: original,
+            expiresAt: now.addingTimeInterval(30)
+        )
         guard let token = try await verifier.authorize(
-            challenge: ApprovalChallenge(
-                envelope: original,
-                expiresAt: now.addingTimeInterval(30)
-            ),
+            challenge: challenge,
             approved: true,
             now: now
         ) else {
             return XCTFail("Expected an authorization token")
         }
         let executor = ProtectedExecutionService(
-            vault: vault,
+            approvalVerifier: verifier,
+            idempotencyStore: IdempotencyStore(),
             adapter: RecordingAdapter()
         )
         do {
@@ -137,17 +169,32 @@ final class AuthorizationTokenTests: XCTestCase {
         }
     }
 
-    func testRejectedApprovalIssuesNoToken() async throws {
+    func testRejectedApprovalIssuesNoTokenAndBurnsChallenge() async throws {
         let now = Date(timeIntervalSince1970: 1_000)
-        let verifier = ApprovalVerifier(vault: AuthorizationTokenVault())
+        let verifier = ApprovalVerifier()
+        let challenge = try await verifier.createChallenge(
+            envelope: makeEnvelope(),
+            expiresAt: now.addingTimeInterval(30)
+        )
         let result = try await verifier.authorize(
-            challenge: ApprovalChallenge(
-                envelope: makeEnvelope(),
-                expiresAt: now.addingTimeInterval(30)
-            ),
+            challenge: challenge,
             approved: false,
             now: now
         )
         XCTAssertNil(result)
+
+        do {
+            _ = try await verifier.authorize(
+                challenge: challenge,
+                approved: true,
+                now: now
+            )
+            XCTFail("Denied challenge must remain burned")
+        } catch {
+            XCTAssertEqual(
+                error as? AuthorizationError,
+                .challengeUnknownOrConsumed
+            )
+        }
     }
 }
