@@ -40,7 +40,8 @@ final class AuthorizationTokenTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as? AuthorizationError, .tokenUnknownOrConsumed)
         }
-        XCTAssertEqual(await adapter.executionCount, 1)
+        let executionCount = await adapter.executionCount
+        XCTAssertEqual(executionCount, 1)
     }
 
     func testApprovalChallengeCanMintOnlyOneToken() async throws {
@@ -65,10 +66,7 @@ final class AuthorizationTokenTests: XCTestCase {
             )
             XCTFail("A consumed approval challenge minted another token")
         } catch {
-            XCTAssertEqual(
-                error as? AuthorizationError,
-                .challengeUnknownOrConsumed
-            )
+            XCTAssertEqual(error as? AuthorizationError, .challengeUnknownOrConsumed)
         }
     }
 
@@ -191,10 +189,7 @@ final class AuthorizationTokenTests: XCTestCase {
             )
             XCTFail("Denied challenge must remain burned")
         } catch {
-            XCTAssertEqual(
-                error as? AuthorizationError,
-                .challengeUnknownOrConsumed
-            )
+            XCTAssertEqual(error as? AuthorizationError, .challengeUnknownOrConsumed)
         }
     }
 }
