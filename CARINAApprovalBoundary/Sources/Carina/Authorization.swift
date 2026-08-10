@@ -7,7 +7,7 @@ public struct ApprovalChallenge: Sendable, Equatable {
     public let target: String
     public let correlationID: UUID
 
-    public init(id: UUID = UUID(), envelope: CommandEnvelope, expiresAt: Date) {
+    fileprivate init(id: UUID = UUID(), envelope: CommandEnvelope, expiresAt: Date) {
         self.id = id
         self.fingerprint = ApprovalFingerprint.make(for: envelope)
         self.expiresAt = expiresAt
@@ -30,32 +30,81 @@ public struct AuthorizationToken: Sendable, Equatable {
 
 public enum AuthorizationError: Error, Sendable, Equatable {
     case challengeExpired
+    case challengeUnknownOrConsumed
     case tokenExpired
     case tokenUnknownOrConsumed
     case fingerprintMismatch
 }
 
-/// The authority that owns token state. Validation and deletion happen in one
-/// actor turn, making successful consumption exactly once within this process.
-public actor AuthorizationTokenVault {
+/// Owns both approval-challenge and authorization-token mutable state.
+/// Challenge consumption and token issuance happen in the same actor turn,
+/// so one human approval can mint at most one authorization token.
+public actor ApprovalVerifier {
+    private var challenges: [UUID: ApprovalChallenge] = [:]
     private var tokens: [UUID: AuthorizationToken] = [:]
+    private let journal: ActionActivityJournal?
 
-    public init() {}
+    public init(journal: ActionActivityJournal? = nil) {
+        self.journal = journal
+    }
 
-    fileprivate func issue(
-        fingerprint: String,
-        expiresAt: Date,
-        id: UUID = UUID()
-    ) -> AuthorizationToken {
-        let token = AuthorizationToken(
-            id: id,
-            fingerprint: fingerprint,
+    public func createChallenge(
+        envelope: CommandEnvelope,
+        expiresAt: Date
+    ) async throws -> ApprovalChallenge {
+        let challenge = ApprovalChallenge(
+            envelope: envelope,
             expiresAt: expiresAt
         )
-        tokens[id] = token
+        challenges[challenge.id] = challenge
+        if let journal {
+            try await journal.record(challenge: challenge, status: .prepared)
+        }
+        return challenge
+    }
+
+    public func authorize(
+        challenge: ApprovalChallenge,
+        approved: Bool,
+        now: Date = Date()
+    ) async throws -> AuthorizationToken? {
+        guard let stored = challenges[challenge.id], stored == challenge else {
+            throw AuthorizationError.challengeUnknownOrConsumed
+        }
+
+        // Burn before returning or awaiting external work. A denial, expiry,
+        // or successful approval is terminal for this challenge.
+        challenges[challenge.id] = nil
+
+        guard stored.expiresAt > now else {
+            if let journal {
+                try await journal.record(challenge: stored, status: .expired)
+            }
+            throw AuthorizationError.challengeExpired
+        }
+
+        guard approved else {
+            if let journal {
+                try await journal.record(challenge: stored, status: .denied)
+            }
+            return nil
+        }
+
+        let token = AuthorizationToken(
+            id: UUID(),
+            fingerprint: stored.fingerprint,
+            expiresAt: stored.expiresAt
+        )
+        tokens[token.id] = token
+
+        if let journal {
+            try await journal.record(challenge: stored, status: .approved)
+        }
         return token
     }
 
+    /// Validates and burns an authorization token atomically. The token is
+    /// consumed before privileged execution begins and is never resurrected.
     public func consume(
         _ presentedToken: AuthorizationToken,
         expectedFingerprint: String,
@@ -66,8 +115,6 @@ public actor AuthorizationTokenVault {
             throw AuthorizationError.tokenUnknownOrConsumed
         }
 
-        // Delete before any result is returned. Expired and mismatched tokens
-        // are terminal too, preventing probing or retry with altered input.
         tokens[presentedToken.id] = nil
 
         guard storedToken.expiresAt > now else {
@@ -76,36 +123,5 @@ public actor AuthorizationTokenVault {
         guard storedToken.fingerprint == expectedFingerprint else {
             throw AuthorizationError.fingerprintMismatch
         }
-    }
-}
-
-public struct ApprovalVerifier: Sendable {
-    private let vault: AuthorizationTokenVault
-    private let journal: ActionActivityJournal?
-
-    public init(vault: AuthorizationTokenVault, journal: ActionActivityJournal? = nil) {
-        self.vault = vault
-        self.journal = journal
-    }
-
-    public func authorize(
-        challenge: ApprovalChallenge,
-        approved: Bool,
-        now: Date = Date()
-    ) async throws -> AuthorizationToken? {
-        guard approved else {
-            if let journal { try await journal.record(challenge: challenge, status: .denied) }
-            return nil
-        }
-        guard challenge.expiresAt > now else {
-            if let journal { try await journal.record(challenge: challenge, status: .expired) }
-            throw AuthorizationError.challengeExpired
-        }
-        let token = await vault.issue(
-            fingerprint: challenge.fingerprint,
-            expiresAt: challenge.expiresAt
-        )
-        if let journal { try await journal.record(challenge: challenge, status: .approved) }
-        return token
     }
 }
