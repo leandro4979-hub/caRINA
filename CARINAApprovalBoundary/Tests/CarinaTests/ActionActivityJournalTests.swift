@@ -42,7 +42,8 @@ final class ActionActivityJournalTests: XCTestCase {
             [.prepared, .approved, .executionStarted, .executionSucceeded]
         )
         XCTAssertTrue(receipts.allSatisfy { $0.correlationID == envelope.requestID })
-        XCTAssertTrue(await journal.integrityIsValid())
+        let integrityIsValid = await journal.integrityIsValid()
+        XCTAssertTrue(integrityIsValid)
     }
 
     func testDeniedApprovalCreatesReceiptAndCannotBeReused() async throws {
@@ -59,7 +60,8 @@ final class ActionActivityJournalTests: XCTestCase {
             now: now
         )
         XCTAssertNil(token)
-        XCTAssertEqual((await journal.recent()).first?.status, .denied)
+        let receipts = await journal.recent()
+        XCTAssertEqual(receipts.first?.status, .denied)
 
         do {
             _ = try await verifier.authorize(
