@@ -12,22 +12,22 @@ public enum CommandPermission: Sendable {
     case execute
 }
 
-/// Dispatch ends at an approval challenge. It deliberately has no reference
-/// to ProtectedExecutionService or AppIntentAdapter.
+/// Dispatch validates replay first and can create an approval challenge, but
+/// it deliberately has no path to privileged execution.
 public struct CommandDispatcher: Sendable {
     private let replayProtector: ReplayProtector
+    private let approvalVerifier: ApprovalVerifier
     private let approvalTTL: TimeInterval
-    private let journal: ActionActivityJournal?
 
     public init(
         replayProtector: ReplayProtector,
-        approvalTTL: TimeInterval = 60,
-        journal: ActionActivityJournal? = nil
+        approvalVerifier: ApprovalVerifier,
+        approvalTTL: TimeInterval = 60
     ) {
         precondition(approvalTTL > 0)
         self.replayProtector = replayProtector
+        self.approvalVerifier = approvalVerifier
         self.approvalTTL = approvalTTL
-        self.journal = journal
     }
 
     public func dispatch(
@@ -42,8 +42,10 @@ public struct CommandDispatcher: Sendable {
         case .prepare:
             return .preparation
         case .execute:
-            let challenge = ApprovalChallenge(envelope: envelope, expiresAt: now.addingTimeInterval(approvalTTL))
-            if let journal { try await journal.record(challenge: challenge, status: .prepared) }
+            let challenge = try await approvalVerifier.createChallenge(
+                envelope: envelope,
+                expiresAt: now.addingTimeInterval(approvalTTL)
+            )
             return .approvalRequired(challenge)
         }
     }
@@ -54,13 +56,28 @@ public protocol AppIntentAdapter: Sendable {
     func execute(_ request: CommandRequest) async throws -> Output
 }
 
+public enum ProtectedExecutionError: Error, Sendable, Equatable {
+    case missingIdempotencyKey
+}
+
+/// Enforces the protected execution order:
+/// consume token -> reserve idempotency key -> audit started -> invoke adapter
+/// -> audit succeeded/failed. A failure after reservation intentionally burns
+/// the operation. This is at-most-once invocation, not exactly-once completion.
 public struct ProtectedExecutionService<Adapter: AppIntentAdapter>: Sendable {
-    private let vault: AuthorizationTokenVault
+    private let approvalVerifier: ApprovalVerifier
+    private let idempotencyStore: IdempotencyStore
     private let adapter: Adapter
     private let journal: ActionActivityJournal?
 
-    public init(vault: AuthorizationTokenVault, adapter: Adapter, journal: ActionActivityJournal? = nil) {
-        self.vault = vault
+    public init(
+        approvalVerifier: ApprovalVerifier,
+        idempotencyStore: IdempotencyStore,
+        adapter: Adapter,
+        journal: ActionActivityJournal? = nil
+    ) {
+        self.approvalVerifier = approvalVerifier
+        self.idempotencyStore = idempotencyStore
         self.adapter = adapter
         self.journal = journal
     }
@@ -71,19 +88,77 @@ public struct ProtectedExecutionService<Adapter: AppIntentAdapter>: Sendable {
         now: Date = Date()
     ) async throws -> Adapter.Output {
         let currentFingerprint = ApprovalFingerprint.make(for: envelope)
-        let challenge = ApprovalChallenge(envelope: envelope, expiresAt: authorization.expiresAt)
+
         do {
-            try await vault.consume(authorization, expectedFingerprint: currentFingerprint, now: now)
+            try await approvalVerifier.consume(
+                authorization,
+                expectedFingerprint: currentFingerprint,
+                now: now
+            )
         } catch {
-            if let journal { try await journal.record(challenge: challenge, status: error as? AuthorizationError == .tokenExpired ? .expired : .failedBeforeExecution) }
+            if let journal {
+                try await journal.record(
+                    envelope: envelope,
+                    status: error as? AuthorizationError == .tokenExpired
+                        ? .expired
+                        : .failedBeforeExecution,
+                    now: now
+                )
+            }
             throw error
         }
+
+        guard let idempotencyKey = envelope.request.payload["idempotencyKey"],
+              !idempotencyKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            if let journal {
+                try await journal.record(
+                    envelope: envelope,
+                    status: .failedBeforeExecution,
+                    now: now
+                )
+            }
+            throw ProtectedExecutionError.missingIdempotencyKey
+        }
+
+        do {
+            try await idempotencyStore.reserve(idempotencyKey)
+        } catch {
+            if let journal {
+                try await journal.record(
+                    envelope: envelope,
+                    status: .failedBeforeExecution,
+                    now: now
+                )
+            }
+            throw error
+        }
+
+        if let journal {
+            try await journal.record(
+                envelope: envelope,
+                status: .executionStarted,
+                now: now
+            )
+        }
+
         do {
             let output = try await adapter.execute(envelope.request)
-            if let journal { try await journal.record(challenge: challenge, status: .executed) }
+            if let journal {
+                try await journal.record(
+                    envelope: envelope,
+                    status: .executionSucceeded,
+                    now: now
+                )
+            }
             return output
         } catch {
-            if let journal { try await journal.record(challenge: challenge, status: .executedWithWarning) }
+            if let journal {
+                try await journal.record(
+                    envelope: envelope,
+                    status: .executionFailed,
+                    now: now
+                )
+            }
             throw error
         }
     }
