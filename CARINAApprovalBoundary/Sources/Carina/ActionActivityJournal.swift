@@ -4,8 +4,9 @@ import Foundation
 public enum ActionReceiptStatus: String, Codable, Sendable, Equatable {
     case prepared, denied, approved, expired, cancelled
     case failedBeforeExecution = "failed-before-execution"
-    case executed
-    case executedWithWarning = "executed-with-warning"
+    case executionStarted = "execution-started"
+    case executionSucceeded = "execution-succeeded"
+    case executionFailed = "execution-failed"
 }
 
 /// Privacy-minimized receipt: no raw command payload, voice audio, credentials, or model output.
@@ -48,6 +49,7 @@ public actor ActionActivityJournal {
     }
 
     public func recent(limit: Int = 10) -> [ActionReceipt] { Array(receipts.suffix(max(0, limit)).reversed()) }
+    public func count(status: ActionReceiptStatus) -> Int { receipts.filter { $0.status == status }.count }
     public func integrityIsValid() -> Bool { Self.isValid(receipts) }
 
     private static func append(_ receipt: ActionReceipt, to url: URL) throws {
