@@ -6,40 +6,84 @@ final class ActionActivityJournalTests: XCTestCase {
         let now = Date(timeIntervalSince1970: 1_000)
         let envelope = makeEnvelope()
         let journal = try ActionActivityJournal()
-        let vault = AuthorizationTokenVault()
-        let dispatcher = CommandDispatcher(replayProtector: ReplayProtector(), approvalTTL: 30, journal: journal)
-        guard case let .approvalRequired(challenge) = try await dispatcher.dispatch(envelope: envelope, permission: .execute, now: now) else {
+        let verifier = ApprovalVerifier(journal: journal)
+        let dispatcher = CommandDispatcher(
+            replayProtector: ReplayProtector(),
+            approvalVerifier: verifier,
+            approvalTTL: 30
+        )
+        guard case let .approvalRequired(challenge) = try await dispatcher.dispatch(
+            envelope: envelope,
+            permission: .execute,
+            now: now
+        ) else {
             return XCTFail("Expected challenge")
         }
-        let verifier = ApprovalVerifier(vault: vault, journal: journal)
-        let token = try await verifier.authorize(challenge: challenge, approved: true, now: now)
-        let executor = ProtectedExecutionService(vault: vault, adapter: RecordingAdapter(), journal: journal)
-        _ = try await executor.execute(envelope: envelope, authorization: try XCTUnwrap(token), now: now)
+        let token = try await verifier.authorize(
+            challenge: challenge,
+            approved: true,
+            now: now
+        )
+        let executor = ProtectedExecutionService(
+            approvalVerifier: verifier,
+            idempotencyStore: IdempotencyStore(),
+            adapter: RecordingAdapter(),
+            journal: journal
+        )
+        _ = try await executor.execute(
+            envelope: envelope,
+            authorization: try XCTUnwrap(token),
+            now: now
+        )
 
         let receipts = await journal.recent()
-        XCTAssertEqual(receipts.map(\.status).reversed(), [.prepared, .approved, .executed])
+        XCTAssertEqual(
+            receipts.map(\.status).reversed(),
+            [.prepared, .approved, .executionStarted, .executionSucceeded]
+        )
         XCTAssertTrue(receipts.allSatisfy { $0.correlationID == envelope.requestID })
-        let isValid = await journal.integrityIsValid()
-        XCTAssertTrue(isValid)
+        XCTAssertTrue(await journal.integrityIsValid())
     }
 
-    func testDeniedApprovalCreatesReceiptAndCannotExecute() async throws {
+    func testDeniedApprovalCreatesReceiptAndCannotBeReused() async throws {
         let now = Date(timeIntervalSince1970: 1_000)
         let journal = try ActionActivityJournal()
-        let envelope = makeEnvelope()
-        let challenge = ApprovalChallenge(envelope: envelope, expiresAt: now.addingTimeInterval(30))
-        let token = try await ApprovalVerifier(vault: AuthorizationTokenVault(), journal: journal)
-            .authorize(challenge: challenge, approved: false, now: now)
+        let verifier = ApprovalVerifier(journal: journal)
+        let challenge = try await verifier.createChallenge(
+            envelope: makeEnvelope(),
+            expiresAt: now.addingTimeInterval(30)
+        )
+        let token = try await verifier.authorize(
+            challenge: challenge,
+            approved: false,
+            now: now
+        )
         XCTAssertNil(token)
-        let receipts = await journal.recent()
-        XCTAssertEqual(receipts.first?.status, .denied)
+        XCTAssertEqual((await journal.recent()).first?.status, .denied)
+
+        do {
+            _ = try await verifier.authorize(
+                challenge: challenge,
+                approved: true,
+                now: now
+            )
+            XCTFail("Denied challenge should be consumed")
+        } catch {
+            XCTAssertEqual(error as? AuthorizationError, .challengeUnknownOrConsumed)
+        }
     }
 
     func testJournalRejectsTamperedPersistedHistory() async throws {
         let directory = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
         let file = directory.appendingPathComponent("receipts.jsonl")
         let journal = try ActionActivityJournal(fileURL: file)
-        try await journal.record(challenge: ApprovalChallenge(envelope: makeEnvelope(), expiresAt: Date().addingTimeInterval(30)), status: .prepared)
+        let verifier = ApprovalVerifier()
+        let envelope = makeEnvelope()
+        let challenge = try await verifier.createChallenge(
+            envelope: envelope,
+            expiresAt: Date().addingTimeInterval(30)
+        )
+        try await journal.record(challenge: challenge, status: .prepared)
         var line = try String(contentsOf: file, encoding: .utf8)
         line = line.replacingOccurrences(of: "prepared", with: "approved")
         try line.write(to: file, atomically: true, encoding: .utf8)
