@@ -44,8 +44,6 @@ final class ApprovalBoundaryIntegrationTests: XCTestCase {
             now: now
         )
 
-        // Same envelope is stopped at replay protection before a new approval
-        // challenge can be created.
         do {
             _ = try await dispatcher.dispatch(
                 envelope: envelope,
@@ -60,8 +58,6 @@ final class ApprovalBoundaryIntegrationTests: XCTestCase {
             )
         }
 
-        // Even if a caller retains the old token and reaches the protected
-        // executor directly, the authorization has already been burned.
         do {
             _ = try await executor.execute(
                 envelope: envelope,
@@ -79,11 +75,12 @@ final class ApprovalBoundaryIntegrationTests: XCTestCase {
         let executionCount = await adapter.executionCount
         let executionStartedCount = await journal.count(status: .executionStarted)
         let executionSucceededCount = await journal.count(status: .executionSucceeded)
+        let idempotencyReserved = await idempotencyStore.contains("sync-001")
 
         XCTAssertEqual(executionCount, 1)
         XCTAssertEqual(executionStartedCount, 1)
         XCTAssertEqual(executionSucceededCount, 1)
-        XCTAssertTrue(await idempotencyStore.contains("sync-001"))
+        XCTAssertTrue(idempotencyReserved)
     }
 
     func testSameIdempotencyKeyCannotInvokeAdapterTwiceWithFreshAuthorization() async throws {
