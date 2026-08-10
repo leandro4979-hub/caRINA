@@ -37,20 +37,46 @@ public actor ActionActivityJournal {
     }
 
     public func record(challenge: ApprovalChallenge, status: ActionReceiptStatus, now: Date = Date()) throws {
-        let previousHash = receipts.last?.eventHash
-        let receipt = ActionReceipt(
-            id: UUID(), correlationID: challenge.correlationID, fingerprint: challenge.fingerprint,
-            target: challenge.target, status: status, createdAt: now,
-            previousHash: previousHash,
-            eventHash: Self.hash(challenge.correlationID, challenge.fingerprint, challenge.target, status, now, previousHash)
+        try appendReceipt(
+            correlationID: challenge.correlationID,
+            fingerprint: challenge.fingerprint,
+            target: challenge.target,
+            status: status,
+            now: now
         )
-        receipts.append(receipt)
-        if let fileURL { try Self.append(receipt, to: fileURL) }
+    }
+
+    public func record(envelope: CommandEnvelope, status: ActionReceiptStatus, now: Date = Date()) throws {
+        try appendReceipt(
+            correlationID: envelope.requestID,
+            fingerprint: ApprovalFingerprint.make(for: envelope),
+            target: envelope.request.target,
+            status: status,
+            now: now
+        )
     }
 
     public func recent(limit: Int = 10) -> [ActionReceipt] { Array(receipts.suffix(max(0, limit)).reversed()) }
     public func count(status: ActionReceiptStatus) -> Int { receipts.filter { $0.status == status }.count }
     public func integrityIsValid() -> Bool { Self.isValid(receipts) }
+
+    private func appendReceipt(
+        correlationID: UUID,
+        fingerprint: String,
+        target: String,
+        status: ActionReceiptStatus,
+        now: Date
+    ) throws {
+        let previousHash = receipts.last?.eventHash
+        let receipt = ActionReceipt(
+            id: UUID(), correlationID: correlationID, fingerprint: fingerprint,
+            target: target, status: status, createdAt: now,
+            previousHash: previousHash,
+            eventHash: Self.hash(correlationID, fingerprint, target, status, now, previousHash)
+        )
+        receipts.append(receipt)
+        if let fileURL { try Self.append(receipt, to: fileURL) }
+    }
 
     private static func append(_ receipt: ActionReceipt, to url: URL) throws {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
