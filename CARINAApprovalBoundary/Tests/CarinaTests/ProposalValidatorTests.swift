@@ -142,6 +142,39 @@ final class ProposalValidatorTests: XCTestCase {
 
         let validated = try validator.validate(proposal, now: now)
         XCTAssertEqual(validated.policyTier, .biometricAndApproval)
+        XCTAssertFalse(validated.canonicalPayloadDigest.isEmpty)
+    }
+
+    func testFingerprintBindsFilesystemState() throws {
+        let proposal = makeProposal(mutations: [], diff: nil)
+        let first = makeValidator(filesystemBindings: [
+            FilesystemStateBinding(
+                path: "\(repoRoot)/A.swift",
+                role: .source,
+                expectation: .existing,
+                device: 1,
+                inode: 10,
+                contentSHA256: String(repeating: "a", count: 64),
+                parentDevice: 1,
+                parentInode: 2
+            )
+        ])
+        let second = makeValidator(filesystemBindings: [
+            FilesystemStateBinding(
+                path: "\(repoRoot)/A.swift",
+                role: .source,
+                expectation: .existing,
+                device: 1,
+                inode: 11,
+                contentSHA256: String(repeating: "a", count: 64),
+                parentDevice: 1,
+                parentInode: 2
+            )
+        ])
+
+        let lhs = try first.validate(proposal, now: now)
+        let rhs = try second.validate(proposal, now: now)
+        XCTAssertNotEqual(lhs.canonicalPayloadDigest, rhs.canonicalPayloadDigest)
     }
 
     func testRejectsExpiredAndReplayedProposal() throws {
@@ -162,7 +195,10 @@ final class ProposalValidatorTests: XCTestCase {
         }
     }
 
-    private func makeValidator(replayedProposalIDs: Set<UUID> = []) -> ProposalValidator {
+    private func makeValidator(
+        replayedProposalIDs: Set<UUID> = [],
+        filesystemBindings: [FilesystemStateBinding] = []
+    ) -> ProposalValidator {
         let tool = ToolContract(toolID: "engineering.antigravity", version: 1)
         let policy = RepositoryPolicy(
             canonicalRoot: repoRoot,
@@ -179,7 +215,8 @@ final class ProposalValidatorTests: XCTestCase {
                 repositories: [repoRoot: policy]
             ),
             pathResolver: StandardCanonicalPathResolver(),
-            replayStore: StubProposalReplayStore(proposalIDs: replayedProposalIDs)
+            replayStore: StubProposalReplayStore(proposalIDs: replayedProposalIDs),
+            filesystemBinder: StubFilesystemStateBinder(bindings: filesystemBindings)
         )
     }
 
@@ -222,4 +259,14 @@ private struct StubProposalReplayStore: ProposalReplayChecking {
     func containsDigest(_ digest: String) throws -> Bool {
         digests.contains(digest)
     }
+}
+
+private struct StubFilesystemStateBinder: FilesystemStateCapturing {
+    let bindings: [FilesystemStateBinding]
+
+    func capture(for mutations: [ValidatedFileMutation]) throws -> [FilesystemStateBinding] {
+        bindings
+    }
+
+    func revalidate(_ bindings: [FilesystemStateBinding]) throws {}
 }
