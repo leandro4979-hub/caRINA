@@ -1,4 +1,3 @@
-import CryptoKit
 import Foundation
 
 public enum FileOperation: String, Codable, Sendable, Hashable {
@@ -81,11 +80,23 @@ public struct EngineeringProposal: Codable, Sendable {
     }
 }
 
-public struct ValidatedFileMutation: Codable, Sendable, Equatable {
+public struct ValidatedFileMutation: Codable, Sendable, Equatable, Hashable {
     public let oldCanonicalPath: String?
     public let newCanonicalPath: String?
     public let operation: FileOperation
     public let destructive: Bool
+
+    public init(
+        oldCanonicalPath: String?,
+        newCanonicalPath: String?,
+        operation: FileOperation,
+        destructive: Bool
+    ) {
+        self.oldCanonicalPath = oldCanonicalPath
+        self.newCanonicalPath = newCanonicalPath
+        self.operation = operation
+        self.destructive = destructive
+    }
 }
 
 public struct ValidatedEngineeringProposal: Codable, Sendable {
@@ -96,6 +107,8 @@ public struct ValidatedEngineeringProposal: Codable, Sendable {
     public let registryVersion: UInt64
     public let repoRoot: String
     public let affectedFiles: [ValidatedFileMutation]
+    public let filesystemBindings: [FilesystemStateBinding]
+    public let normalizedDiffDigest: String
     public let summary: String
     public let rationale: String
     public let proposedDiff: String?
@@ -213,6 +226,7 @@ public struct ProposalValidator: Sendable {
     private let registry: RegistrySnapshot
     private let pathResolver: any CanonicalPathResolving
     private let replayStore: any ProposalReplayChecking
+    private let filesystemBinder: any FilesystemStateCapturing
     private let maximumValidationLifetime: TimeInterval
 
     public init(
@@ -220,12 +234,14 @@ public struct ProposalValidator: Sendable {
         registry: RegistrySnapshot,
         pathResolver: any CanonicalPathResolving,
         replayStore: any ProposalReplayChecking,
+        filesystemBinder: any FilesystemStateCapturing = FilesystemStateBinder(),
         maximumValidationLifetime: TimeInterval = 300
     ) {
         self.diffInspector = diffInspector
         self.registry = registry
         self.pathResolver = pathResolver
         self.replayStore = replayStore
+        self.filesystemBinder = filesystemBinder
         self.maximumValidationLifetime = maximumValidationLifetime
     }
 
@@ -279,20 +295,18 @@ public struct ProposalValidator: Sendable {
             )
         }
 
-        let canonicalPayload = CanonicalProposalPayload(
+        let filesystemBindings = try filesystemBinder.capture(for: validatedFiles)
+        let diffDigest = CanonicalProposalFingerprint.normalizedDiffDigest(proposal.proposedDiff)
+        let digest = CanonicalProposalFingerprint.make(
             proposalID: proposal.proposalID,
             sourceToolID: proposal.sourceToolID,
             sourceContractVersion: proposal.sourceContractVersion,
             registryVersion: registry.version,
             repoRoot: canonicalRepoRoot,
-            affectedFiles: validatedFiles,
-            summary: proposal.summary,
-            rationale: proposal.rationale,
-            proposedDiff: proposal.proposedDiff,
-            testPlan: proposal.testPlan,
-            risks: proposal.risks
+            mutations: validatedFiles,
+            filesystemBindings: filesystemBindings,
+            normalizedDiffDigest: diffDigest
         )
-        let digest = try canonicalDigest(canonicalPayload)
 
         if try replayStore.contains(proposalID: proposal.proposalID) {
             throw ProposalValidationError.replayedProposal
@@ -309,6 +323,8 @@ public struct ProposalValidator: Sendable {
             registryVersion: registry.version,
             repoRoot: canonicalRepoRoot,
             affectedFiles: validatedFiles,
+            filesystemBindings: filesystemBindings,
+            normalizedDiffDigest: diffDigest,
             summary: proposal.summary,
             rationale: proposal.rationale,
             proposedDiff: proposal.proposedDiff,
@@ -319,6 +335,10 @@ public struct ProposalValidator: Sendable {
             validatedAt: now,
             expiresAt: min(proposal.expiresAt, now.addingTimeInterval(maximumValidationLifetime))
         )
+    }
+
+    public func revalidateFilesystemState(_ proposal: ValidatedEngineeringProposal) throws {
+        try filesystemBinder.revalidate(proposal.filesystemBindings)
     }
 }
 
@@ -454,26 +474,4 @@ private extension ProposalValidator {
         if lhs.operation.rawValue != rhs.operation.rawValue { return lhs.operation.rawValue < rhs.operation.rawValue }
         return (lhs.oldPath ?? "") < (rhs.oldPath ?? "")
     }
-}
-
-private struct CanonicalProposalPayload: Codable, Sendable {
-    let proposalID: UUID
-    let sourceToolID: String
-    let sourceContractVersion: UInt64
-    let registryVersion: UInt64
-    let repoRoot: String
-    let affectedFiles: [ValidatedFileMutation]
-    let summary: String
-    let rationale: String
-    let proposedDiff: String?
-    let testPlan: [String]
-    let risks: [String]
-}
-
-private func canonicalDigest<T: Encodable>(_ payload: T) throws -> String {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
-    encoder.dateEncodingStrategy = .iso8601
-    let data = try encoder.encode(payload)
-    return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
 }
