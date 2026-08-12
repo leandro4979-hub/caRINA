@@ -147,7 +147,8 @@ updates, and a recorded verification command/result.
 | F-012 | Detect missing/late anomalies. | Registry/SLA monitoring and alert tests. | Runbook | Pending / Pending |
 | AUD-001–AUD-004 | CARINA durable receipts, bound approvals, trust state, and failure verification. | Hash-chain integrity, denial, expiry, target mutation, and exact-once tests. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
 | AUD-005, AUD-006, AUD-008 | Versioned capability allowlist, locked ActionPlan, and isolated batch compilation. | Version-key miss before validation, locked-plan mutation rejection, and valid/failed batch isolation. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
-| AUD-007 | Durable local ledger and transactional outbox recovery. | Atomic reserve/outbox insertion, restart recovery, duplicate reservation, completion suppression, and persisted-plan tamper checks. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |\n| AUD-009 | Registry-integrated persistent approval runtime. | Registry-derived permission before replay reservation; SQLite restart persistence; cross-connection one-time token consumption; durable executor idempotency. | ADR-002; Security; Runbook | Implemented; CI verification pending |
+| AUD-007 | Durable local ledger and transactional outbox recovery. | Atomic reserve/outbox insertion, restart recovery, duplicate reservation, completion suppression, and persisted-plan tamper checks. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
+| AUD-009 | Registry-integrated persistent approval runtime. | Registry-derived permission before replay reservation; SQLite restart persistence; cross-connection one-time token consumption; durable executor idempotency. | ADR-002; Security; Runbook | Implemented; CI verification pending |
 
 ## F-010 — NTFS ADS and Windows-safe archive extraction
 
@@ -238,7 +239,6 @@ integrity verification before delivery.
 This is a local-filesystem reference implementation with advisory locking,
 suited to one host. It is not a distributed database, a cryptographic
 provenance system, or an external execution guarantee.
-
 
 ## CARINA persistent approval runtime (AUD-009)
 
