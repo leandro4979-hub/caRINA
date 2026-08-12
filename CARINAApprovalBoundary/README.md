@@ -1,38 +1,37 @@
 # CARINA Approval Boundary
 
-A standalone Swift package implementing the privileged execution boundary:
+This Swift package isolates CARINA's authorization and execution boundary from the rest of the app.
 
-- deterministic SHA-256 approval fingerprints;
-- atomic replay rejection for `(sessionID, sequence, nonce)`;
-- expiring, opaque authorization tokens;
-- exactly-once token consumption;
-- executor-side fingerprint verification immediately before adapter execution;
-- a dispatcher that stops at `ApprovalChallenge` and cannot invoke an adapter.
-- hash-chained, privacy-minimized approval receipts and dashboard-ready trust snapshots.
-- a macOS-only Ollama loopback client with typed health checks and cancellable NDJSON streaming.
+The boundary is fail-closed and intentionally separates untrusted intent from execution authority.
 
-Run on macOS with:
+## Existing control-plane guarantees
 
-```sh
-swift test
-```
+- typed command envelopes
+- replay protection and idempotency
+- approval fingerprints
+- durable action journaling
+- execution boundary adapters
+- local Ollama integration
 
-`ReplayProtector` and `AuthorizationTokenVault` are process-local actors. For a
-multi-process deployment, preserve their public contracts but replace their
-storage with a shared transactional database that provides unique inserts and
-atomic compare-and-delete semantics.
+## Proposal validation keel
 
-`ActionActivityJournal` stores correlation ID, target, fingerprint, terminal
-state, UTC timestamp, and a hash chain—never command payloads, credentials,
-audio, or model output. Use a protected, append-only filesystem location in a
-single-process deployment; use a transactional append-only audit store for
-multi-process production deployments.
+Engineering proposals now pass through a strict validation chain before they can become execution candidates:
 
-## Local Ollama (macOS only)
+1. Raw Git-style unified diff text is quarantined in `DiffMutationInspector`.
+2. Only pre-hunk metadata is structural; hunk contents are opaque data.
+3. Declared mutations and observed mutations are canonicalized and reconciled.
+4. Repository scope and protection tiers come from the CARINA registry, never from proposal claims.
+5. Expected filesystem state is captured for every affected source or destination.
+6. The authority fingerprint uses a fixed-order, length-prefixed byte representation instead of JSON serialization.
+7. The fingerprint binds proposal identity, tool and registry versions, canonical repo root, sorted mutations, filesystem state, and a normalized diff digest.
+8. Filesystem state must be revalidated immediately before an execution authorization is consumed.
 
-`OllamaClient` connects only to `http://127.0.0.1:11434` by default and uses
-`llama3.2:3b`. It performs a short `/api/tags` health check before generation,
-then streams `/api/generate` newline-delimited JSON. It has no API key and must
-not be included in an iPhone keyboard-extension target: loopback refers to the
-device running the code. A future phone-to-Mac connection must be a separately
-designed authenticated bridge.
+## Filesystem state binding
+
+Existing files are bound by canonical path, device, inode, content SHA-256, and parent directory identity. Create destinations are required to remain absent and are bound to parent directory identity. Rename operations bind both the existing source and the absent destination.
+
+Symlinks, missing expected paths, unexpected destinations, unsupported object types, and changed state fail closed.
+
+## Remaining execution integration
+
+The validator exposes `revalidateFilesystemState(_:)`, but the executor must call it immediately before consuming the single-use authorization and performing the mutation. This keeps validation evidence attached to the exact filesystem state that was approved.
