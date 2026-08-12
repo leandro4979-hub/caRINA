@@ -113,64 +113,88 @@ public actor SQLiteApprovalStateStore:
             if let handle { sqlite3_close(handle) }
             throw ApprovalStateStoreError.databaseUnavailable
         }
-        database = handle
-
         do {
-            try execute("PRAGMA journal_mode=WAL")
-            try execute("PRAGMA synchronous=FULL")
-            try execute("PRAGMA foreign_keys=ON")
             guard sqlite3_busy_timeout(handle, 2_000) == SQLITE_OK else {
-                throw databaseError()
+                throw Self.databaseError(handle)
             }
-            try execute(
-                """
-                CREATE TABLE IF NOT EXISTS replay_reservations (
-                    session_id TEXT NOT NULL,
-                    sequence TEXT NOT NULL,
-                    nonce TEXT NOT NULL,
-                    expires_at REAL NOT NULL,
-                    PRIMARY KEY (session_id, sequence, nonce)
-                )
-                """
-            )
-            try execute(
-                """
-                CREATE TABLE IF NOT EXISTS approval_challenges (
-                    id TEXT PRIMARY KEY,
-                    fingerprint TEXT NOT NULL,
-                    expires_at REAL NOT NULL,
-                    target TEXT NOT NULL,
-                    correlation_id TEXT NOT NULL
-                )
-                """
-            )
-            try execute(
-                """
-                CREATE TABLE IF NOT EXISTS authorization_tokens (
-                    id TEXT PRIMARY KEY,
-                    fingerprint TEXT NOT NULL,
-                    expires_at REAL NOT NULL
-                )
-                """
-            )
-            try execute(
-                """
-                CREATE TABLE IF NOT EXISTS idempotency_reservations (
-                    key TEXT PRIMARY KEY,
-                    created_at REAL NOT NULL
-                )
-                """
-            )
+            try Self.bootstrap(handle)
         } catch {
             sqlite3_close(handle)
-            database = nil
             throw error
         }
+        database = handle
     }
 
     deinit {
         if let database { sqlite3_close(database) }
     }
+
+    private static func bootstrap(_ database: OpaquePointer) throws {
+        let statements = [
+            "PRAGMA journal_mode=WAL",
+            "PRAGMA synchronous=FULL",
+            "PRAGMA foreign_keys=ON",
+            """
+            CREATE TABLE IF NOT EXISTS replay_reservations (
+                session_id TEXT NOT NULL,
+                sequence TEXT NOT NULL,
+                nonce TEXT NOT NULL,
+                expires_at REAL NOT NULL,
+                PRIMARY KEY (session_id, sequence, nonce)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS approval_challenges (
+                id TEXT PRIMARY KEY,
+                fingerprint TEXT NOT NULL,
+                expires_at REAL NOT NULL,
+                target TEXT NOT NULL,
+                correlation_id TEXT NOT NULL
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS authorization_tokens (
+                id TEXT PRIMARY KEY,
+                fingerprint TEXT NOT NULL,
+                expires_at REAL NOT NULL
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS idempotency_reservations (
+                key TEXT PRIMARY KEY,
+                created_at REAL NOT NULL
+            )
+            """
+        ]
+
+        for statement in statements {
+            var message: UnsafeMutablePointer<CChar>?
+            let result = sqlite3_exec(
+                database,
+                statement,
+                nil,
+                nil,
+                &message
+            )
+            guard result == SQLITE_OK else {
+                let detail = message.map { String(cString: $0) }
+                    ?? String(cString: sqlite3_errmsg(database))
+                if let message { sqlite3_free(message) }
+                throw ApprovalStateStoreError.databaseFailure(detail)
+            }
+            if let message { sqlite3_free(message) }
+        }
+    }
+
+    private static func databaseError(
+        _ database: OpaquePointer
+    ) -> ApprovalStateStoreError {
+        guard let message = sqlite3_errmsg(database) else {
+            return .databaseUnavailable
+        }
+        return .databaseFailure(String(cString: message))
+    }
+
 
     public func reserveReplay(
         _ key: ReplayKey,
