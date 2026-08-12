@@ -21,6 +21,16 @@ DLQ proposals retain only review-safe metadata and hashes of untrusted intent
 or suggested schema material. Strict per-item batch and payload limits prevent
 one excessive proposal from consuming the entire batch or exposing its content.
 
+## Persistent runtime extension
+
+The production command composition root uses the reviewed capability registry
+to derive read, preparation, or execution permission. It shares one SQLite
+store across replay protection, approval verification, and executor
+idempotency reservation. Unique inserts and transactional token deletion
+survive restart and prevent two cooperating processes from consuming the same
+authority. The macOS app still exposes no privileged action adapter; adding one
+requires a separately reviewed capability and adapter implementation.
+
 ## Consequences
 
 Changed targets, replay, expiry, or journal-integrity failure fail closed and
