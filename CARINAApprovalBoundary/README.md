@@ -34,4 +34,4 @@ Symlinks, missing expected paths, unexpected destinations, unsupported object ty
 
 ## Remaining execution integration
 
-The validator exposes `revalidateFilesystemState(_:)`, but the executor must call it immediately before consuming the single-use authorization and performing the mutation. This keeps validation evidence attached to the exact filesystem state that was approved.
+The validator exposes `revalidateFilesystemState(_:)`. The executor must call it immediately before consuming the single-use authorization, reserve idempotency only after that revalidation succeeds, then perform the mutation and verify the result. This keeps approval evidence attached to the exact filesystem state that was approved.
