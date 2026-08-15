@@ -3,6 +3,7 @@ import unittest
 
 
 MINIMUM_PYTHON = (3, 11)
+GUARDRAIL_DOC = "ci_guardrails/python311/README.md"
 
 
 class PythonRuntimeCompatibilityTests(unittest.TestCase):
@@ -13,7 +14,7 @@ class PythonRuntimeCompatibilityTests(unittest.TestCase):
             (
                 "caRINA requires Python 3.11+ because runtime code uses "
                 "features such as datetime.UTC. Keep local tooling and CI "
-                "aligned with the repository minimum."
+                f"aligned with the repository minimum. See {GUARDRAIL_DOC}."
             ),
         )
 
