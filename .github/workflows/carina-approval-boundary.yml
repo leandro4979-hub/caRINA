@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - agent/approval-boundary
-      - agent/sofa-knowledge-bridge
   pull_request:
     paths:
       - "CARINAApprovalBoundary/**"
