@@ -5,6 +5,9 @@ public enum SofaError: Error, Sendable, Equatable {
     case invalidConfiguration(String)
     case invalidResponse
     case invalidSession
+    case invalidActionPlan
+    case unapprovedRegistrySnapshot(String)
+    case unsupportedCapability(String)
     case httpStatus(code: Int, message: String)
     case decoding(String)
     case encoding(String)
@@ -26,6 +29,12 @@ extension SofaError: LocalizedError {
             return "SOFA returned a non-HTTP or otherwise invalid response."
         case .invalidSession:
             return "The SOFA session is invalid or expired."
+        case .invalidActionPlan:
+            return "The SOFA action plan is missing, malformed, expired, or fails its integrity check."
+        case let .unapprovedRegistrySnapshot(snapshotID):
+            return "SOFA action plan uses an unapproved registry snapshot: \(snapshotID)."
+        case let .unsupportedCapability(capabilityID):
+            return "Unsupported SOFA capability: \(capabilityID)."
         case let .httpStatus(code, message):
             return "SOFA request failed with HTTP \(code): \(message)"
         case let .decoding(message):
