@@ -10,25 +10,26 @@ public actor SofaClient: SofaContributionTransport {
     private let config: SofaConfig
     private let apiKey: String
     private let urlSession: URLSession
+    private let redirectGuard: SofaRedirectGuard
     private var sofaSessionID: String?
 
     public init(
         config: SofaConfig,
         credentialProvider: any SofaCredentialProvider = EnvironmentSofaCredentialProvider(),
-        urlSession: URLSession = .shared
+        urlSession: URLSession = .shared,
+        redirectGuard: SofaRedirectGuard = SofaRedirectGuard()
     ) throws {
         let key = try credentialProvider.apiKey().trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !key.isEmpty else {
-            throw SofaError.missingCredential("SOFA_API_KEY")
-        }
+        guard !key.isEmpty else { throw SofaError.missingCredential("SOFA_API_KEY") }
         self.config = config
         self.apiKey = key
         self.urlSession = urlSession
+        self.redirectGuard = redirectGuard
     }
 
     @discardableResult
     public func startSession() async throws -> String {
-        var request = URLRequest(url: try endpointURL(["api", "sessions"]))
+        var request = URLRequest(url: try endpoint(["api", "sessions"]))
         request.httpMethod = "POST"
         request.timeoutInterval = config.requestTimeout
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
@@ -37,231 +38,149 @@ public actor SofaClient: SofaContributionTransport {
         if let provider = config.metadata.modelProvider?.trimmingCharacters(in: .whitespacesAndNewlines), !provider.isEmpty {
             request.setValue(provider, forHTTPHeaderField: "X-Sofa-Model-Provider")
         }
-
-        let (data, response) = try await urlSession.data(for: request)
-        let http = try requireHTTPResponse(response)
-        guard (200 ... 299).contains(http.statusCode) else {
-            throw makeHTTPError(statusCode: http.statusCode, data: data)
-        }
-
-        do {
-            let response = try JSONDecoder().decode(SofaSessionResponse.self, from: data)
-            sofaSessionID = response.sessionID
-            return response.sessionID
-        } catch {
-            throw SofaError.decoding(String(describing: error))
-        }
+        let (data, response) = try await send(request)
+        try requireSuccess(response, data: data)
+        let session: SofaSessionResponse = try decode(data)
+        sofaSessionID = session.sessionID
+        return session.sessionID
     }
 
     public func searchPosts(query: String, perPage: Int = 20) async throws -> SofaSearchResponse {
-        let boundedPerPage = min(max(perPage, 1), 100)
         let data = try await authenticatedRead(
-            path: ["api", "posts"],
+            ["api", "posts"],
             queryItems: [
                 URLQueryItem(name: "search", value: query),
-                URLQueryItem(name: "per_page", value: String(boundedPerPage))
+                URLQueryItem(name: "per_page", value: String(min(max(perPage, 1), 100)))
             ]
         )
-        do {
-            return try JSONDecoder().decode(SofaSearchResponse.self, from: data)
-        } catch {
-            throw SofaError.decoding(String(describing: error))
-        }
+        return try decode(data)
     }
 
     public func getPost(id: String) async throws -> SofaPost {
-        let data = try await readPostData(id: id)
-        do {
-            return try JSONDecoder().decode(SofaPost.self, from: data)
-        } catch {
-            throw SofaError.decoding(String(describing: error))
-        }
+        try decode(await readPostData(id: id))
     }
 
     public func vote(postID: String, value: Int) async throws -> SofaMutationReceipt {
-        guard value == 1 || value == -1 else {
-            throw SofaError.invalidVoteValue(value)
-        }
-        let request = SofaVoteRequest(postID: postID, value: value)
+        guard value == 1 || value == -1 else { throw SofaError.invalidVoteValue(value) }
         return try await contextualWrite(
             postID: postID,
             path: ["api", "votes"],
-            payload: request
+            payload: SofaVoteRequest(postID: postID, value: value)
         )
     }
 
-    public func verify(
-        postID: String,
-        outcome: SofaVerificationOutcome,
-        feedback: String
-    ) async throws -> SofaMutationReceipt {
-        guard feedback.count <= 500 else {
-            throw SofaError.verificationFeedbackTooLong(feedback.count)
-        }
-        let request = SofaVerificationRequest(postID: postID, outcome: outcome, feedback: feedback)
+    public func verify(postID: String, outcome: SofaVerificationOutcome, feedback: String) async throws -> SofaMutationReceipt {
+        guard feedback.count <= 500 else { throw SofaError.verificationFeedbackTooLong(feedback.count) }
         return try await contextualWrite(
             postID: postID,
             path: ["api", "verifications"],
-            payload: request
+            payload: SofaVerificationRequest(postID: postID, outcome: outcome, feedback: feedback)
         )
     }
 
     public func reply(postID: String, body: String) async throws -> SofaMutationReceipt {
-        guard body.count <= 25_000 else {
-            throw SofaError.replyTooLong(body.count)
-        }
-        let request = SofaReplyRequest(body: body)
+        guard body.count <= 25_000 else { throw SofaError.replyTooLong(body.count) }
         return try await contextualWrite(
             postID: postID,
             path: ["api", "posts", postID, "replies"],
-            payload: request
+            payload: SofaReplyRequest(body: body)
         )
     }
 
-    private func contextualWrite<Payload: Encodable>(
-        postID: String,
-        path: [String],
-        payload: Payload
-    ) async throws -> SofaMutationReceipt {
+    private func contextualWrite<Payload: Encodable>(postID: String, path: [String], payload: Payload) async throws -> SofaMutationReceipt {
         _ = try await readPostData(id: postID)
         let body: Data
-        do {
-            body = try JSONEncoder().encode(payload)
-        } catch {
-            throw SofaError.encoding(String(describing: error))
-        }
+        do { body = try JSONEncoder().encode(payload) }
+        catch { throw SofaError.encoding(String(describing: error)) }
 
-        do {
-            return try await authenticatedWrite(path: path, body: body, retryInvalidSession: false)
-        } catch SofaError.invalidSession {
+        do { return try await authenticatedWrite(path, body: body) }
+        catch SofaError.invalidSession {
             _ = try await startSession()
             _ = try await readPostData(id: postID)
-            return try await authenticatedWrite(path: path, body: body, retryInvalidSession: false)
+            return try await authenticatedWrite(path, body: body)
         }
     }
 
     private func readPostData(id: String) async throws -> Data {
-        guard !id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw SofaError.missingField("postID")
-        }
-        return try await authenticatedRead(path: ["api", "posts", id])
+        guard !id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw SofaError.missingField("postID") }
+        return try await authenticatedRead(["api", "posts", id])
     }
 
-    private func authenticatedRead(
-        path: [String],
-        queryItems: [URLQueryItem] = []
-    ) async throws -> Data {
-        do {
-            return try await authenticatedRequest(
-                method: "GET",
-                path: path,
-                queryItems: queryItems,
-                body: nil
-            ).data
-        } catch SofaError.invalidSession {
+    private func authenticatedRead(_ path: [String], queryItems: [URLQueryItem] = []) async throws -> Data {
+        do { return try await authenticatedRequest(method: "GET", path: path, queryItems: queryItems).data }
+        catch SofaError.invalidSession {
             _ = try await startSession()
-            return try await authenticatedRequest(
-                method: "GET",
-                path: path,
-                queryItems: queryItems,
-                body: nil
-            ).data
+            return try await authenticatedRequest(method: "GET", path: path, queryItems: queryItems).data
         }
     }
 
-    private func authenticatedWrite(
-        path: [String],
-        body: Data,
-        retryInvalidSession: Bool
-    ) async throws -> SofaMutationReceipt {
-        do {
-            let result = try await authenticatedRequest(
-                method: "POST",
-                path: path,
-                queryItems: [],
-                body: body
-            )
-            return SofaMutationReceipt(statusCode: result.statusCode, responseBody: result.data)
-        } catch SofaError.invalidSession where retryInvalidSession {
-            _ = try await startSession()
-            let result = try await authenticatedRequest(
-                method: "POST",
-                path: path,
-                queryItems: [],
-                body: body
-            )
-            return SofaMutationReceipt(statusCode: result.statusCode, responseBody: result.data)
-        }
+    private func authenticatedWrite(_ path: [String], body: Data) async throws -> SofaMutationReceipt {
+        let result = try await authenticatedRequest(method: "POST", path: path, body: body)
+        return SofaMutationReceipt(statusCode: result.statusCode, responseBody: result.data)
     }
 
     private func authenticatedRequest(
         method: String,
         path: [String],
-        queryItems: [URLQueryItem],
-        body: Data?
+        queryItems: [URLQueryItem] = [],
+        body: Data? = nil
     ) async throws -> (data: Data, statusCode: Int) {
-        let activeSessionID: String
-        if let sofaSessionID {
-            activeSessionID = sofaSessionID
-        } else {
-            activeSessionID = try await startSession()
-        }
-
-        var request = URLRequest(url: try endpointURL(path, queryItems: queryItems))
+        let sessionID = sofaSessionID ?? (try await startSession())
+        var request = URLRequest(url: try endpoint(path, queryItems: queryItems))
         request.httpMethod = method
         request.timeoutInterval = config.requestTimeout
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.setValue(activeSessionID, forHTTPHeaderField: "X-Sofa-Session")
+        request.setValue(sessionID, forHTTPHeaderField: "X-Sofa-Session")
         if let body {
             request.httpBody = body
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
-
-        let (data, response) = try await urlSession.data(for: request)
-        let http = try requireHTTPResponse(response)
-        guard (200 ... 299).contains(http.statusCode) else {
-            if isInvalidSession(data: data) {
+        let (data, response) = try await send(request)
+        guard (200 ... 299).contains(response.statusCode) else {
+            if isInvalidSession(data) {
                 sofaSessionID = nil
                 throw SofaError.invalidSession
             }
-            throw makeHTTPError(statusCode: http.statusCode, data: data)
+            throw httpError(response.statusCode, data: data)
         }
-        return (data, http.statusCode)
+        return (data, response.statusCode)
     }
 
-    private func endpointURL(
-        _ path: [String],
-        queryItems: [URLQueryItem] = []
-    ) throws -> URL {
+    private func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let (data, response) = try await urlSession.data(for: request, delegate: redirectGuard)
+        guard let http = response as? HTTPURLResponse else { throw SofaError.invalidResponse }
+        return (data, http)
+    }
+
+    private func endpoint(_ path: [String], queryItems: [URLQueryItem] = []) throws -> URL {
         var url = config.baseURL
-        for component in path {
-            url.appendPathComponent(component)
-        }
+        for component in path { url.appendPathComponent(component) }
         guard !queryItems.isEmpty else { return url }
         guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             throw SofaError.invalidConfiguration("could not construct endpoint URL")
         }
         components.queryItems = queryItems
-        guard let result = components.url else {
-            throw SofaError.invalidConfiguration("could not construct endpoint query")
+        guard let result = components.url, SofaOriginPolicy.allows(result) else {
+            throw SofaError.invalidConfiguration("could not construct approved SOFA endpoint")
         }
         return result
     }
 
-    private func requireHTTPResponse(_ response: URLResponse) throws -> HTTPURLResponse {
-        guard let http = response as? HTTPURLResponse else {
-            throw SofaError.invalidResponse
-        }
-        return http
+    private func requireSuccess(_ response: HTTPURLResponse, data: Data) throws {
+        guard (200 ... 299).contains(response.statusCode) else { throw httpError(response.statusCode, data: data) }
     }
 
-    private func isInvalidSession(data: Data) -> Bool {
+    private func decode<T: Decodable>(_ data: Data) throws -> T {
+        do { return try JSONDecoder().decode(T.self, from: data) }
+        catch { throw SofaError.decoding(String(describing: error)) }
+    }
+
+    private func isInvalidSession(_ data: Data) -> Bool {
         guard let text = String(data: data, encoding: .utf8)?.lowercased() else { return false }
         return text.contains("invalid_session") || text.contains("missing_session")
     }
 
-    private func makeHTTPError(statusCode: Int, data: Data) -> SofaError {
-        let raw = String(data: data.prefix(2_048), encoding: .utf8) ?? "request failed"
-        return .httpStatus(code: statusCode, message: raw)
+    private func httpError(_ statusCode: Int, data: Data) -> SofaError {
+        .httpStatus(code: statusCode, message: String(data: data.prefix(2_048), encoding: .utf8) ?? "request failed")
     }
 }
