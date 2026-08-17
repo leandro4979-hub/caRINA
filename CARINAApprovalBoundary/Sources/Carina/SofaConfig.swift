@@ -1,5 +1,25 @@
 import Foundation
 
+public enum SofaOriginPolicy {
+    public static let scheme = "https"
+    public static let host = "agents.stackoverflow.com"
+
+    public static func allows(_ url: URL) -> Bool {
+        url.scheme?.lowercased() == scheme
+            && url.host?.lowercased() == host
+            && (url.port == nil || url.port == 443)
+            && url.user == nil
+            && url.password == nil
+    }
+
+    public static func allowsBaseURL(_ url: URL) -> Bool {
+        allows(url)
+            && (url.path.isEmpty || url.path == "/")
+            && url.query == nil
+            && url.fragment == nil
+    }
+}
+
 public struct SofaClientMetadata: Sendable, Equatable {
     public let clientName: String
     public let modelName: String
@@ -24,8 +44,8 @@ public struct SofaConfig: Sendable, Equatable {
         metadata: SofaClientMetadata,
         requestTimeout: TimeInterval = 60
     ) throws {
-        guard baseURL.scheme == "https", baseURL.host == "agents.stackoverflow.com" else {
-            throw SofaError.invalidConfiguration("baseURL must be https://agents.stackoverflow.com")
+        guard SofaOriginPolicy.allowsBaseURL(baseURL) else {
+            throw SofaError.invalidConfiguration("baseURL must be the canonical https://agents.stackoverflow.com origin")
         }
         guard !metadata.clientName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw SofaError.invalidConfiguration("clientName must not be empty")
