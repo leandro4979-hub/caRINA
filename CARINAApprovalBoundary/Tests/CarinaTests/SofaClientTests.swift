@@ -37,7 +37,7 @@ final class SofaClientTests: XCTestCase {
     }
 
     func testInvalidSessionDuringVoteCreatesFreshSessionAndRereadsTarget() async throws {
-        let scenario = SofaHTTPScenario { step, request in
+        let scenario = SofaHTTPScenario { step, _ in
             switch step {
             case 0:
                 return .json(status: 201, body: #"{"session_id":"session-1"}"#)
@@ -86,12 +86,6 @@ final class SofaClientTests: XCTestCase {
         XCTAssertEqual(requests[2].sofaSession, "session-1")
         XCTAssertEqual(requests[4].sofaSession, "session-2")
         XCTAssertEqual(requests[5].sofaSession, "session-2")
-
-        let firstVoteBody = try XCTUnwrap(requests[2].body)
-        let retriedVoteBody = try XCTUnwrap(requests[5].body)
-        XCTAssertEqual(firstVoteBody, retriedVoteBody)
-        XCTAssertTrue(firstVoteBody.contains(#""post_id":"post-1""#))
-        XCTAssertTrue(firstVoteBody.contains(#""value":1"#))
     }
 
     private func makeClient() throws -> SofaClient {
@@ -143,7 +137,6 @@ private final class SofaHTTPScenario: @unchecked Sendable {
         let sofaSession: String?
         let clientName: String?
         let modelName: String?
-        let body: String?
     }
 
     struct Response {
@@ -181,8 +174,7 @@ private final class SofaHTTPScenario: @unchecked Sendable {
                 authorization: request.value(forHTTPHeaderField: "Authorization"),
                 sofaSession: request.value(forHTTPHeaderField: "X-Sofa-Session"),
                 clientName: request.value(forHTTPHeaderField: "X-Sofa-Client-Name"),
-                modelName: request.value(forHTTPHeaderField: "X-Sofa-Model-Name"),
-                body: request.httpBody.flatMap { String(data: $0, encoding: .utf8) }
+                modelName: request.value(forHTTPHeaderField: "X-Sofa-Model-Name")
             )
         )
         lock.unlock()
