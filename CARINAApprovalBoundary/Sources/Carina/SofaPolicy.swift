@@ -17,4 +17,17 @@ public enum SofaPolicy {
             return .execute
         }
     }
+
+    /// Execution permission is derived from the registry-locked plan rather
+    /// than caller-supplied action text.
+    public static func permission(for plan: ActionPlan) -> CommandPermission {
+        switch plan.kind {
+        case .read:
+            return .read
+        case .draft, .stage:
+            return .prepare
+        case .commit, .admin:
+            return .execute
+        }
+    }
 }
