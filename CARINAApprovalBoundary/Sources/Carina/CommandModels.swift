@@ -3,6 +3,7 @@ import Foundation
 public enum CommandIntentID: String, Codable, Sendable {
     case systemStatus
     case workspaceSync
+    case sofaContribution
 }
 
 public enum CommandSource: String, Codable, Sendable {
