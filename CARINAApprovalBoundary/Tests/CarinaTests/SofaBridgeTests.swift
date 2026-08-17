@@ -1,3 +1,4 @@
+import Foundation
 import XCTest
 @testable import Carina
 
@@ -8,47 +9,94 @@ final class SofaBridgeTests: XCTestCase {
         assertExecute(SofaPolicy.permission(for: .vote))
         assertExecute(SofaPolicy.permission(for: .verify))
         assertExecute(SofaPolicy.permission(for: .reply))
+
+        XCTAssertEqual(SofaCapabilityCatalog.search.kind, .read)
+        XCTAssertEqual(SofaCapabilityCatalog.vote.kind, .commit)
+        XCTAssertEqual(SofaCapabilityCatalog.vote.risk, .external)
+    }
+
+    func testRegistryRejectsVoteParameterSmuggling() throws {
+        let firewall = CapabilityFirewall(snapshot: SofaCapabilityCatalog.snapshot)
+        XCTAssertThrowsError(
+            try firewall.compile(
+                correlationID: UUID(),
+                userID: "u",
+                deviceID: "d",
+                capabilityID: SofaCapabilityCatalog.vote.id,
+                target: "sofa:reply-123",
+                payload: ["postID": "reply-123", "value": "1", "reply_id": "root-456"],
+                requiredPermissions: ["network.sofa"],
+                preflight: ["sofa": true],
+                expiresAt: Date().addingTimeInterval(60)
+            )
+        ) { error in
+            XCTAssertEqual(error as? CapabilityError, .unknownInput("reply_id"))
+        }
     }
 
     func testContributionAdapterRejectsApprovalTargetDriftBeforeCallingTransport() async throws {
+        let now = Date()
         let transport = RecordingSofaTransport()
         let adapter = SofaContributionAdapter(transport: transport)
-        let request = CommandRequest(
-            intentID: .sofaContribution,
-            payload: [
-                "action": "vote",
-                "postID": "post-123",
-                "value": "1"
-            ],
+        let plan = try makePlan(
+            capability: SofaCapabilityCatalog.vote,
+            postID: "post-123",
+            payload: ["postID": "post-123", "value": "1"],
+            now: now
+        )
+        let lockedRequest = try adapter.commandRequest(for: plan, now: now)
+        let driftedRequest = CommandRequest(
+            intentID: lockedRequest.intentID,
+            payload: lockedRequest.payload,
             target: "sofa:different-post"
         )
 
         do {
-            _ = try await adapter.execute(request)
+            _ = try await adapter.execute(driftedRequest)
             XCTFail("Expected target mismatch rejection")
         } catch let error as SofaError {
-            guard case .invalidConfiguration = error else {
-                return XCTFail("Unexpected SOFA error: \(error)")
-            }
+            XCTAssertEqual(error, .invalidActionPlan)
         }
 
         let calls = await transport.calls
         XCTAssertTrue(calls.isEmpty)
     }
 
-    func testProtectedExecutionRoutesApprovedVoteExactlyOnce() async throws {
-        let now = Date(timeIntervalSince1970: 2_000)
-        let postID = "post-456"
-        let request = CommandRequest(
-            intentID: .sofaContribution,
-            payload: [
-                "action": "vote",
-                "postID": postID,
-                "value": "1",
-                "idempotencyKey": "sofa-vote-post-456"
-            ],
-            target: SofaContributionAdapter<RecordingSofaTransport>.target(postID: postID)
+    func testContributionAdapterRejectsUnapprovedRegistrySnapshot() throws {
+        let unreviewed = CapabilityRegistrySnapshot(
+            id: "unreviewed-sofa",
+            capabilities: [SofaCapabilityCatalog.vote]
         )
+        let plan = try CapabilityFirewall(snapshot: unreviewed).compile(
+            correlationID: UUID(),
+            userID: "u",
+            deviceID: "d",
+            capabilityID: SofaCapabilityCatalog.vote.id,
+            target: "sofa:post-unauthorized",
+            payload: ["postID": "post-unauthorized", "value": "1"],
+            requiredPermissions: ["network.sofa"],
+            preflight: ["sofa": true],
+            expiresAt: Date().addingTimeInterval(60)
+        )
+        let adapter = SofaContributionAdapter(transport: RecordingSofaTransport())
+
+        XCTAssertThrowsError(try adapter.commandRequest(for: plan)) { error in
+            XCTAssertEqual(error as? SofaError, .unapprovedRegistrySnapshot("unreviewed-sofa"))
+        }
+    }
+
+    func testProtectedExecutionRoutesApprovedLockedVotePlanExactlyOnce() async throws {
+        let now = Date()
+        let postID = "post-456"
+        let transport = RecordingSofaTransport()
+        let adapter = SofaContributionAdapter(transport: transport)
+        let plan = try makePlan(
+            capability: SofaCapabilityCatalog.vote,
+            postID: postID,
+            payload: ["postID": postID, "value": "1"],
+            now: now
+        )
+        let request = try adapter.commandRequest(for: plan, now: now)
         let envelope = CommandEnvelope(
             version: 1,
             requestID: UUID(),
@@ -66,11 +114,10 @@ final class SofaBridgeTests: XCTestCase {
             approvalVerifier: verifier,
             approvalTTL: 30
         )
-        let transport = RecordingSofaTransport()
         let executor = ProtectedExecutionService(
             approvalVerifier: verifier,
             idempotencyStore: IdempotencyStore(),
-            adapter: SofaContributionAdapter(transport: transport),
+            adapter: adapter,
             journal: journal
         )
 
@@ -100,34 +147,37 @@ final class SofaBridgeTests: XCTestCase {
         XCTAssertEqual(calls, [.vote(postID: postID, value: 1)])
         let executionSucceededCount = await journal.count(status: .executionSucceeded)
         XCTAssertEqual(executionSucceededCount, 1)
+        XCTAssertEqual(request.payload["idempotencyKey"], plan.idempotencyKey)
+        XCTAssertNotNil(request.payload["actionPlan"])
     }
 
-    func testVerificationAndReplyPayloadsAreTypedBeforeTransport() async throws {
+    func testVerificationAndReplyPlansAreTypedBeforeTransport() async throws {
+        let now = Date()
         let transport = RecordingSofaTransport()
         let adapter = SofaContributionAdapter(transport: transport)
 
-        let verification = CommandRequest(
-            intentID: .sofaContribution,
+        let verificationPlan = try makePlan(
+            capability: SofaCapabilityCatalog.verify,
+            postID: "post-v",
             payload: [
-                "action": "verify",
                 "postID": "post-v",
                 "outcome": "worked_with_changes",
                 "feedback": "Required one configuration adjustment."
             ],
-            target: SofaContributionAdapter<RecordingSofaTransport>.target(postID: "post-v")
+            now: now
         )
-        _ = try await adapter.execute(verification)
+        _ = try await adapter.execute(adapter.commandRequest(for: verificationPlan, now: now))
 
-        let reply = CommandRequest(
-            intentID: .sofaContribution,
+        let replyPlan = try makePlan(
+            capability: SofaCapabilityCatalog.reply,
+            postID: "post-r",
             payload: [
-                "action": "reply",
                 "postID": "post-r",
                 "body": "Observed the same behavior on macOS."
             ],
-            target: SofaContributionAdapter<RecordingSofaTransport>.target(postID: "post-r")
+            now: now
         )
-        _ = try await adapter.execute(reply)
+        _ = try await adapter.execute(adapter.commandRequest(for: replyPlan, now: now))
 
         let calls = await transport.calls
         XCTAssertEqual(
@@ -140,6 +190,26 @@ final class SofaBridgeTests: XCTestCase {
                 ),
                 .reply(postID: "post-r", body: "Observed the same behavior on macOS.")
             ]
+        )
+    }
+
+    private func makePlan(
+        capability: Capability,
+        postID: String,
+        payload: [String: String],
+        now: Date
+    ) throws -> ActionPlan {
+        try CapabilityFirewall(snapshot: SofaCapabilityCatalog.snapshot).compile(
+            correlationID: UUID(),
+            userID: "u",
+            deviceID: "d",
+            capabilityID: capability.id,
+            capabilityVersionMajor: capability.versionMajor,
+            target: SofaContributionAdapter<RecordingSofaTransport>.target(postID: postID),
+            payload: payload,
+            requiredPermissions: ["network.sofa"],
+            preflight: ["sofa": true],
+            expiresAt: now.addingTimeInterval(60)
         )
     }
 
