@@ -98,7 +98,8 @@ final class SofaBridgeTests: XCTestCase {
         XCTAssertEqual(receipt.statusCode, 200)
         let calls = await transport.calls
         XCTAssertEqual(calls, [.vote(postID: postID, value: 1)])
-        XCTAssertEqual(await journal.count(status: .executionSucceeded), 1)
+        let executionSucceededCount = await journal.count(status: .executionSucceeded)
+        XCTAssertEqual(executionSucceededCount, 1)
     }
 
     func testVerificationAndReplyPayloadsAreTypedBeforeTransport() async throws {
