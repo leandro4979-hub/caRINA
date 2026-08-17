@@ -57,7 +57,8 @@ public actor SofaClient: SofaContributionTransport {
     }
 
     public func getPost(id: String) async throws -> SofaPost {
-        try decode(await readPostData(id: id))
+        let data = try await readPostData(id: id)
+        return try decode(data)
     }
 
     public func vote(postID: String, value: Int) async throws -> SofaMutationReceipt {
@@ -125,7 +126,13 @@ public actor SofaClient: SofaContributionTransport {
         queryItems: [URLQueryItem] = [],
         body: Data? = nil
     ) async throws -> (data: Data, statusCode: Int) {
-        let sessionID = sofaSessionID ?? (try await startSession())
+        let sessionID: String
+        if let existingSessionID = sofaSessionID {
+            sessionID = existingSessionID
+        } else {
+            sessionID = try await startSession()
+        }
+
         var request = URLRequest(url: try endpoint(path, queryItems: queryItems))
         request.httpMethod = method
         request.timeoutInterval = config.requestTimeout
