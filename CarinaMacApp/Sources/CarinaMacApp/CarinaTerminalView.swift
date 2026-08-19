@@ -14,6 +14,25 @@ struct CarinaTerminalView: View {
         }
     }
 
+    private var skillColor: Color {
+        switch viewModel.activeSkill {
+        case .securityAudit: return .purple
+        case .codingStandards: return .cyan
+        case nil: return .secondary
+        }
+    }
+
+    private var composerPlaceholder: String {
+        switch viewModel.activeSkill {
+        case .securityAudit:
+            return "Answer the audit interview or ask caRINA to inspect a risk…"
+        case .codingStandards:
+            return "Describe the code change you want reviewed or designed…"
+        case nil:
+            return "Ask caRINA or type /skills"
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -25,11 +44,11 @@ struct CarinaTerminalView: View {
         }
         .background(Color.black)
         .foregroundStyle(.white)
-        .frame(minWidth: 760, minHeight: 560)
+        .frame(minWidth: 860, minHeight: 600)
     }
 
     private var header: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             ZStack {
                 Circle()
                     .fill(statusColor.opacity(0.16))
@@ -45,9 +64,9 @@ struct CarinaTerminalView: View {
                 HStack(spacing: 8) {
                     Text("caRINA")
                         .font(.system(size: 16, weight: .bold, design: .monospaced))
-                    Text("0.4.0")
+                    Text("SHE'S ALIVE 0.4.0")
                         .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.purple)
                 }
                 Text("LOCAL CONSOLE • 127.0.0.1:11434")
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
@@ -55,6 +74,14 @@ struct CarinaTerminalView: View {
             }
 
             Spacer()
+
+            Text("SKILL: \(viewModel.activeSkillLabel)")
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundStyle(skillColor)
+                .padding(.horizontal, 9)
+                .padding(.vertical, 6)
+                .background(skillColor.opacity(0.10), in: Capsule())
+                .overlay(Capsule().stroke(skillColor.opacity(0.32), lineWidth: 1))
 
             Text(viewModel.statusText)
                 .font(.system(size: 11, weight: .bold, design: .monospaced))
@@ -127,6 +154,18 @@ struct CarinaTerminalView: View {
                 haptic()
                 viewModel.showStatus()
             }
+            TerminalControlButton(title: "SKILLS", systemImage: "square.stack.3d.up") {
+                haptic()
+                viewModel.showSkills()
+            }
+            TerminalControlButton(
+                title: "AUDIT",
+                systemImage: "shield.lefthalf.filled",
+                isProminent: viewModel.activeSkill == .securityAudit
+            ) {
+                haptic()
+                viewModel.startSecurityAudit()
+            }
             TerminalControlButton(title: "HELP", systemImage: "questionmark.circle") {
                 haptic()
                 viewModel.showHelp()
@@ -148,7 +187,7 @@ struct CarinaTerminalView: View {
 
             Spacer()
 
-            Text("⌘↩ SEND   ⌘. STOP")
+            Text("/audit  /standards   ⌘↩ SEND   ⌘. STOP")
                 .font(.system(size: 10, weight: .medium, design: .monospaced))
                 .foregroundStyle(.secondary)
         }
@@ -163,7 +202,7 @@ struct CarinaTerminalView: View {
                 .font(.system(size: 18, weight: .bold, design: .monospaced))
                 .foregroundStyle(.green)
 
-            TextField("Ask caRINA or type /help", text: $viewModel.input)
+            TextField(composerPlaceholder, text: $viewModel.input)
                 .textFieldStyle(.plain)
                 .font(.system(size: 14, weight: .regular, design: .monospaced))
                 .disabled(viewModel.isGenerating)
