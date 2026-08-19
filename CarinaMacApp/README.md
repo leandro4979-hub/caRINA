@@ -18,6 +18,12 @@ and macOS trackpad haptic feedback.
 Local console commands:
 
 - `/status`
+- `/skills`
+- `/audit`
+- `/standards`
+- `/skill coding-standards`
+- `/skill security-audit`
+- `/skill off`
 - `/about`
 - `/clear`
 - `/stop`
@@ -27,6 +33,25 @@ The terminal is intentionally a conversation sandbox. User text is sent only
 through the existing loopback `OllamaClient`; the terminal does not execute
 shell commands, expose a listener, add a remote fallback, bypass approvals, or
 connect to an action executor.
+
+### Skill layer
+
+The prototype includes two local reasoning skills:
+
+- **CODING STANDARDS** applies the repository's `CODING_STANDARDS.md` behavior:
+  smallest safe change, explicit typed state, fail-closed security boundaries,
+  secret/data protection, honest execution reporting, and verification.
+- **SECURITY AUDIT** reproduces the interactive audit flow from the terminal
+  reference: establish the trust-boundary change, rank the assets/worst-case
+  failures, choose scope, choose deliverable, then report severity-labeled
+  findings. Settings outside source control remain explicitly unverified and
+  are converted into an operator checklist instead of guessed.
+
+The active skill is visible in the terminal header. `/audit` also prints the
+four-question audit interview directly into the console. A bounded in-memory
+conversation context lets subsequent answers continue the same audit thread.
+No skill expands the terminal's authority: these are reasoning instructions,
+not shell access or execution capabilities.
 
 Keyboard controls:
 
