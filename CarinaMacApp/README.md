@@ -8,6 +8,31 @@ app imports the sibling `CARINAApprovalBoundary` package, which connects only
 to loopback Ollama at `127.0.0.1:11434`. It has no iPhone target, API key,
 remote fallback, or permission to execute actions.
 
+## caRINA 0.4.0 terminal
+
+The Terminal tab is the primary tactile surface for caRINA 0.4.0. It uses a
+full-screen, monospaced local-console design with visible streaming output,
+status indication, clickable controls, keyboard shortcuts, selectable text,
+and macOS trackpad haptic feedback.
+
+Local console commands:
+
+- `/status`
+- `/about`
+- `/clear`
+- `/stop`
+- `/help`
+
+The terminal is intentionally a conversation sandbox. User text is sent only
+through the existing loopback `OllamaClient`; the terminal does not execute
+shell commands, expose a listener, add a remote fallback, bypass approvals, or
+connect to an action executor.
+
+Keyboard controls:
+
+- Command-Return: send
+- Command-Period: stop generation
+
 ## Verification boundary
 
 - DEBUG slow-stream cancellation passed end-to-end.
