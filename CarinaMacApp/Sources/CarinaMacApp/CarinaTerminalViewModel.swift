@@ -125,6 +125,16 @@ final class CarinaTerminalViewModel: ObservableObject {
         runLocalCommand("/audit")
     }
 
+    func activateCodingStandards() {
+        guard !isGenerating else { return }
+        runLocalCommand("/standards")
+    }
+
+    func disableSkill() {
+        guard !isGenerating else { return }
+        runLocalCommand("/skill off")
+    }
+
     private func buildPrompt(userText: String, priorLines: [Line]) -> String {
         let skillInstructions = activeSkill?.systemInstructions ?? """
         Active skill: GENERAL.
