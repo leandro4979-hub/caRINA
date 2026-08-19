@@ -6,7 +6,7 @@ struct CarinaMacApp: App {
         WindowGroup("caRINA 0.4.0") {
             TabView {
                 CarinaTerminalView()
-                    .tabItem { Label("Terminal", systemImage: "apple.terminal") }
+                    .tabItem { Label("Terminal", systemImage: "terminal") }
                 LocalConversationView()
                     .tabItem { Label("Conversation", systemImage: "bubble.left.and.bubble.right") }
                 LocalModelTestView()
