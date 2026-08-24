@@ -20,6 +20,9 @@
 		A0000000000000000000000C /* SecureCredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000010 /* SecureCredentialStore.swift */; };
 		A0000000000000000000000D /* AgentProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000011 /* AgentProvider.swift */; };
 		A0000000000000000000000E /* AgentArchitectureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012 /* AgentArchitectureTests.swift */; };
+		A0000000000000000000000F /* RealtimeVoiceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000013 /* RealtimeVoiceService.swift */; };
+		A00000000000000000000010 /* RealtimeVoiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000014 /* RealtimeVoiceView.swift */; };
+		A00000000000000000000011 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = F20000000000000000000001 /* WebRTC */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,10 +54,12 @@
 		B00000000000000000000010 /* SecureCredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureCredentialStore.swift; sourceTree = "<group>"; };
 		B00000000000000000000011 /* AgentProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentProvider.swift; sourceTree = "<group>"; };
 		B00000000000000000000012 /* AgentArchitectureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentArchitectureTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000013 /* RealtimeVoiceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealtimeVoiceService.swift; sourceTree = "<group>"; };
+		B00000000000000000000014 /* RealtimeVoiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealtimeVoiceView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D00000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		D00000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000011 /* WebRTC in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
 		D00000000000000000000005 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
@@ -86,9 +91,9 @@
 		};
 		C00000000000000000000004 /* App */ = {isa = PBXGroup; children = (B00000000000000000000001 /* CarinaApp.swift */); path = App; sourceTree = "<group>"; };
 		C00000000000000000000005 /* AppIntents */ = {isa = PBXGroup; children = (B00000000000000000000008 /* CarinaAppIntents.swift */); path = AppIntents; sourceTree = "<group>"; };
-		C00000000000000000000006 /* Views */ = {isa = PBXGroup; children = (B00000000000000000000002 /* ContentView.swift */, B00000000000000000000003 /* SettingsView.swift */); path = Views; sourceTree = "<group>"; };
+		C00000000000000000000006 /* Views */ = {isa = PBXGroup; children = (B00000000000000000000002 /* ContentView.swift */, B00000000000000000000003 /* SettingsView.swift */, B00000000000000000000014 /* RealtimeVoiceView.swift */); path = Views; sourceTree = "<group>"; };
 		C00000000000000000000007 /* Models */ = {isa = PBXGroup; children = (B00000000000000000000004 /* BridgeConfiguration.swift */, B0000000000000000000000E /* AgentModels.swift */); path = Models; sourceTree = "<group>"; };
-		C00000000000000000000008 /* Services */ = {isa = PBXGroup; children = (B00000000000000000000005 /* BridgeClient.swift */, B00000000000000000000006 /* SpeechRecognitionService.swift */, B00000000000000000000010 /* SecureCredentialStore.swift */, B00000000000000000000011 /* AgentProvider.swift */); path = Services; sourceTree = "<group>"; };
+		C00000000000000000000008 /* Services */ = {isa = PBXGroup; children = (B00000000000000000000005 /* BridgeClient.swift */, B00000000000000000000006 /* SpeechRecognitionService.swift */, B00000000000000000000010 /* SecureCredentialStore.swift */, B00000000000000000000011 /* AgentProvider.swift */, B00000000000000000000013 /* RealtimeVoiceService.swift */); path = Services; sourceTree = "<group>"; };
 		C00000000000000000000009 /* PermissionEngine */ = {isa = PBXGroup; children = (B00000000000000000000007 /* PermissionManager.swift */, B0000000000000000000000F /* CommandAuthorization.swift */); path = PermissionEngine; sourceTree = "<group>"; };
 		C0000000000000000000000A /* Resources */ = {isa = PBXGroup; children = (B0000000000000000000000A /* Info.plist */); path = Resources; sourceTree = "<group>"; };
 		C0000000000000000000000B /* CarinaTests */ = {isa = PBXGroup; children = (B00000000000000000000009 /* BridgeConfigurationTests.swift */, B00000000000000000000012 /* AgentArchitectureTests.swift */); path = CarinaTests; sourceTree = "<group>"; };
@@ -102,6 +107,7 @@
 			buildRules = ();
 			dependencies = ();
 			name = Carina;
+			packageProductDependencies = (F20000000000000000000001 /* WebRTC */,);
 			productName = Carina;
 			productReference = B0000000000000000000000C /* Carina.app */;
 			productType = "com.apple.product-type.application";
@@ -137,6 +143,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (en, Base);
 			mainGroup = C00000000000000000000001;
+			packageReferences = (F10000000000000000000001 /* XCRemoteSwiftPackageReference "WebRTC" */,);
 			productRefGroup = C00000000000000000000002 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -166,6 +173,8 @@
 				A0000000000000000000000B /* CommandAuthorization.swift in Sources */,
 				A0000000000000000000000C /* SecureCredentialStore.swift in Sources */,
 				A0000000000000000000000D /* AgentProvider.swift in Sources */,
+				A0000000000000000000000F /* RealtimeVoiceService.swift in Sources */,
+				A00000000000000000000010 /* RealtimeVoiceView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -190,6 +199,25 @@
 		H00000000000000000000002 /* Build configuration list for PBXNativeTarget "Carina" */ = {isa = XCConfigurationList; buildConfigurations = (G00000000000000000000003 /* Debug */, G00000000000000000000004 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 		H00000000000000000000003 /* Build configuration list for PBXNativeTarget "CarinaTests" */ = {isa = XCConfigurationList; buildConfigurations = (G00000000000000000000005 /* Debug */, G00000000000000000000006 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F10000000000000000000001 /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stasel/WebRTC.git";
+			requirement = {
+				kind = exactVersion;
+				version = 150.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F20000000000000000000001 /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F10000000000000000000001 /* XCRemoteSwiftPackageReference "WebRTC" */;
+			productName = WebRTC;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F00000000000000000000001 /* Project object */;
 }
