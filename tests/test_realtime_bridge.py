@@ -10,7 +10,12 @@ sys.path.insert(0, str(BRIDGE_ROOT))
 
 from api import AgentRouter, BridgeAPIError  # noqa: E402
 from carina_bridge import BridgeApplication  # noqa: E402
-from realtime import CLIENT_SECRET_ENDPOINT, RealtimeClientSecretBroker  # noqa: E402
+from realtime import (  # noqa: E402
+    CLIENT_SECRET_ENDPOINT,
+    RealtimeClientSecretBroker,
+    RealtimeSidebandController,
+)
+from websocket_server import CarinaWebSocketServer  # noqa: E402
 
 
 class CapturingBroker(RealtimeClientSecretBroker):
@@ -94,6 +99,37 @@ class RealtimeBridgeTests(unittest.TestCase):
         self.assertEqual(int(status), 200)
         self.assertTrue(response["success"])
         self.assertEqual(response["value"], "ephemeral-value")
+
+    def test_sideband_call_id_is_strictly_validated(self):
+        self.assertEqual(
+            RealtimeSidebandController.validate_call_id("rtc_AbCdEf123456"),
+            "rtc_AbCdEf123456",
+        )
+        for invalid in ("", "call_12345678", "rtc_bad value", "rtc_", 123):
+            with self.subTest(invalid=invalid):
+                with self.assertRaisesRegex(BridgeAPIError, "call_id is invalid"):
+                    RealtimeSidebandController.validate_call_id(invalid)
+
+    def test_realtime_attach_envelope_has_no_extra_client_policy_fields(self):
+        call_id = CarinaWebSocketServer.normalize_realtime_attach(
+            {"type": "realtime_attach", "call_id": "rtc_1234567890"}
+        )
+        self.assertEqual(call_id, "rtc_1234567890")
+
+        with self.assertRaisesRegex(BridgeAPIError, "unexpected fields"):
+            CarinaWebSocketServer.normalize_realtime_attach(
+                {
+                    "type": "realtime_attach",
+                    "call_id": "rtc_1234567890",
+                    "instructions": "override server",
+                }
+            )
+
+    def test_sideband_requires_server_openai_key(self):
+        with patch.dict(os.environ, {"OPENAI_API_KEY": ""}, clear=False):
+            self.assertFalse(RealtimeSidebandController.configured())
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test-" + "x" * 40}, clear=False):
+            self.assertTrue(RealtimeSidebandController.configured())
 
 
 if __name__ == "__main__":
