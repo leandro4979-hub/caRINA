@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import urllib.error
+import urllib.parse
 import urllib.request
+from collections.abc import Awaitable, Callable
 from typing import Any, Mapping
 
 from api import BridgeAPIError
@@ -13,6 +16,8 @@ DEFAULT_REALTIME_MODEL = "gpt-realtime-2.1"
 DEFAULT_REALTIME_VOICE = "marin"
 MAX_UPSTREAM_BYTES = 256_000
 CLIENT_SECRET_ENDPOINT = "https://api.openai.com/v1/realtime/client_secrets"
+SIDEBAND_ENDPOINT = "wss://api.openai.com/v1/realtime"
+CALL_ID_PATTERN = re.compile(r"^rtc_[A-Za-z0-9_-]{8,200}$")
 
 
 class RealtimeClientSecretBroker:
@@ -125,3 +130,72 @@ class RealtimeClientSecretBroker:
         if not isinstance(decoded, dict):
             raise BridgeAPIError(502, "OpenAI Realtime returned an invalid object")
         return decoded
+
+
+class RealtimeSidebandController:
+    """Attach the Mac control plane to an existing WebRTC Realtime call.
+
+    This channel deliberately does not execute tools yet. It establishes the
+    authenticated server-side control path while leaving all side-effecting
+    actions behind CARINA's existing permission and approval boundary.
+    """
+
+    @staticmethod
+    def validate_call_id(value: Any) -> str:
+        if not isinstance(value, str) or not CALL_ID_PATTERN.fullmatch(value):
+            raise BridgeAPIError(400, "realtime call_id is invalid")
+        return value
+
+    @staticmethod
+    def configured() -> bool:
+        value = os.environ.get("OPENAI_API_KEY", "").strip()
+        return len(value) >= 20 and value.lower() not in {"replace_me", "your_key_here"}
+
+    async def monitor(
+        self,
+        call_id: str,
+        notify: Callable[[str], Awaitable[None]],
+    ) -> None:
+        call_id = self.validate_call_id(call_id)
+        key = os.environ.get("OPENAI_API_KEY", "").strip()
+        if not self.configured():
+            raise BridgeAPIError(503, "OpenAI Realtime sideband is not configured")
+
+        try:
+            from websockets.asyncio.client import connect
+        except ImportError as exc:
+            raise BridgeAPIError(503, "websockets dependency is unavailable") from exc
+
+        query = urllib.parse.urlencode({"call_id": call_id})
+        url = f"{SIDEBAND_ENDPOINT}?{query}"
+        headers = {"Authorization": f"Bearer {key}"}
+
+        try:
+            async with connect(
+                url,
+                additional_headers=headers,
+                max_size=MAX_UPSTREAM_BYTES,
+                ping_interval=20,
+                ping_timeout=20,
+                close_timeout=5,
+                open_timeout=10,
+            ) as upstream:
+                await notify("connected")
+                async for raw in upstream:
+                    if not isinstance(raw, str):
+                        continue
+                    try:
+                        event = json.loads(raw)
+                    except json.JSONDecodeError:
+                        continue
+                    if not isinstance(event, Mapping):
+                        continue
+                    event_type = event.get("type")
+                    if isinstance(event_type, str) and event_type:
+                        # Only surface event names to the iPhone. Conversation
+                        # content and server details stay on the control plane.
+                        await notify(f"event:{event_type[:120]}")
+        except BridgeAPIError:
+            raise
+        except Exception as exc:
+            raise BridgeAPIError(502, f"OpenAI Realtime sideband failed: {type(exc).__name__}") from exc
