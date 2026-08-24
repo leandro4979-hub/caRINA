@@ -23,6 +23,7 @@ from api import (
     generate_shared_secret,
     load_runtime_environment,
 )
+from realtime import RealtimeClientSecretBroker
 from websocket_server import CarinaWebSocketServer
 
 
@@ -34,9 +35,15 @@ LOGGER = logging.getLogger("CarinaBridge")
 
 
 class BridgeApplication:
-    def __init__(self, shared_secret: str, router: AgentRouter | None = None) -> None:
+    def __init__(
+        self,
+        shared_secret: str,
+        router: AgentRouter | None = None,
+        realtime: RealtimeClientSecretBroker | None = None,
+    ) -> None:
         self.shared_secret = shared_secret.encode("utf-8")
         self.router = router or AgentRouter()
+        self.realtime = realtime or RealtimeClientSecretBroker()
         self.started_at = time.time()
 
     def authorized(self, header: str) -> bool:
@@ -47,6 +54,11 @@ class BridgeApplication:
             "success": True,
             "uptime_seconds": round(time.time() - self.started_at, 3),
             **self.router.health(),
+            "realtime": {
+                "configured": self.realtime.configured,
+                "model": self.realtime.model,
+                "voice": self.realtime.voice,
+            },
         }
 
     def dispatch(self, path: str, payload: Mapping[str, Any]) -> tuple[int, Mapping[str, Any]]:
@@ -55,6 +67,8 @@ class BridgeApplication:
                 return HTTPStatus.OK, self.router.message(payload)
             if path == "/v1/actions/execute":
                 return HTTPStatus.OK, self.router.execute(payload)
+            if path == "/v1/realtime/client-secret":
+                return HTTPStatus.OK, self.realtime.create_client_secret(payload)
             raise BridgeAPIError(404, "unknown endpoint")
         except BridgeAPIError as exc:
             return exc.status, {"success": False, "error": str(exc)}
