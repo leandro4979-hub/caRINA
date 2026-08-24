@@ -13,7 +13,7 @@ dashboard-status:
 	/usr/bin/curl -fsS http://127.0.0.1:51003/health
 
 verify:
-	python3 -m py_compile src/build_dashboard.py src/archive_codex_review.py src/token_counter.py scripts/carina_forge.py scripts/carina_deployment_guardian.py scripts/carina_dashboard_service.py apps/bridge/forge_store.py
+	python3 -m py_compile src/build_dashboard.py src/archive_codex_review.py src/token_counter.py scripts/carina_forge.py scripts/carina_deployment_guardian.py scripts/carina_dashboard_service.py apps/bridge/api.py apps/bridge/carina_bridge.py apps/bridge/forge_store.py apps/bridge/realtime.py apps/bridge/websocket_server.py
 	python3 -m unittest discover -s tests
 	python3 src/build_dashboard.py
 	python3 src/token_counter.py --text "caRINA token check"
