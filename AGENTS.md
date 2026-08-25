@@ -74,3 +74,64 @@ security documentation, tests, and ADRs in the same change set. Mark a feature
 Complete only after all acceptance criteria and quality checks pass. Final
 reports include scope, files, traceability, tests, commands/results, docs/ADRs,
 risks, and status recommendation.
+
+## Continuous Integration and Testing
+
+- All changes must include automated tests that exercise the new behavior and
+  any relevant negative/security cases. Prefer unit tests with focused scope and
+  higher-level integration tests for boundary behavior.
+- CI pipelines must run linters, static analysis, dependency vulnerability
+  scanning, and the full test suite for the affected package(s). Failures in
+  security-related checks are blocking.
+- Add precise test commands to PR descriptions and include sample CI output or
+  a link to the run. When tests are flaky, add a reproducible local command and
+  file an issue to stabilize the test before merge.
+
+## Incident response and audits
+
+- Treat suspected security incidents as high-priority. Stop automated actions
+  that may worsen the incident and notify the security team per
+  `docs/OPERATIONS_RUNBOOK.md`.
+- Produce an auditable timeline: who, what, when, where, and how. Include
+  hashes and identifiers for artifacts, attached evidence, and the scope of
+  impact. Keep sensitive artifacts in restricted evidence storage.
+- Any deviation from this contract for remediation requires explicit approval
+  and an attached audit event describing the rationale and the rollback plan.
+
+## Roles and responsibilities
+
+- Agents are tools, not owners. Humans named in ADRs, SECURITY_REQUIREMENTS,
+  or the repository `CODEOWNERS` hold final authority for design, security
+  exceptions, and production merges.
+- Agents should clearly declare actions taken, files changed, tests run, and
+  any assumptions made in PR descriptions and change logs.
+- Security reviewers must sign off on changes that affect authorization,
+  encryption, key management, or quarantine/handling of untrusted inputs.
+
+## Exceptions and enforcement
+
+- Exceptions to these rules are rare and must be documented as an ADR or an
+  explicit approved exception linked from the PR. The exception must include
+  compensating controls and a sunset/review date.
+- Non-compliant changes must be reverted and investigated. Reversion and root
+  cause analysis are the default remediation path unless a documented exception
+  instructs otherwise.
+
+## Developer checklist (quick reference)
+
+- Read the nearest `AGENTS.md` and `docs/SECURITY_REQUIREMENTS.md`.
+- Confirm the request scope and whether it is `plan-only`.
+- Create a dedicated branch and include the issue/feature ID in the branch
+  name.
+- Add tests covering positive and negative cases; run them locally.
+- Run the repository's CI/test commands and paste results in the PR.
+- Include a risk/security impact section in the PR body and link relevant ADRs.
+- Do not merge. Wait for explicit human approval to merge to protected
+  branches.
+
+## Change history
+
+- 2026-08-25 — Completed Agent Operating Contract with CI, incident,
+  roles, enforcement, and checklist additions.
+
+
