@@ -5,25 +5,29 @@ public enum IdempotencyError: Error, Sendable, Equatable {
     case alreadyReserved(String)
 }
 
-/// In-memory at-most-once reservation store. A reservation is intentionally
-/// never released after execution failure. Retry semantics must create a new
-/// authorized attempt under policy rather than silently reusing authority.
+/// At-most-once reservation facade backed by injected storage. Reservations
+/// are never released after execution failure.
 public actor IdempotencyStore {
-    private var reservedKeys: Set<String> = []
+    private let store: any IdempotencyStateStore
 
-    public init() {}
+    public init(
+        store: any IdempotencyStateStore = InMemoryApprovalStateStore()
+    ) {
+        self.store = store
+    }
 
-    public func reserve(_ key: String) throws {
+    public func reserve(_ key: String) async throws {
         let normalized = key.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalized.isEmpty else {
             throw IdempotencyError.missingKey
         }
-        guard reservedKeys.insert(normalized).inserted else {
+        guard try await store.reserveIdempotencyKey(normalized) else {
             throw IdempotencyError.alreadyReserved(normalized)
         }
     }
 
-    public func contains(_ key: String) -> Bool {
-        reservedKeys.contains(key.trimmingCharacters(in: .whitespacesAndNewlines))
+    public func contains(_ key: String) async -> Bool {
+        let normalized = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        return (try? await store.containsIdempotencyKey(normalized)) == true
     }
 }
