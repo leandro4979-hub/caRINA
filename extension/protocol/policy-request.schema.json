@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "carina://protocol/v1/policy-request.schema.json",
+  "title": "PolicyRequest",
+  "type": "object",
+  "properties": {
+    "type": { "const": "POLICY_REQUEST" },
+    "version": { "const": 1 },
+    "requestId": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "nonce": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "candidateId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9._:-]+$" },
+    "pluginId": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9._-]+$" },
+    "intent": { "type": "string", "enum": ["SkipInterruption", "ContinuePlayback", "CloseOverlay"] },
+    "proposedAction": { "const": "click" },
+    "tabId": { "type": "integer", "minimum": 0 },
+    "frameId": { "type": "integer", "minimum": 0 },
+    "origin": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "host": { "type": "string", "minLength": 1, "maxLength": 253 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "observedAt": { "type": "integer", "minimum": 0 },
+    "receivedAt": { "type": "integer", "minimum": 0 }
+  },
+  "required": ["type", "version", "requestId", "nonce", "candidateId", "pluginId", "intent", "proposedAction", "tabId", "frameId", "origin", "host", "confidence", "observedAt", "receivedAt"],
+  "additionalProperties": false
+}
