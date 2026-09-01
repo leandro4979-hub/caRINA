@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "carina://protocol/v1/execution-authorization.schema.json",
+  "title": "ExecutionAuthorization",
+  "type": "object",
+  "properties": {
+    "type": { "const": "EXECUTION_AUTHORIZATION" },
+    "version": { "const": 1 },
+    "authorizationId": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "requestId": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "nonce": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "candidateId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "proposedAction": { "const": "click" },
+    "tabId": { "type": "integer", "minimum": 0 },
+    "frameId": { "type": "integer", "minimum": 0 },
+    "issuedAt": { "type": "integer", "minimum": 0 },
+    "expiresAt": { "type": "integer", "minimum": 0 },
+    "authorizationToken": { "type": "string", "minLength": 32, "maxLength": 512 }
+  },
+  "required": ["type", "version", "authorizationId", "requestId", "nonce", "candidateId", "proposedAction", "tabId", "frameId", "issuedAt", "expiresAt", "authorizationToken"],
+  "additionalProperties": false
+}
