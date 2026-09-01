@@ -9,7 +9,7 @@ function controlFromElement(element, index) {
     visible: element?.hidden !== true,
     enabled: element?.disabled !== true,
     observedAt: Date.now(),
-    perform: () => element.click(),
+    proposedAction: 'click',
     element,
   };
 }

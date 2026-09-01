@@ -20,7 +20,7 @@ test('login page resolves to DENY', async () => {
 
 test('credentials and DOM references are excluded from policy proposal', async () => {
   const captured = [];
-  const c = candidate({ secret: 'SHOULD_NOT_LEAK', element: { isConnected: false, token: 'NOPE' } });
+  const c = candidate({ secret: 'SHOULD_NOT_LEAK', element: { isConnected: false, token: 'NOPE', click() {} } });
   const result = await engine('ALLOW', captured).evaluateCandidate({ candidate: c, rawContext: { ...context(), apiKey: 'secret', cookies: 'secret', password: 'secret' } });
   assert.equal(result.status, 'VERIFIED');
   const serialized = JSON.stringify(captured[0]);

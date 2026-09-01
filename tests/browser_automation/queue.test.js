@@ -29,11 +29,25 @@ test('duplicate action protection executes candidate at most once', async () => 
 
 test('bounded retry applies only after ALLOW to transient execution races', async () => {
   let attempts = 0;
-  const c = candidate({ perform: async () => {
-    attempts += 1;
-    if (attempts === 1) { const error = new Error('detached'); error.transient = true; throw error; }
-  } });
+  const c = candidate({
+    element: {
+      isConnected: false,
+      click() {
+        attempts += 1;
+        if (attempts === 1) { const error = new Error('detached'); error.transient = true; throw error; }
+      },
+    },
+  });
   const result = await engine('ALLOW').evaluateCandidate({ candidate: c, rawContext: context() });
   assert.equal(result.status, 'VERIFIED');
   assert.equal(attempts, 2);
+});
+
+test('unsupported proposed actions are rejected by the core executor', async () => {
+  const c = candidate({ proposedAction: 'submit' });
+  await assert.rejects(
+    engine('ALLOW').evaluateCandidate({ candidate: c, rawContext: context() }),
+    /action is not allowed/,
+  );
+  assert.equal(c.clicks(), 0);
 });

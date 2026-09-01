@@ -12,6 +12,17 @@ test('plugin registry strips execution authority and freezes facade', () => {
   assert.equal(Object.isFrozen(registered), true);
 });
 
+test('plugin candidate contract contains no executable closure', () => {
+  const node = {
+    textContent: 'Skip', hidden: false, disabled: false, dataset: {}, tagName: 'BUTTON',
+    getAttribute() { return null; }, click() {},
+  };
+  const plugin = registerPlugin(youtubePlugin);
+  const [found] = plugin.candidates({ document: { querySelectorAll: () => [node] } });
+  assert.equal(found.proposedAction, 'click');
+  assert.equal('perform' in found, false);
+});
+
 test('registry rejects invalid methods and duplicate IDs', () => {
   assert.throws(() => registerPlugin({ id: 'bad', hosts: ['example.com'], detect: 'yes' }), /invalid field/);
   registerPlugin(youtubePlugin);

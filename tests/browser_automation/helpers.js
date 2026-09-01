@@ -2,11 +2,20 @@ import { CarinaBrowserAutomation } from '../../src/index.js';
 
 export function candidate(overrides = {}) {
   let clicked = 0;
+  const element = {
+    isConnected: false,
+    click() { clicked += 1; },
+  };
   return {
-    id: 'candidate-1', text: 'Skip', ariaLabel: '', role: 'button', visible: true, enabled: true,
+    id: 'candidate-1',
+    text: 'Skip',
+    ariaLabel: '',
+    role: 'button',
+    visible: true,
+    enabled: true,
     observedAt: Date.now(),
-    perform: async () => { clicked += 1; },
-    element: { isConnected: false },
+    proposedAction: 'click',
+    element,
     clicks: () => clicked,
     ...overrides,
   };
