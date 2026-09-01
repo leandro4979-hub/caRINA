@@ -1,0 +1,8 @@
+{
+  "name": "carina",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:browser": "node --test tests/browser_automation/*.test.js"
+  }
+}
