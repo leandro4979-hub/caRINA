@@ -1,0 +1,28 @@
+name: WebExtension Bridge
+
+on:
+  push:
+    paths:
+      - 'extension/**'
+      - 'tests/webextension/**'
+      - 'package.json'
+      - '.github/workflows/webextension.yml'
+  pull_request:
+    paths:
+      - 'extension/**'
+      - 'tests/webextension/**'
+      - 'package.json'
+      - '.github/workflows/webextension.yml'
+
+jobs:
+  protocol-and-bridge-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run WebExtension bridge tests
+        run: npm run test:webextension

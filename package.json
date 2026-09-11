@@ -1,0 +1,9 @@
+{
+  "name": "carina",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:browser": "node --test tests/browser_automation/*.test.js",
+    "test:webextension": "node --test tests/webextension/*.test.cjs"
+  }
+}
