@@ -84,14 +84,7 @@ actor ExecutionAuthorizationStore {
     private var consumed: Set<String> = []
 
     func stage(_ authorization: ExecutionAuthorization) throws {
-        guard authorization.type == "EXECUTION_AUTHORIZATION",
-              authorization.version == 1,
-              authorization.action == "click",
-              !authorization.authorizationId.isEmpty,
-              !authorization.requestId.isEmpty,
-              !authorization.nonce.isEmpty,
-              authorization.issuedAt >= 0,
-              authorization.expiresAt >= authorization.issuedAt else {
+        guard Self.isSchemaValid(authorization) else {
             throw AuthorizationBoundaryError.invalidAuthorization
         }
 
@@ -119,8 +112,12 @@ actor ExecutionAuthorizationStore {
             throw AuthorizationBoundaryError.authorizationNotAvailable
         }
 
+        guard Self.isSchemaValid(authorization) else {
+            consumed.insert(authorization.authorizationId)
+            throw AuthorizationBoundaryError.invalidAuthorization
+        }
+
         guard now >= authorization.issuedAt,
-              authorization.expiresAt >= authorization.issuedAt,
               now <= authorization.expiresAt else {
             consumed.insert(authorization.authorizationId)
             throw AuthorizationBoundaryError.expiredAuthorization
@@ -163,6 +160,36 @@ actor ExecutionAuthorizationStore {
         return SHA256.hash(data: Data(canonical.utf8))
             .map { String(format: "%02x", $0) }
             .joined()
+    }
+
+    private static func isSchemaValid(_ authorization: ExecutionAuthorization) -> Bool {
+        authorization.type == "EXECUTION_AUTHORIZATION"
+            && authorization.version == 1
+            && isHex(authorization.authorizationId, count: 32)
+            && isHex(authorization.requestId, count: 32)
+            && isHex(authorization.nonce, count: 32)
+            && matches(authorization.candidateId, pattern: #"^[A-Za-z0-9._:-]{1,128}$"#)
+            && matches(authorization.pluginId, pattern: #"^[a-z0-9._-]{1,64}$"#)
+            && ["SkipInterruption", "ContinuePlayback", "CloseOverlay"].contains(authorization.intent)
+            && authorization.action == "click"
+            && authorization.tabId >= 0
+            && authorization.frameId >= 0
+            && matches(authorization.origin, pattern: #"^https://[^/]+$"#)
+            && authorization.origin.count <= 256
+            && authorization.issuedAt >= 0
+            && authorization.expiresAt >= authorization.issuedAt
+            && isHex(authorization.executionFingerprint, count: 64)
+            && isHex(authorization.authorityBinding, count: 64)
+    }
+
+    private static func isHex(_ value: String, count: Int) -> Bool {
+        value.count == count && value.unicodeScalars.allSatisfy {
+            (48...57).contains($0.value) || (97...102).contains($0.value)
+        }
+    }
+
+    private static func matches(_ value: String, pattern: String) -> Bool {
+        value.range(of: pattern, options: .regularExpression) != nil
     }
 }
 
