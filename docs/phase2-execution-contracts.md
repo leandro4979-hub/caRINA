@@ -8,6 +8,44 @@ Reference contract only. This document does not enable browser execution and doe
 
 Only the CARINA Authority Spine may authorize execution. A browser capability may consume an authorization decision, but it must never define the authoritative policy that produces it.
 
+## Native Safari/WebExtension boundary
+
+The dedicated native boundary lives under:
+
+`apps/ios/Carina/SafariExtension/`
+
+The Safari native handler receives extension messages through Apple's `SFExtensionMessageKey` / `NSExtensionContext` mechanism. The handler does **not** accept a complete `EXECUTION_AUTHORIZATION` object from JavaScript. Instead, the browser sends an `EXECUTION_AUTHORIZATION_REQUEST` containing only an authorization ID and the execution context it is asking to use:
+
+- `authorizationId`
+- `tabId`
+- `frameId`
+- `origin`
+
+The native boundary looks up a previously staged authorization and atomically consumes it before returning the authorization to the extension. It validates:
+
+1. message shape and supported request type;
+2. authorization lifetime;
+3. tab/frame/origin binding;
+4. the canonical execution fingerprint;
+5. the CARINA authority binding;
+6. single-use state.
+
+If any check fails, the authorization is consumed/invalidated and no `EXECUTION_AUTHORIZATION` is returned.
+
+The exact browser entry point is therefore the **response emitted by `SafariWebExtensionHandler.beginRequest(with:)` after `SafariAuthorizationBoundary.consume(...)` succeeds**. That response is the only point at which an already-issued authorization crosses from the native boundary into the Safari extension runtime.
+
+This follows Apple's documented Safari web extension native-messaging model: a background script sends a native message, the native extension handles it in `beginRequest(with:)`, and the native extension returns a response through `SFExtensionMessageKey`.
+
+### Fail-closed authority binding
+
+The native boundary currently uses `UnconfiguredAuthorityBindingVerifier`, which rejects every authorization. This is intentional. The cryptographic issuance and verification semantics for `authorityBinding` have not yet been defined by the CARINA Authority Spine, so the branch cannot accidentally turn a contract-shaped value into execution authority.
+
+A concrete verifier may be introduced only after the Authority Spine specifies the canonical signed/bound input and verification mechanism. The browser/native runtime must never hold a secret that lets it manufacture a valid authority binding.
+
+### Current integration status
+
+The repository's current `main` branch does not contain a Safari Web Extension target. This branch therefore adds the native boundary source and tests as an isolated Phase 2 implementation seam; it does **not** silently modify the Xcode project or create a new extension target. Packaging/wiring the Safari Web Extension target is a separate integration step.
+
 ## Execution state machine
 
 ```text
@@ -106,7 +144,7 @@ The schema defines:
 - `EXECUTION_RESULT`
 - `VERIFICATION_RESULT`
 
-The native Swift handler and JavaScript implementation must be reconciled against these reference contracts before Phase 2 execution is enabled.
+The native Swift boundary and JavaScript implementation must be reconciled against these reference contracts before Phase 2 execution is enabled.
 
 ## Security boundary
 
