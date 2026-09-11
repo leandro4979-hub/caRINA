@@ -34,7 +34,7 @@ If any check fails, the authorization is consumed/invalidated and no `EXECUTION_
 
 The exact browser entry point is therefore the **response emitted by `SafariWebExtensionHandler.beginRequest(with:)` after `SafariAuthorizationBoundary.consume(...)` succeeds**. That response is the only point at which an already-issued authorization crosses from the native boundary into the Safari extension runtime.
 
-This follows Apple's documented Safari web extension native-messaging model: a background script sends a native message, the native extension handles it in `beginRequest(with:)`, and the native extension returns a response through `SFExtensionMessageKey`. citeturn0search1turn0search3
+This follows Apple's documented Safari web extension native-messaging model: a background script sends a native message, the native extension handles it in `beginRequest(with:)`, and the native extension returns a response through `SFExtensionMessageKey`.
 
 ### Fail-closed authority binding
 
