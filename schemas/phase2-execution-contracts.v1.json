@@ -8,170 +8,55 @@
   "required": ["$defs"],
   "properties": {},
   "$defs": {
-    "hex32": {
-      "type": "string",
-      "pattern": "^[a-f0-9]{32}$"
-    },
-    "sha256": {
-      "type": "string",
-      "pattern": "^[a-f0-9]{64}$"
-    },
-    "candidateId": {
-      "type": "string",
-      "pattern": "^[A-Za-z0-9._:-]{1,128}$"
-    },
-    "pluginId": {
-      "type": "string",
-      "pattern": "^[a-z0-9._-]{1,64}$"
-    },
-    "reasonCode": {
-      "type": "string",
-      "pattern": "^[A-Z0-9_]{1,64}$"
-    },
-    "intent": {
-      "type": "string",
-      "enum": [
-        "SkipInterruption",
-        "ContinuePlayback",
-        "CloseOverlay"
-      ]
-    },
-    "origin": {
-      "type": "string",
-      "pattern": "^https://[^/]+$",
-      "maxLength": 256
-    },
-    "action": {
-      "const": "click"
-    },
+    "hex32": {"type": "string", "pattern": "^[a-f0-9]{32}$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "candidateId": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,128}$"},
+    "pluginId": {"type": "string", "pattern": "^[a-z0-9._-]{1,64}$"},
+    "reasonCode": {"type": "string", "pattern": "^[A-Z0-9_]{1,64}$"},
+    "intent": {"type": "string", "enum": ["SkipInterruption", "ContinuePlayback", "CloseOverlay"]},
+    "origin": {"type": "string", "pattern": "^https://[^/]+$", "maxLength": 256},
+    "action": {"const": "click"},
     "executionAuthorization": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type",
-        "version",
-        "authorizationId",
-        "requestId",
-        "nonce",
-        "candidateId",
-        "pluginId",
-        "intent",
-        "action",
-        "tabId",
-        "frameId",
-        "origin",
-        "issuedAt",
-        "expiresAt",
-        "executionFingerprint",
-        "authorityBinding"
-      ],
+      "required": ["type", "version", "authorizationId", "requestId", "nonce", "candidateId", "pluginId", "intent", "action", "tabId", "frameId", "origin", "issuedAt", "expiresAt", "executionFingerprint", "authorityBinding"],
       "properties": {
-        "type": {
-          "const": "EXECUTION_AUTHORIZATION"
-        },
-        "version": {
-          "const": 1
-        },
-        "authorizationId": {
-          "$ref": "#/$defs/hex32"
-        },
-        "requestId": {
-          "$ref": "#/$defs/hex32"
-        },
-        "nonce": {
-          "$ref": "#/$defs/hex32"
-        },
-        "candidateId": {
-          "$ref": "#/$defs/candidateId"
-        },
-        "pluginId": {
-          "$ref": "#/$defs/pluginId"
-        },
-        "intent": {
-          "$ref": "#/$defs/intent"
-        },
-        "action": {
-          "$ref": "#/$defs/action"
-        },
-        "tabId": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "frameId": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "origin": {
-          "$ref": "#/$defs/origin"
-        },
-        "issuedAt": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "expiresAt": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "executionFingerprint": {
-          "$ref": "#/$defs/sha256"
-        },
-        "authorityBinding": {
-          "$ref": "#/$defs/sha256"
-        }
+        "type": {"const": "EXECUTION_AUTHORIZATION"},
+        "version": {"const": 1},
+        "authorizationId": {"$ref": "#/$defs/hex32"},
+        "requestId": {"$ref": "#/$defs/hex32"},
+        "nonce": {"$ref": "#/$defs/hex32"},
+        "candidateId": {"$ref": "#/$defs/candidateId"},
+        "pluginId": {"$ref": "#/$defs/pluginId"},
+        "intent": {"$ref": "#/$defs/intent"},
+        "action": {"$ref": "#/$defs/action"},
+        "tabId": {"type": "integer", "minimum": 0},
+        "frameId": {"type": "integer", "minimum": 0},
+        "origin": {"$ref": "#/$defs/origin"},
+        "issuedAt": {"type": "integer", "minimum": 0},
+        "expiresAt": {"type": "integer", "minimum": 1},
+        "executionFingerprint": {"$ref": "#/$defs/sha256"},
+        "authorityBinding": {"$ref": "#/$defs/sha256"}
       }
     },
     "executionResult": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type",
-        "version",
-        "authorizationId",
-        "requestId",
-        "candidateId",
-        "action",
-        "executionState",
-        "startedAt",
-        "completedAt"
-      ],
+      "required": ["type", "version", "authorizationId", "requestId", "candidateId", "action", "tabId", "frameId", "origin", "executionState", "startedAt", "completedAt"],
       "properties": {
-        "type": {
-          "const": "EXECUTION_RESULT"
-        },
-        "version": {
-          "const": 1
-        },
-        "authorizationId": {
-          "$ref": "#/$defs/hex32"
-        },
-        "requestId": {
-          "$ref": "#/$defs/hex32"
-        },
-        "candidateId": {
-          "$ref": "#/$defs/candidateId"
-        },
-        "action": {
-          "$ref": "#/$defs/action"
-        },
-        "executionState": {
-          "type": "string",
-          "enum": [
-            "ATTEMPTED",
-            "DISPATCHED",
-            "FAILED"
-          ]
-        },
-        "startedAt": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "completedAt": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "errorCode": {
-          "$ref": "#/$defs/reasonCode"
-        }
+        "type": {"const": "EXECUTION_RESULT"},
+        "version": {"const": 1},
+        "authorizationId": {"$ref": "#/$defs/hex32"},
+        "requestId": {"$ref": "#/$defs/hex32"},
+        "candidateId": {"$ref": "#/$defs/candidateId"},
+        "action": {"$ref": "#/$defs/action"},
+        "tabId": {"type": "integer", "minimum": 0},
+        "frameId": {"type": "integer", "minimum": 0},
+        "origin": {"$ref": "#/$defs/origin"},
+        "executionState": {"type": "string", "enum": ["ATTEMPTED", "DISPATCHED", "FAILED"]},
+        "startedAt": {"type": "integer", "minimum": 0},
+        "completedAt": {"type": "integer", "minimum": 0},
+        "errorCode": {"$ref": "#/$defs/reasonCode"}
       }
     },
     "verificationEvidence": {
@@ -179,64 +64,25 @@
       "additionalProperties": false,
       "required": ["code"],
       "properties": {
-        "code": {
-          "type": "string",
-          "enum": [
-            "VISIBLE",
-            "ENABLED",
-            "INTERACTIVE_ROLE",
-            "SUPPORTED_CONTROL_TEXT",
-            "MEDIA_PLAYING",
-            "OVERLAY_VISIBLE",
-            "PLUGIN_SITE_SIGNAL"
-          ]
-        },
-        "value": {
-          "type": "string",
-          "maxLength": 256
-        }
+        "code": {"type": "string", "enum": ["VISIBLE", "ENABLED", "INTERACTIVE_ROLE", "SUPPORTED_CONTROL_TEXT", "MEDIA_PLAYING", "OVERLAY_VISIBLE", "PLUGIN_SITE_SIGNAL"]},
+        "value": {"type": "string", "maxLength": 256}
       }
     },
     "verificationResult": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "type",
-        "version",
-        "authorizationId",
-        "requestId",
-        "candidateId",
-        "observedAt",
-        "evidence"
-      ],
+      "required": ["type", "version", "authorizationId", "requestId", "candidateId", "tabId", "frameId", "origin", "observedAt", "evidence"],
       "properties": {
-        "type": {
-          "const": "VERIFICATION_RESULT"
-        },
-        "version": {
-          "const": 1
-        },
-        "authorizationId": {
-          "$ref": "#/$defs/hex32"
-        },
-        "requestId": {
-          "$ref": "#/$defs/hex32"
-        },
-        "candidateId": {
-          "$ref": "#/$defs/candidateId"
-        },
-        "observedAt": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "evidence": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 16,
-          "items": {
-            "$ref": "#/$defs/verificationEvidence"
-          }
-        }
+        "type": {"const": "VERIFICATION_RESULT"},
+        "version": {"const": 1},
+        "authorizationId": {"$ref": "#/$defs/hex32"},
+        "requestId": {"$ref": "#/$defs/hex32"},
+        "candidateId": {"$ref": "#/$defs/candidateId"},
+        "tabId": {"type": "integer", "minimum": 0},
+        "frameId": {"type": "integer", "minimum": 0},
+        "origin": {"$ref": "#/$defs/origin"},
+        "observedAt": {"type": "integer", "minimum": 0},
+        "evidence": {"type": "array", "minItems": 1, "maxItems": 16, "items": {"$ref": "#/$defs/verificationEvidence"}}
       }
     }
   }
