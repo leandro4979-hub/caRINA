@@ -49,13 +49,13 @@ Authorization MUST be atomically consumed before target resolution or action dis
 
 The `executionFingerprint` is the canonical SHA-256 digest of the execution tuple. Any change to a bound field invalidates the authorization.
 
-`expiresAt` MUST be checked before consumption. An expired authorization is never executable.
+`expiresAt` MUST be checked before consumption, and runtime validation MUST require `expiresAt >= issuedAt`. An expired authorization is never executable.
 
 ## Result separation
 
-`EXECUTION_RESULT` reports mechanical browser facts only. It MUST NOT establish policy validity or semantic task success.
+`EXECUTION_RESULT` reports mechanical browser facts only. It MUST NOT establish policy validity or semantic task success. Results are bound to the same tab, frame, and origin context as the authorization.
 
-`VERIFICATION_RESULT` reports observable evidence only. It MUST NOT contain an authoritative success verdict. CARINA evaluates the evidence and records the final semantic verdict in the authority/audit layer.
+`VERIFICATION_RESULT` reports observable evidence only. It MUST NOT contain an authoritative success verdict. It is also bound to the authorization's tab, frame, and origin. CARINA evaluates the evidence and records the final semantic verdict in the authority/audit layer.
 
 The browser therefore cannot turn:
 
@@ -69,6 +69,10 @@ into:
 "the requested intent was successfully completed"
 ```
 
+## Authority binding
+
+`authorityBinding` is a contract-level SHA-256 value. Its exact canonical input and cryptographic issuance/verification mechanism MUST be defined by the CARINA Authority Spine before execution is enabled. The browser MUST NOT possess any secret required to manufacture a valid authority binding.
+
 ## Required replay defenses
 
 The implementation must reject:
@@ -81,7 +85,8 @@ The implementation must reject:
 6. Authorizations whose candidate, plugin, intent, or action differs from the bound fingerprint.
 7. Unknown or malformed authorization IDs.
 8. Browser-originated attempts to mint or extend authorization.
-9. Duplicate or stale result messages that do not match the consumed authorization.
+9. Duplicate or stale result messages that do not match the consumed authorization and execution context.
+10. Result messages with undeclared semantic fields such as `success`, `verdict`, or `policyApproved`.
 
 ## Phase 1 compatibility
 
