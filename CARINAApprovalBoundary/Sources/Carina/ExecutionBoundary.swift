@@ -12,20 +12,24 @@ public enum CommandPermission: Sendable {
     case execute
 }
 
-/// Dispatch validates replay first and can create an approval challenge, but
-/// it deliberately has no path to privileged execution.
+/// Dispatch validates exact replay first, then rejects semantic duplicate tool
+/// calls for the same session. It can create an approval challenge, but it
+/// deliberately has no path to privileged execution.
 public struct CommandDispatcher: Sendable {
     private let replayProtector: ReplayProtector
+    private let toolCallHistory: ToolCallHistoryGuard
     private let approvalVerifier: ApprovalVerifier
     private let approvalTTL: TimeInterval
 
     public init(
         replayProtector: ReplayProtector,
+        toolCallHistory: ToolCallHistoryGuard = ToolCallHistoryGuard(),
         approvalVerifier: ApprovalVerifier,
         approvalTTL: TimeInterval = 60
     ) {
         precondition(approvalTTL > 0)
         self.replayProtector = replayProtector
+        self.toolCallHistory = toolCallHistory
         self.approvalVerifier = approvalVerifier
         self.approvalTTL = approvalTTL
     }
@@ -35,7 +39,16 @@ public struct CommandDispatcher: Sendable {
         permission: CommandPermission,
         now: Date = Date()
     ) async throws -> DispatchResult {
+        // Preserve the existing replay contract for an identical envelope.
         try await replayProtector.reserve(envelope, now: now)
+
+        // Then reject a fresh envelope that repeats the same semantic tool call.
+        try await toolCallHistory.reserve(
+            sessionID: envelope.sessionID,
+            toolName: envelope.request.intentID.rawValue,
+            arguments: envelope.request.payload
+        )
+
         switch permission {
         case .read:
             return .query
