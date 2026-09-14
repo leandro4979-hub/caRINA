@@ -70,7 +70,7 @@ public actor ToolCallHistoryGuard {
         histories.removeAll(keepingCapacity: false)
     }
 
-    public nonisolated static func makeHash(
+    public static func makeHash(
         toolName: String,
         arguments: [String: String]
     ) -> String {
@@ -90,7 +90,7 @@ public actor ToolCallHistoryGuard {
     /// Removes secrets from the hash input and neutralizes transport-only keys.
     /// Secret values are deliberately replaced with a fixed marker so token
     /// rotation cannot make an otherwise identical action look new.
-    public nonisolated static func sanitizedArguments(
+    public static func sanitizedArguments(
         _ arguments: [String: String]
     ) -> [String: String] {
         var sanitized: [String: String] = [:]
@@ -113,7 +113,7 @@ public actor ToolCallHistoryGuard {
         return sanitized
     }
 
-    private nonisolated static let transportOnlyKeys: Set<String> = [
+    private static let transportOnlyKeys: Set<String> = [
         "idempotencykey",
         "idempotency_key",
         "requestid",
@@ -123,7 +123,7 @@ public actor ToolCallHistoryGuard {
         "trace_id"
     ]
 
-    private nonisolated static let sensitiveKeyFragments: [String] = [
+    private static let sensitiveKeyFragments: [String] = [
         "authorization",
         "password",
         "passwd",
@@ -135,7 +135,7 @@ public actor ToolCallHistoryGuard {
         "cookie"
     ]
 
-    private nonisolated static func appendLengthPrefixed(
+    private static func appendLengthPrefixed(
         _ value: String,
         to data: inout Data
     ) {
