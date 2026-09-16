@@ -101,4 +101,80 @@ final class DispatcherBoundaryTests: XCTestCase {
             )
         }
     }
+
+    func testChallengeCreationFailureReleasesSemanticReservation() async throws {
+        let now = Date(timeIntervalSince1970: 1_000)
+        let store = FailOnceAuthorizationStateStore()
+        let verifier = ApprovalVerifier(store: store)
+        let dispatcher = CommandDispatcher(
+            replayProtector: ReplayProtector(),
+            approvalVerifier: verifier,
+            approvalTTL: 30
+        )
+        let first = makeEnvelope()
+
+        do {
+            _ = try await dispatcher.dispatch(
+                envelope: first,
+                permission: .execute,
+                now: now
+            )
+            XCTFail("Expected challenge creation failure")
+        } catch {
+            XCTAssertEqual(error as? TestAuthorizationStoreError, .insertFailed)
+        }
+
+        let retry = makeEnvelope(
+            requestID: UUID(uuidString: "88888888-8888-8888-8888-888888888888")!,
+            sessionID: first.sessionID,
+            sequence: first.sequence + 1,
+            nonce: UUID(uuidString: "99999999-9999-9999-9999-999999999999")!,
+            payload: [
+                "scope": "documents",
+                "idempotencyKey": "sync-002"
+            ]
+        )
+
+        guard case .approvalRequired = try await dispatcher.dispatch(
+            envelope: retry,
+            permission: .execute,
+            now: now.addingTimeInterval(1)
+        ) else {
+            return XCTFail("Challenge creation failure should permit a fresh retry")
+        }
+    }
+}
+
+private enum TestAuthorizationStoreError: Error, Equatable {
+    case insertFailed
+}
+
+private actor FailOnceAuthorizationStateStore: AuthorizationStateStore {
+    private var shouldFailInsert = true
+    private var challenges: [UUID: ApprovalChallenge] = [:]
+    private var tokens: [UUID: AuthorizationToken] = [:]
+
+    func insertChallenge(_ challenge: ApprovalChallenge) throws {
+        if shouldFailInsert {
+            shouldFailInsert = false
+            throw TestAuthorizationStoreError.insertFailed
+        }
+        challenges[challenge.id] = challenge
+    }
+
+    func resolveChallenge(
+        _ challenge: ApprovalChallenge,
+        issuing token: AuthorizationToken?
+    ) -> Bool {
+        guard challenges[challenge.id] == challenge else { return false }
+        challenges[challenge.id] = nil
+        if let token { tokens[token.id] = token }
+        return true
+    }
+
+    func consumeToken(_ token: AuthorizationToken) -> AuthorizationToken? {
+        let stored = tokens[token.id]
+        tokens[token.id] = nil
+        return stored
+    }
 }
