@@ -85,12 +85,13 @@ public actor InMemoryApprovalStateStore:
 /// Durable, privacy-minimized approval storage.
 ///
 /// SQLite unique constraints and BEGIN IMMEDIATE transactions provide atomic
-/// replay/idempotency reservation and compare-and-delete token consumption
-/// across app restarts and cooperating processes on one host.
+/// replay/idempotency/semantic-call reservation and compare-and-delete token
+/// consumption across app restarts and cooperating processes on one host.
 public actor SQLiteApprovalStateStore:
     ReplayStateStore,
     AuthorizationStateStore,
-    IdempotencyStateStore
+    IdempotencyStateStore,
+    ToolCallHistoryStateStore
 {
     public let databaseURL: URL
     private var database: OpaquePointer?
@@ -164,6 +165,14 @@ public actor SQLiteApprovalStateStore:
                 key TEXT PRIMARY KEY,
                 created_at REAL NOT NULL
             )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS semantic_tool_call_reservations (
+                session_id TEXT NOT NULL,
+                call_hash TEXT NOT NULL,
+                expires_at REAL NOT NULL,
+                PRIMARY KEY (session_id, call_hash)
+            )
             """
         ]
 
@@ -195,7 +204,6 @@ public actor SQLiteApprovalStateStore:
         return .databaseFailure(String(cString: message))
     }
 
-
     public func reserveReplay(
         _ key: ReplayKey,
         expiresAt: Date,
@@ -216,6 +224,32 @@ public actor SQLiteApprovalStateStore:
                     .text(key.sessionID.uuidString.lowercased()),
                     .text(String(key.sequence)),
                     .text(key.nonce.uuidString.lowercased()),
+                    .double(expiresAt.timeIntervalSince1970)
+                ]
+            )
+        }
+    }
+
+    public func reserveToolCall(
+        sessionID: UUID,
+        callHash: String,
+        expiresAt: Date,
+        now: Date
+    ) throws -> Bool {
+        try transaction {
+            try execute(
+                "DELETE FROM semantic_tool_call_reservations WHERE expires_at <= ?",
+                bindings: [.double(now.timeIntervalSince1970)]
+            )
+            return try insert(
+                """
+                INSERT OR IGNORE INTO semantic_tool_call_reservations
+                    (session_id, call_hash, expires_at)
+                VALUES (?, ?, ?)
+                """,
+                bindings: [
+                    .text(sessionID.uuidString.lowercased()),
+                    .text(callHash),
                     .double(expiresAt.timeIntervalSince1970)
                 ]
             )

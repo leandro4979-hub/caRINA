@@ -15,6 +15,15 @@ public struct DuplicateToolCallError: Error, Sendable, Equatable, Codable {
     }
 }
 
+public protocol ToolCallHistoryStateStore: Sendable {
+    func reserveToolCall(
+        sessionID: UUID,
+        callHash: String,
+        expiresAt: Date,
+        now: Date
+    ) async throws -> Bool
+}
+
 /// Session-scoped semantic duplicate protection for agent tool calls.
 ///
 /// Unlike replay protection, this guard intentionally ignores transport-level
@@ -28,10 +37,19 @@ public actor ToolCallHistoryGuard {
 
     private var histories: [UUID: SessionHistory] = [:]
     private let maxEntriesPerSession: Int
+    private let store: (any ToolCallHistoryStateStore)?
+    private let retention: TimeInterval
 
-    public init(maxEntriesPerSession: Int = 512) {
+    public init(
+        maxEntriesPerSession: Int = 512,
+        store: (any ToolCallHistoryStateStore)? = nil,
+        retention: TimeInterval = 24 * 60 * 60
+    ) {
         precondition(maxEntriesPerSession > 0)
+        precondition(retention > 0)
         self.maxEntriesPerSession = maxEntriesPerSession
+        self.store = store
+        self.retention = retention
     }
 
     /// Reserves a semantic tool-call hash for the session.
@@ -41,9 +59,24 @@ public actor ToolCallHistoryGuard {
     public func reserve(
         sessionID: UUID,
         toolName: String,
-        arguments: [String: String]
-    ) throws -> String {
+        arguments: [String: String],
+        now: Date = Date()
+    ) async throws -> String {
         let callHash = Self.makeHash(toolName: toolName, arguments: arguments)
+
+        if let store {
+            let reserved = try await store.reserveToolCall(
+                sessionID: sessionID,
+                callHash: callHash,
+                expiresAt: now.addingTimeInterval(retention),
+                now: now
+            )
+            guard reserved else {
+                throw DuplicateToolCallError(toolName: toolName, callHash: callHash)
+            }
+            return callHash
+        }
+
         var history = histories[sessionID] ?? SessionHistory()
 
         guard !history.hashes.contains(callHash) else {

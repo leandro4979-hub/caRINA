@@ -46,7 +46,8 @@ public struct CommandDispatcher: Sendable {
         try await toolCallHistory.reserve(
             sessionID: envelope.sessionID,
             toolName: envelope.request.intentID.rawValue,
-            arguments: envelope.request.payload
+            arguments: envelope.request.payload,
+            now: now
         )
 
         switch permission {
