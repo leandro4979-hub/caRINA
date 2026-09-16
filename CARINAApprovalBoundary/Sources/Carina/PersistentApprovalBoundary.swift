@@ -110,8 +110,13 @@ public struct PersistentApprovalBoundary<Adapter: AppIntentAdapter>: Sendable {
             store: store,
             retention: replayRetention
         )
+        let toolCallHistory = ToolCallHistoryGuard(
+            store: store,
+            retention: replayRetention
+        )
         let dispatcher = CommandDispatcher(
             replayProtector: replayProtector,
+            toolCallHistory: toolCallHistory,
             approvalVerifier: verifier,
             approvalTTL: approvalTTL
         )
