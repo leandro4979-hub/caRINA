@@ -47,6 +47,7 @@ public struct CommandDispatcher: Sendable {
             sessionID: envelope.sessionID,
             toolName: envelope.request.intentID.rawValue,
             arguments: envelope.request.payload,
+            correlationID: envelope.requestID,
             now: now
         )
 
@@ -56,11 +57,17 @@ public struct CommandDispatcher: Sendable {
         case .prepare:
             return .preparation
         case .execute:
-            let challenge = try await approvalVerifier.createChallenge(
-                envelope: envelope,
-                expiresAt: now.addingTimeInterval(approvalTTL)
-            )
-            return .approvalRequired(challenge)
+            do {
+                let challenge = try await approvalVerifier.createChallenge(
+                    envelope: envelope,
+                    expiresAt: now.addingTimeInterval(approvalTTL)
+                )
+                return .approvalRequired(challenge)
+            } catch {
+                let challengeError = error
+                try await toolCallHistory.release(correlationID: envelope.requestID)
+                throw challengeError
+            }
         }
     }
 }

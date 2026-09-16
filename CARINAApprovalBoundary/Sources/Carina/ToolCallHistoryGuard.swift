@@ -19,9 +19,12 @@ public protocol ToolCallHistoryStateStore: Sendable {
     func reserveToolCall(
         sessionID: UUID,
         callHash: String,
+        correlationID: UUID,
         expiresAt: Date,
         now: Date
     ) async throws -> Bool
+
+    func releaseToolCall(correlationID: UUID) async throws
 }
 
 /// Session-scoped semantic duplicate protection for agent tool calls.
@@ -35,7 +38,13 @@ public actor ToolCallHistoryGuard {
         var insertionOrder: [String] = []
     }
 
+    private struct Correlation: Sendable {
+        let sessionID: UUID
+        let callHash: String
+    }
+
     private var histories: [UUID: SessionHistory] = [:]
+    private var correlations: [UUID: Correlation] = [:]
     private let maxEntriesPerSession: Int
     private let store: (any ToolCallHistoryStateStore)?
     private let retention: TimeInterval
@@ -60,6 +69,7 @@ public actor ToolCallHistoryGuard {
         sessionID: UUID,
         toolName: String,
         arguments: [String: String],
+        correlationID: UUID = UUID(),
         now: Date = Date()
     ) async throws -> String {
         let callHash = Self.makeHash(toolName: toolName, arguments: arguments)
@@ -68,6 +78,7 @@ public actor ToolCallHistoryGuard {
             let reserved = try await store.reserveToolCall(
                 sessionID: sessionID,
                 callHash: callHash,
+                correlationID: correlationID,
                 expiresAt: now.addingTimeInterval(retention),
                 now: now
             )
@@ -89,18 +100,47 @@ public actor ToolCallHistoryGuard {
         if history.insertionOrder.count > maxEntriesPerSession {
             let evicted = history.insertionOrder.removeFirst()
             history.hashes.remove(evicted)
+            correlations = correlations.filter {
+                !($0.value.sessionID == sessionID && $0.value.callHash == evicted)
+            }
         }
 
         histories[sessionID] = history
+        correlations[correlationID] = Correlation(
+            sessionID: sessionID,
+            callHash: callHash
+        )
         return callHash
+    }
+
+    public func release(correlationID: UUID) async throws {
+        if let store {
+            try await store.releaseToolCall(correlationID: correlationID)
+            return
+        }
+
+        guard let correlation = correlations.removeValue(forKey: correlationID),
+              var history = histories[correlation.sessionID] else {
+            return
+        }
+
+        history.hashes.remove(correlation.callHash)
+        history.insertionOrder.removeAll { $0 == correlation.callHash }
+        if history.hashes.isEmpty {
+            histories.removeValue(forKey: correlation.sessionID)
+        } else {
+            histories[correlation.sessionID] = history
+        }
     }
 
     public func reset(sessionID: UUID) {
         histories.removeValue(forKey: sessionID)
+        correlations = correlations.filter { $0.value.sessionID != sessionID }
     }
 
     public func resetAll() {
         histories.removeAll(keepingCapacity: false)
+        correlations.removeAll(keepingCapacity: false)
     }
 
     public static func makeHash(

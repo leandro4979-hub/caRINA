@@ -173,6 +173,16 @@ public actor SQLiteApprovalStateStore:
                 expires_at REAL NOT NULL,
                 PRIMARY KEY (session_id, call_hash)
             )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS semantic_tool_call_correlations (
+                correlation_id TEXT PRIMARY KEY,
+                session_id TEXT NOT NULL,
+                call_hash TEXT NOT NULL,
+                FOREIGN KEY (session_id, call_hash)
+                    REFERENCES semantic_tool_call_reservations(session_id, call_hash)
+                    ON DELETE CASCADE
+            )
             """
         ]
 
@@ -233,6 +243,7 @@ public actor SQLiteApprovalStateStore:
     public func reserveToolCall(
         sessionID: UUID,
         callHash: String,
+        correlationID: UUID,
         expiresAt: Date,
         now: Date
     ) throws -> Bool {
@@ -241,7 +252,7 @@ public actor SQLiteApprovalStateStore:
                 "DELETE FROM semantic_tool_call_reservations WHERE expires_at <= ?",
                 bindings: [.double(now.timeIntervalSince1970)]
             )
-            return try insert(
+            let inserted = try insert(
                 """
                 INSERT OR IGNORE INTO semantic_tool_call_reservations
                     (session_id, call_hash, expires_at)
@@ -253,6 +264,32 @@ public actor SQLiteApprovalStateStore:
                     .double(expiresAt.timeIntervalSince1970)
                 ]
             )
+            guard inserted else { return false }
+
+            let correlated = try insert(
+                """
+                INSERT OR IGNORE INTO semantic_tool_call_correlations
+                    (correlation_id, session_id, call_hash)
+                VALUES (?, ?, ?)
+                """,
+                bindings: [
+                    .text(correlationID.uuidString.lowercased()),
+                    .text(sessionID.uuidString.lowercased()),
+                    .text(callHash)
+                ]
+            )
+            guard correlated else {
+                throw ApprovalStateStoreError.databaseFailure(
+                    "duplicate semantic correlation"
+                )
+            }
+            return true
+        }
+    }
+
+    public func releaseToolCall(correlationID: UUID) throws {
+        try transaction {
+            try releaseToolCallReservation(correlationID: correlationID)
         }
     }
 
@@ -305,6 +342,10 @@ public actor SQLiteApprovalStateStore:
                 guard inserted else {
                     throw ApprovalStateStoreError.databaseFailure("duplicate token")
                 }
+            } else {
+                try releaseToolCallReservation(
+                    correlationID: challenge.correlationID
+                )
             }
             return true
         }
@@ -343,6 +384,22 @@ public actor SQLiteApprovalStateStore:
     private enum Binding {
         case text(String)
         case double(Double)
+    }
+
+    private func releaseToolCallReservation(correlationID: UUID) throws {
+        try execute(
+            """
+            DELETE FROM semantic_tool_call_reservations
+            WHERE EXISTS (
+                SELECT 1
+                FROM semantic_tool_call_correlations AS correlation
+                WHERE correlation.correlation_id = ?
+                  AND correlation.session_id = semantic_tool_call_reservations.session_id
+                  AND correlation.call_hash = semantic_tool_call_reservations.call_hash
+            )
+            """,
+            bindings: [.text(correlationID.uuidString.lowercased())]
+        )
     }
 
     private func loadChallenge(id: UUID) throws -> ApprovalChallenge? {
