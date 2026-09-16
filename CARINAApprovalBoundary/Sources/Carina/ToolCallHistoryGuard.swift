@@ -87,9 +87,8 @@ public actor ToolCallHistoryGuard {
         return digest.map { String(format: "%02x", $0) }.joined()
     }
 
-    /// Removes secrets from the hash input and neutralizes transport-only keys.
-    /// Secret values are deliberately replaced with a fixed marker so token
-    /// rotation cannot make an otherwise identical action look new.
+    /// Removes secrets from the hash input, neutralizes transport-only keys,
+    /// and reduces encoded ActionPlans to their execution-relevant semantics.
     public static func sanitizedArguments(
         _ arguments: [String: String]
     ) -> [String: String] {
@@ -103,6 +102,9 @@ public actor ToolCallHistoryGuard {
 
             if transportOnlyKeys.contains(normalizedKey) {
                 sanitized[key] = "<transport>"
+            } else if actionPlanKeys.contains(normalizedKey),
+                      let canonicalPlan = canonicalActionPlan(value) {
+                sanitized[key] = canonicalPlan
             } else if sensitiveKeyFragments.contains(where: normalizedKey.contains) {
                 sanitized[key] = "<redacted>"
             } else {
@@ -112,6 +114,11 @@ public actor ToolCallHistoryGuard {
 
         return sanitized
     }
+
+    private static let actionPlanKeys: Set<String> = [
+        "actionplan",
+        "action_plan"
+    ]
 
     private static let transportOnlyKeys: Set<String> = [
         "idempotencykey",
@@ -134,6 +141,23 @@ public actor ToolCallHistoryGuard {
         "refresh_token",
         "cookie"
     ]
+
+    private static func canonicalActionPlan(_ encodedPlan: String) -> String? {
+        guard let data = Data(base64Encoded: encodedPlan),
+              let plan = try? JSONDecoder().decode(ActionPlan.self, from: data) else {
+            return nil
+        }
+
+        var canonical = Data()
+        appendLengthPrefixed(plan.capabilityID, to: &canonical)
+        appendLengthPrefixed(String(plan.capabilityVersionMajor), to: &canonical)
+        appendLengthPrefixed(plan.target, to: &canonical)
+        for key in plan.normalizedPayload.keys.sorted() {
+            appendLengthPrefixed(key, to: &canonical)
+            appendLengthPrefixed(plan.normalizedPayload[key] ?? "", to: &canonical)
+        }
+        return canonical.base64EncodedString()
+    }
 
     private static func appendLengthPrefixed(
         _ value: String,
