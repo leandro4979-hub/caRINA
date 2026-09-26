@@ -146,6 +146,7 @@ actor ExecutionAuthorizationStore {
 
     static func fingerprint(for authorization: ExecutionAuthorization) -> String {
         let canonical = [
+            authorization.authorizationId,
             authorization.requestId,
             authorization.nonce,
             authorization.candidateId,
@@ -155,6 +156,8 @@ actor ExecutionAuthorizationStore {
             String(authorization.tabId),
             String(authorization.frameId),
             authorization.origin,
+            String(authorization.issuedAt),
+            String(authorization.expiresAt),
         ].joined(separator: "\n")
 
         return SHA256.hash(data: Data(canonical.utf8))
