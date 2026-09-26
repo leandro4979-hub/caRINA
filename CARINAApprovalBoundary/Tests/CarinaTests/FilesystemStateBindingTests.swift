@@ -41,6 +41,25 @@ final class FilesystemStateBindingTests: XCTestCase {
         }
     }
 
+    func testSymlinkSourceIsRejectedWithoutFollowingTarget() throws {
+        let fixture = try TempFixture()
+        let target = fixture.root.appendingPathComponent("Target.swift")
+        let link = fixture.root.appendingPathComponent("Link.swift")
+        try Data("let value = 1\n".utf8).write(to: target)
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: target)
+
+        let mutation = ValidatedFileMutation(
+            oldCanonicalPath: link.path,
+            newCanonicalPath: link.path,
+            operation: .modify,
+            destructive: false
+        )
+
+        XCTAssertThrowsError(try binder.capture(for: [mutation])) { error in
+            XCTAssertEqual(error as? FilesystemStateBindingError, .symlinkDetected(link.path))
+        }
+    }
+
     func testCreateBindsAbsentDestinationAndParentIdentity() throws {
         let fixture = try TempFixture()
         let destination = fixture.root.appendingPathComponent("New.swift")
