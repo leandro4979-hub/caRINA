@@ -167,10 +167,12 @@ final class PersistentApprovalBoundaryTests: XCTestCase {
                 )
             ]
         )
+        let journalURL = databaseURL.deletingLastPathComponent().appendingPathComponent("activity.jsonl")
         let boundary = try PersistentApprovalBoundary(
             databaseURL: databaseURL,
             registry: registry,
-            adapter: RecordingAdapter()
+            adapter: RecordingAdapter(),
+            journalURL: journalURL
         )
         let invalid = makeEnvelope(payload: [
             "scope": "documents",
