@@ -52,6 +52,13 @@ final class SafariAuthorizationBoundaryTests: XCTestCase {
         )
     }
 
+    func testFingerprintBindsAuthorizationLifetime() {
+        let first = authorization(expiresAt: 2_000)
+        let second = authorization(expiresAt: 2_001)
+
+        XCTAssertNotEqual(first.executionFingerprint, second.executionFingerprint)
+    }
+
     func testDefaultVerifierFailsClosed() async throws {
         let boundary = SafariAuthorizationBoundary()
         let auth = authorization()
