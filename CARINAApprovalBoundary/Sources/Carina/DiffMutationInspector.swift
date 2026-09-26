@@ -48,26 +48,27 @@ public struct DiffMutationInspector: Sendable {
         var current: FileSection?
 
         for rawLine in diff.components(separatedBy: .newlines) {
-            let line = rawLine.trimmingCharacters(in: .whitespaces)
-            if line.isEmpty { continue }
-
-            if line.hasPrefix("diff --git ") {
+            if rawLine.hasPrefix("diff --git ") {
                 if let section = current {
                     mutations.append(try finalize(section))
                 }
-                current = try parseGitHeader(line)
+                current = try parseGitHeader(rawLine)
                 continue
             }
 
             guard var section = current else {
+                if rawLine.trimmingCharacters(in: .whitespaces).isEmpty { continue }
                 throw DiffParserError.malformedFileSection
             }
 
             if section.enteredHunks {
-                // Everything in hunk bodies is inert until the next diff header.
+                // Everything in hunk bodies is inert until the next unprefixed diff header.
                 current = section
                 continue
             }
+
+            let line = rawLine.trimmingCharacters(in: .whitespaces)
+            if line.isEmpty { continue }
 
             if line.hasPrefix("@@") {
                 section.enteredHunks = true
