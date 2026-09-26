@@ -103,8 +103,17 @@ public actor SofaClient: SofaContributionTransport {
     }
 
     private func readPostData(id: String) async throws -> Data {
-        guard !id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw SofaError.missingField("postID") }
-        return try await authenticatedRead(["api", "posts", id])
+        let postID = try validatedPostID(id)
+        return try await authenticatedRead(["api", "posts", postID])
+    }
+
+    private func validatedPostID(_ rawValue: String) throws -> String {
+        let postID = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !postID.isEmpty else { throw SofaError.missingField("postID") }
+        guard postID.range(of: #"^[A-Za-z0-9_-]{1,128}$"#, options: .regularExpression) != nil else {
+            throw SofaError.invalidConfiguration("postID must be a single URL-safe path segment")
+        }
+        return postID
     }
 
     private func authenticatedRead(_ path: [String], queryItems: [URLQueryItem] = []) async throws -> Data {
