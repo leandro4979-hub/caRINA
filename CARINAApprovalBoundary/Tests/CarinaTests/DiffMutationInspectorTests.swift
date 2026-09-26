@@ -65,6 +65,22 @@ final class DiffMutationInspectorTests: XCTestCase {
         )
     }
 
+    func testHunkContextBeginningWithDiffHeaderTextRemainsOpaque() throws {
+        let diff = [
+            "diff --git a/Sources/Safe.swift b/Sources/Safe.swift",
+            "--- a/Sources/Safe.swift",
+            "+++ b/Sources/Safe.swift",
+            "@@ -1,1 +1,2 @@",
+            " diff --git a/Fake.swift b/Fake.swift",
+            "+print(\"still same hunk\")"
+        ].joined(separator: "\n")
+
+        XCTAssertEqual(
+            try inspector.inspect(diff),
+            [ObservedMutation(oldPath: "Sources/Safe.swift", newPath: "Sources/Safe.swift", operation: .modify)]
+        )
+    }
+
     func testRejectsMalformedHeader() {
         XCTAssertThrowsError(try inspector.inspect("diff --git only-one-path.swift")) {
             XCTAssertEqual($0 as? DiffParserError, .malformedHeader)
