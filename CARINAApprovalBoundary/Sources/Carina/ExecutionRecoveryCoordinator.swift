@@ -254,10 +254,10 @@ public struct ExecutionRecoveryCoordinator: Sendable {
 
     private func persistedState(for decision: RecoveryDecision) -> ReservationState? {
         switch decision {
-        case .continueExecution, .alreadyCommitted:
+        case .continueExecution, .safeToRetry:
+            return .executing
+        case .alreadyCommitted:
             return nil
-        case .safeToRetry:
-            return .retryable
         case .recoverAsCommitted:
             return .committed
         case .quarantine:
