@@ -26,8 +26,11 @@ public actor IdempotencyStore {
         }
     }
 
-    public func contains(_ key: String) async -> Bool {
+    public func contains(_ key: String) async throws -> Bool {
         let normalized = key.trimmingCharacters(in: .whitespacesAndNewlines)
-        return (try? await store.containsIdempotencyKey(normalized)) == true
+        guard !normalized.isEmpty else {
+            throw IdempotencyError.missingKey
+        }
+        return try await store.containsIdempotencyKey(normalized)
     }
 }
