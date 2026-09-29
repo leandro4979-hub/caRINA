@@ -24,30 +24,33 @@ public enum ReplayProtectionError: Error, Sendable, Equatable {
     case replayDetected(ReplayKey)
 }
 
-/// An in-memory implementation. Replace the storage with a transactional,
-/// shared store when multiple CARINA processes accept commands.
+/// Replay reservations are delegated to an injected atomic store. Production
+/// uses SQLiteApprovalStateStore, preserving reservations across restarts.
 public actor ReplayProtector {
-    private var reservations: [ReplayKey: Date] = [:]
+    private let store: any ReplayStateStore
     private let retention: TimeInterval
 
-    public init(retention: TimeInterval = 24 * 60 * 60) {
+    public init(
+        store: any ReplayStateStore = InMemoryApprovalStateStore(),
+        retention: TimeInterval = 24 * 60 * 60
+    ) {
         precondition(retention > 0)
+        self.store = store
         self.retention = retention
     }
 
     public func reserve(
         _ envelope: CommandEnvelope,
         now: Date = Date()
-    ) throws {
-        prune(now: now)
+    ) async throws {
         let key = ReplayKey(envelope: envelope)
-        guard reservations[key] == nil else {
+        let inserted = try await store.reserveReplay(
+            key,
+            expiresAt: now.addingTimeInterval(retention),
+            now: now
+        )
+        guard inserted else {
             throw ReplayProtectionError.replayDetected(key)
         }
-        reservations[key] = now.addingTimeInterval(retention)
-    }
-
-    private func prune(now: Date) {
-        reservations = reservations.filter { $0.value > now }
     }
 }

@@ -9,7 +9,15 @@ let package = Package(
         .library(name: "CarinaCore", targets: ["Carina"])
     ],
     targets: [
-        .target(name: "Carina"),
+        .systemLibrary(
+            name: "CSQLite",
+            pkgConfig: "sqlite3",
+            providers: [
+                .brew(["sqlite3"]),
+                .apt(["libsqlite3-dev"])
+            ]
+        ),
+        .target(name: "Carina", dependencies: ["CSQLite"]),
         .testTarget(name: "CarinaTests", dependencies: ["Carina"])
     ]
 )

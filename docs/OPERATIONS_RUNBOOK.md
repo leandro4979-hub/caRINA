@@ -37,6 +37,19 @@ stage, checksum, quarantine reference, and UTC timestamp—never raw content.
   not create a new action or change target/parameters. If storage is corrupt or
   the stored plan fails integrity validation, fail closed and escalate.
 
+## CARINA persistent approval recovery
+
+- **Approval database unavailable, corrupt, or locked past timeout:** fail
+  closed before challenge issuance or execution. Preserve the existing
+  privacy-minimized journal, do not recreate authorization state from UI data,
+  and require operator recovery of the protected database.
+- **Restart during approval:** reload only the stored challenge/token state.
+  Never mint a replacement token from a displayed approval card.
+- **Concurrent token presentation:** exactly one transactional delete may win.
+  Every loser is treated as consumed/unknown and must not retry execution.
+- **Expired replay reservations:** prune only within the configured retention
+  transaction. Never remove live reservations to recover capacity.
+
 ## Review, recovery, and retention
 
 Only an authorized reviewer may approve a corrected replacement or security

@@ -28,3 +28,6 @@ CARINAApprovalBoundary/.build/
 .env
 .env.local
 .venv/
+
+# SOFA credentials
+.sofa/

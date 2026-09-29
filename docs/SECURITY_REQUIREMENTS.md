@@ -94,6 +94,20 @@ credentials, and model output. The package stores one-way hashes for review
 deduplication and correlation only. Oversized payloads and over-limit batch
 entries fail per item into the same privacy-minimized policy-rejection path.
 
+## CARINA persistent approval runtime (AUD-009)
+
+Production command routing derives permission only from the immutable capability
+registry snapshot. Unknown capabilities, versions, inputs, accounts, and
+recipient limits fail before replay reservation or challenge creation.
+
+Replay tuples, approval challenges, authorization tokens, and executor
+idempotency keys share one SQLite authority. Unique constraints and
+`BEGIN IMMEDIATE` transactions enforce atomic reservation and token
+compare-and-delete across app restarts and cooperating same-host processes.
+SQLite runs in WAL mode with full synchronization and a bounded busy timeout.
+The database stores no raw model text, credentials, audio, or response content.
+Database open, schema, lock, corruption, and write failures fail closed.
+
 ## CARINA durable ledger and outbox (AUD-007)
 
 The local durable ledger holds an advisory process lock while it loads,
