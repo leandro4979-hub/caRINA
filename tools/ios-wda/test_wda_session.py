@@ -11,7 +11,7 @@ from appium.options.common import AppiumOptions
 from wda_capabilities import build_capabilities
 
 
-APPIUM_URL = os.environ.get("APPIUM_URL", "http://127.0.0.1:4723")
+APPIUM_URL = os.environ.get("APPIUM_URL", "http://127.0.0.1:4723/wd/hub").rstrip("/")
 
 
 def appium_server_is_alive() -> bool:
