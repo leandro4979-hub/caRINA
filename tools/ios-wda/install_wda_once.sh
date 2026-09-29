@@ -16,7 +16,7 @@ Optional environment variables:
   WDA_DIR             Checkout/build directory.
                       Default: $HOME/Developer/WebDriverAgent-Carina
 
-  DERIVED_DATA        Xcode DerivedData location.
+  DERIVED_DATA        Parent directory for retained WDA builds.
                       Default: $WDA_DIR/DerivedData
 
   CODE_SIGN_IDENTITY  Signing identity.
@@ -49,6 +49,7 @@ require_command git
 require_command xcodebuild
 require_command xcrun
 require_command plutil
+require_command codesign
 
 echo "==> Verifying active Xcode"
 xcode-select -p
@@ -74,10 +75,10 @@ fi
 
 cd "$WDA_DIR"
 
-echo
-echo "==> Removing previous DerivedData"
-rm -rf "$DERIVED_DATA"
-mkdir -p "$DERIVED_DATA"
+WDA_GIT_SHA="$(git rev-parse HEAD)"
+BUILD_ID="$(date -u +%Y%m%dT%H%M%SZ)-$(git rev-parse --short HEAD)"
+BUILD_ROOT="$DERIVED_DATA/$BUILD_ID"
+mkdir -p "$BUILD_ROOT"
 
 echo
 echo "==> Building signed WebDriverAgentRunner"
@@ -86,7 +87,7 @@ xcodebuild \
   -scheme WebDriverAgentRunner \
   -configuration Debug \
   -destination "id=$DEVICE_UDID" \
-  -derivedDataPath "$DERIVED_DATA" \
+  -derivedDataPath "$BUILD_ROOT" \
   -allowProvisioningUpdates \
   -allowProvisioningDeviceRegistration \
   DEVELOPMENT_TEAM="$WDA_TEAM_ID" \
@@ -97,13 +98,18 @@ xcodebuild \
   COMPILER_INDEX_STORE_ENABLE=NO \
   build-for-testing
 
-WDA_APP="$DERIVED_DATA/Build/Products/Debug-iphoneos/WebDriverAgentRunner-Runner.app"
+WDA_APP="$BUILD_ROOT/Build/Products/Debug-iphoneos/WebDriverAgentRunner-Runner.app"
 
 if [[ ! -d "$WDA_APP" ]]; then
   echo "ERROR: WDA build completed but runner was not found at:" >&2
   echo "  $WDA_APP" >&2
   exit 71
 fi
+
+echo
+echo "==> Preserving signed entitlements before framework pruning"
+ENTITLEMENTS_PLIST="$BUILD_ROOT/wda-entitlements.plist"
+codesign -d --entitlements :- "$WDA_APP" >"$ENTITLEMENTS_PLIST" 2>/dev/null
 
 echo
 echo "==> Removing embedded XCTest frameworks for preinstalled-WDA launch"
@@ -133,6 +139,22 @@ ACTUAL_BUNDLE_ID="$(
 )"
 
 echo
+echo "==> Re-signing prepared runner after framework pruning"
+codesign \
+  --force \
+  --sign "$CODE_SIGN_IDENTITY" \
+  --entitlements "$ENTITLEMENTS_PLIST" \
+  --timestamp=none \
+  "$WDA_APP"
+
+echo
+echo "==> Verifying final runner signature"
+if ! codesign --verify --deep --strict --verbose=2 "$WDA_APP"; then
+  echo "ERROR: final WDA signature verification failed; refusing installation." >&2
+  exit 73
+fi
+
+echo
 echo "==> Build complete"
 echo "Runner:"
 echo "  $WDA_APP"
@@ -145,6 +167,12 @@ echo "  $WDA_TEAM_ID"
 echo
 echo "Device:"
 echo "  $DEVICE_UDID"
+echo
+echo "WDA Git SHA:"
+echo "  $WDA_GIT_SHA"
+echo
+echo "Retained build:"
+echo "  $BUILD_ROOT"
 
 echo
 echo "==> Installing WDA runner on the physical iPhone"
