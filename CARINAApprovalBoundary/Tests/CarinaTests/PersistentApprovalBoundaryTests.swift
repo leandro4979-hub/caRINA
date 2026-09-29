@@ -3,6 +3,20 @@ import XCTest
 @testable import Carina
 
 final class PersistentApprovalBoundaryTests: XCTestCase {
+    func testApprovalDatabaseUsesOwnerOnlyPermissions() throws {
+        let databaseURL = temporaryDatabaseURL()
+        defer { removeDatabase(at: databaseURL) }
+
+        _ = try SQLiteApprovalStateStore(databaseURL: databaseURL)
+
+        let databaseAttributes = try FileManager.default.attributesOfItem(atPath: databaseURL.path)
+        let directoryAttributes = try FileManager.default.attributesOfItem(
+            atPath: databaseURL.deletingLastPathComponent().path
+        )
+        XCTAssertEqual((databaseAttributes[.posixPermissions] as? NSNumber)?.intValue, 0o600)
+        XCTAssertEqual((directoryAttributes[.posixPermissions] as? NSNumber)?.intValue, 0o700)
+    }
+
     func testReplayReservationSurvivesStoreRestart() async throws {
         let databaseURL = temporaryDatabaseURL()
         defer { removeDatabase(at: databaseURL) }
@@ -167,10 +181,12 @@ final class PersistentApprovalBoundaryTests: XCTestCase {
                 )
             ]
         )
+        let journalURL = databaseURL.deletingLastPathComponent().appendingPathComponent("activity.jsonl")
         let boundary = try PersistentApprovalBoundary(
             databaseURL: databaseURL,
             registry: registry,
-            adapter: RecordingAdapter()
+            adapter: RecordingAdapter(),
+            journalURL: journalURL
         )
         let invalid = makeEnvelope(payload: [
             "scope": "documents",

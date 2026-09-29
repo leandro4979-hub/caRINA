@@ -75,7 +75,7 @@ final class ApprovalBoundaryIntegrationTests: XCTestCase {
         let executionCount = await adapter.executionCount
         let executionStartedCount = await journal.count(status: .executionStarted)
         let executionSucceededCount = await journal.count(status: .executionSucceeded)
-        let idempotencyReserved = await idempotencyStore.contains("sync-001")
+        let idempotencyReserved = try await idempotencyStore.contains("sync-001")
 
         XCTAssertEqual(executionCount, 1)
         XCTAssertEqual(executionStartedCount, 1)

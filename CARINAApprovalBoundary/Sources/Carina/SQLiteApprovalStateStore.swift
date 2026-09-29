@@ -97,9 +97,27 @@ public actor SQLiteApprovalStateStore:
 
     public init(databaseURL: URL) throws {
         self.databaseURL = databaseURL
+        let directoryURL = databaseURL.deletingLastPathComponent()
         try FileManager.default.createDirectory(
-            at: databaseURL.deletingLastPathComponent(),
+            at: directoryURL,
             withIntermediateDirectories: true
+        )
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o700],
+            ofItemAtPath: directoryURL.path
+        )
+        if !FileManager.default.fileExists(atPath: databaseURL.path) {
+            guard FileManager.default.createFile(
+                atPath: databaseURL.path,
+                contents: Data(),
+                attributes: [.posixPermissions: 0o600]
+            ) else {
+                throw ApprovalStateStoreError.databaseUnavailable
+            }
+        }
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o600],
+            ofItemAtPath: databaseURL.path
         )
 
         var handle: OpaquePointer?

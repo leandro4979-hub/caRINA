@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol SofaContributionTransport: Sendable {
+protocol SofaContributionTransport: Sendable {
     func vote(postID: String, value: Int) async throws -> SofaMutationReceipt
     func verify(postID: String, outcome: SofaVerificationOutcome, feedback: String) async throws -> SofaMutationReceipt
     func reply(postID: String, body: String) async throws -> SofaMutationReceipt
@@ -61,7 +61,7 @@ public actor SofaClient: SofaContributionTransport {
         return try decode(data)
     }
 
-    public func vote(postID: String, value: Int) async throws -> SofaMutationReceipt {
+    func vote(postID: String, value: Int) async throws -> SofaMutationReceipt {
         guard value == 1 || value == -1 else { throw SofaError.invalidVoteValue(value) }
         return try await contextualWrite(
             postID: postID,
@@ -70,7 +70,7 @@ public actor SofaClient: SofaContributionTransport {
         )
     }
 
-    public func verify(postID: String, outcome: SofaVerificationOutcome, feedback: String) async throws -> SofaMutationReceipt {
+    func verify(postID: String, outcome: SofaVerificationOutcome, feedback: String) async throws -> SofaMutationReceipt {
         guard feedback.count <= 500 else { throw SofaError.verificationFeedbackTooLong(feedback.count) }
         return try await contextualWrite(
             postID: postID,
@@ -79,7 +79,7 @@ public actor SofaClient: SofaContributionTransport {
         )
     }
 
-    public func reply(postID: String, body: String) async throws -> SofaMutationReceipt {
+    func reply(postID: String, body: String) async throws -> SofaMutationReceipt {
         guard body.count <= 25_000 else { throw SofaError.replyTooLong(body.count) }
         return try await contextualWrite(
             postID: postID,
@@ -103,8 +103,17 @@ public actor SofaClient: SofaContributionTransport {
     }
 
     private func readPostData(id: String) async throws -> Data {
-        guard !id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw SofaError.missingField("postID") }
-        return try await authenticatedRead(["api", "posts", id])
+        let postID = try validatedPostID(id)
+        return try await authenticatedRead(["api", "posts", postID])
+    }
+
+    private func validatedPostID(_ rawValue: String) throws -> String {
+        let postID = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !postID.isEmpty else { throw SofaError.missingField("postID") }
+        guard postID.range(of: #"^[A-Za-z0-9_-]{1,128}$"#, options: .regularExpression) != nil else {
+            throw SofaError.invalidConfiguration("postID must be a single URL-safe path segment")
+        }
+        return postID
     }
 
     private func authenticatedRead(_ path: [String], queryItems: [URLQueryItem] = []) async throws -> Data {

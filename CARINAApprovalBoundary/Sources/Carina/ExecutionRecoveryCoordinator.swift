@@ -172,7 +172,10 @@ public struct ExecutionRecoveryCoordinator: Sendable {
             let observation = try await inspector.observe(reservation: reservation)
             let decision = try decide(reservation: reservation, actual: observation)
 
-            guard let nextState = persistedState(for: decision) else {
+            guard let nextState = persistedState(
+                for: decision,
+                reservationState: reservation.state
+            ) else {
                 return decision
             }
 
@@ -252,12 +255,17 @@ public struct ExecutionRecoveryCoordinator: Sendable {
         return .quarantine(.ambiguousFilesystemState)
     }
 
-    private func persistedState(for decision: RecoveryDecision) -> ReservationState? {
+    private func persistedState(
+        for decision: RecoveryDecision,
+        reservationState: ReservationState
+    ) -> ReservationState? {
         switch decision {
-        case .continueExecution, .alreadyCommitted:
-            return nil
+        case .continueExecution:
+            return .executing
         case .safeToRetry:
-            return .retryable
+            return reservationState == .retryable ? .executing : .retryable
+        case .alreadyCommitted:
+            return nil
         case .recoverAsCommitted:
             return .committed
         case .quarantine:
