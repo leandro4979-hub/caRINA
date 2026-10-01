@@ -83,7 +83,7 @@ final class ApprovalBoundaryIntegrationTests: XCTestCase {
         XCTAssertTrue(idempotencyReserved)
     }
 
-    func testSameIdempotencyKeyCannotInvokeAdapterTwiceWithFreshAuthorization() async throws {
+    func testSameSemanticCallCannotReachSecondAuthorizationOrAdapterInvocation() async throws {
         let now = Date(timeIntervalSince1970: 1_000)
         let journal = try ActionActivityJournal()
         let verifier = ApprovalVerifier(journal: journal)
@@ -123,29 +123,23 @@ final class ApprovalBoundaryIntegrationTests: XCTestCase {
             sequence: first.sequence + 1,
             nonce: UUID()
         )
-        guard case let .approvalRequired(secondChallenge) = try await dispatcher.dispatch(
-            envelope: second,
-            permission: .execute,
-            now: now
-        ), let secondToken = try await verifier.authorize(
-            challenge: secondChallenge,
-            approved: true,
-            now: now
-        ) else {
-            return XCTFail("Expected second authorization")
-        }
 
         do {
-            _ = try await executor.execute(
+            _ = try await dispatcher.dispatch(
                 envelope: second,
-                authorization: secondToken,
+                permission: .execute,
                 now: now
             )
-            XCTFail("Expected duplicate idempotency rejection")
-        } catch {
+            XCTFail("Expected semantic duplicate rejection")
+        } catch let error as DuplicateToolCallError {
+            XCTAssertEqual(error.code, "duplicate_tool_call")
+            XCTAssertEqual(error.toolName, second.request.intentID.rawValue)
             XCTAssertEqual(
-                error as? IdempotencyError,
-                .alreadyReserved("sync-001")
+                error.callHash,
+                ToolCallHistoryGuard.makeHash(
+                    toolName: second.request.intentID.rawValue,
+                    arguments: second.request.payload
+                )
             )
         }
 
