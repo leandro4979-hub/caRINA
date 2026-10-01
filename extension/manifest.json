@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "CARINA Skip Assistant",
+  "version": "1.0.0",
+  "description": "Secure, deterministic browser-automation engine.",
+  "permissions": [
+    "nativeMessaging",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*"
+  ],
+  "background": {
+    "service_worker": "background/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content/content.js"]
+    }
+  ]
+}

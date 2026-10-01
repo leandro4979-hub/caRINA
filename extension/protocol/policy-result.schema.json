@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "carina://protocol/v1/policy-result.schema.json",
+  "title": "PolicyResult",
+  "type": "object",
+  "properties": {
+    "type": { "const": "POLICY_RESULT" },
+    "version": { "const": 1 },
+    "requestId": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "nonce": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "candidateId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9._:-]+$" },
+    "decision": { "type": "string", "enum": ["ALLOW", "DENY", "APPROVAL_REQUIRED"] },
+    "reasonCode": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Z0-9_]+$" }
+  },
+  "required": ["type", "version", "requestId", "nonce", "candidateId", "decision", "reasonCode"],
+  "additionalProperties": false
+}

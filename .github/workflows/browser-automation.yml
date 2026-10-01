@@ -1,0 +1,38 @@
+name: Browser Automation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/core/**'
+      - 'src/plugins/**'
+      - 'src/config/**'
+      - 'src/index.js'
+      - 'tests/browser_automation/**'
+      - 'package.json'
+      - 'Makefile'
+      - '.github/workflows/browser-automation.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/core/**'
+      - 'src/plugins/**'
+      - 'src/config/**'
+      - 'src/index.js'
+      - 'tests/browser_automation/**'
+      - 'package.json'
+      - 'Makefile'
+      - '.github/workflows/browser-automation.yml'
+
+jobs:
+  browser-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run browser automation tests
+        run: npm run test:browser
