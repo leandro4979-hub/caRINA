@@ -150,6 +150,7 @@ updates, and a recorded verification command/result.
 | AUD-007 | Durable local ledger and transactional outbox recovery. | Atomic reserve/outbox insertion, restart recovery, duplicate reservation, completion suppression, and persisted-plan tamper checks. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
 | AUD-009 | Registry-integrated persistent approval runtime. | Registry-derived permission before replay reservation; SQLite restart persistence; cross-connection one-time token consumption; durable executor idempotency. | ADR-002; Security; Runbook | Implemented; 43 Swift tests passed 2026-08-12 |
 | AUD-010 | Effect-verified, fail-closed revocation. | Block one receiver-to-gateway update; require the transaction to remain incomplete, the stale gateway to stay fenced with zero effects, and recovery to require fresh installation plus independent no-effect evidence. Test stale receipts, duplicate evidence, observation-window closure, and sticky violations. | ADR-002; Security; Runbook | `RevocationOutcomeMonitor`; 108 Swift tests passed 2026-10-16 |
+| AGT-001 | Governed multi-agent work with evidence and worker separation. | Require Scout → Builder → Security Reviewer → Verifier; bind task/scope; reject missing evidence, stage skips, self-review, contradictions, and unreproduced claims. Agent verification never creates execution authority. | Agent Roles; Security | `AgentWorkCoordinator`; verification pending |
 
 ## F-010 — NTFS ADS and Windows-safe archive extraction
 
@@ -280,3 +281,21 @@ is idempotent; and an observed committed effect remains a sticky violation.
 
 **Verification:** 2026-10-16 — macOS `swift test --parallel` completed all 108
 XCTest cases, including the five `RevocationOutcomeTests` cases.
+
+## Governed agent team (AGT-001)
+
+**Scope:** coordinate independent Scout, Builder, Security Reviewer, and
+Verifier workers without allowing an agent report to become authorization.
+
+**Acceptance criteria:** every report binds the task ID and frozen scope hash;
+workers advance in role order; a worker cannot participate in more than one
+stage; claims include evidence and inspected surfaces; unresolved
+contradictions and reproduction requirements cannot advance; and any role may
+block work. A verified workflow remains advisory and has no execution adapter.
+
+**Implementation:** `AgentWorkCoordinator` and its typed evidence contract
+under `CARINAApprovalBoundary/Sources/Carina`, with positive and fail-closed
+coverage under `CARINAApprovalBoundary/Tests/CarinaTests`.
+
+**Verification:** pending `swift test --parallel` on a host with Swift 5.9 or
+later; the current development environment does not provide a Swift toolchain.

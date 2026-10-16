@@ -13,6 +13,7 @@ The boundary is fail-closed and intentionally separates untrusted intent from ex
 - execution boundary adapters
 - local Ollama integration
 - effect-verified revocation with stale-gateway fencing
+- governed Scout, Builder, Security Reviewer, and Verifier workflow
 
 ## Effect-verified revocation
 
@@ -25,6 +26,17 @@ after the window closes. Any committed effect makes the violation sticky.
 The monitor is an in-memory reference boundary. Distributed deployments must
 persist and authenticate its evidence transactionally and must not infer
 enforcement from delivery acknowledgement alone.
+
+## Governed agent team
+
+`AgentWorkCoordinator` moves evidence through four workers with distinct
+identities. Every report binds the task and approved scope and records claims,
+evidence, inspected and uninspected surfaces, contradictions, and reproduction
+status. Stage skipping, self-review, scope drift, and evidence gaps fail closed.
+
+The final `verified` state is evidence status only. It does not issue execution
+authority; privileged effects still require the normal CARINA approval and
+execution boundary.
 
 ## Proposal validation keel
 

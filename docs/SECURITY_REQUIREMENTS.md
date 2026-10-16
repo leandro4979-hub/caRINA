@@ -141,3 +141,17 @@ This reference monitor evaluates evidence in memory. Production must persist
 the frozen population, receipts, observations, and sticky violation in one
 transactional authority; authenticate evidence producers; and fence gateways
 whose evidence is missing or stale.
+
+## Governed agent team (AGT-001)
+
+Agent workers are untrusted evidence and proposal producers. A task freezes an
+approved scope hash, and every report must bind that scope and task identity.
+The runtime requires separate Scout, Builder, Security Reviewer, and Verifier
+worker identities in order. Missing evidence, missing inspection records,
+scope drift, skipped stages, self-review, unresolved contradictions, and
+unreproduced claims fail closed.
+
+Completing the agent workflow does not issue an authorization token or permit
+an external effect. Only CARINA may authorize a separately compiled action
+through its capability, approval, replay, idempotency, audit, and recovery
+boundaries.
