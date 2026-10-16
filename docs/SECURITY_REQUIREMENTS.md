@@ -94,6 +94,20 @@ credentials, and model output. The package stores one-way hashes for review
 deduplication and correlation only. Oversized payloads and over-limit batch
 entries fail per item into the same privacy-minimized policy-rejection path.
 
+## CARINA persistent approval runtime (AUD-009)
+
+Production command routing derives permission only from the immutable capability
+registry snapshot. Unknown capabilities, versions, inputs, accounts, and
+recipient limits fail before replay reservation or challenge creation.
+
+Replay tuples, approval challenges, authorization tokens, and executor
+idempotency keys share one SQLite authority. Unique constraints and
+`BEGIN IMMEDIATE` transactions enforce atomic reservation and token
+compare-and-delete across app restarts and cooperating same-host processes.
+SQLite runs in WAL mode with full synchronization and a bounded busy timeout.
+The database stores no raw model text, credentials, audio, or response content.
+Database open, schema, lock, corruption, and write failures fail closed.
+
 ## CARINA durable ledger and outbox (AUD-007)
 
 The local durable ledger holds an advisory process lock while it loads,
@@ -107,3 +121,23 @@ This provides a tested same-host reference boundary, not a distributed
 consensus or trusted-storage guarantee. Production must use a transactional
 database/outbox, protected storage, reconciliation, and separately authorized
 delivery workers.
+
+## CARINA effect-verified revocation (AUD-010)
+
+Persisting or acknowledging a revocation does not prove that every enforcement
+gateway installed it. Each revocation transaction freezes its gateway
+population, required monotonic sequence, and observation window. A gateway is
+fenced from guarded execution until the receiver has persisted the revocation
+and that gateway has produced an installation receipt at or above the required
+sequence.
+
+The transaction closes only after every frozen gateway supplies a fresh
+installation receipt and an independent effect observer reports no committed
+effect for every gateway after the observation window closes. Missing,
+unknown, or stale evidence fails closed. Any observed committed effect is a
+sticky violation that later receipts or no-effect observations cannot erase.
+
+This reference monitor evaluates evidence in memory. Production must persist
+the frozen population, receipts, observations, and sticky violation in one
+transactional authority; authenticate evidence producers; and fence gateways
+whose evidence is missing or stale.
