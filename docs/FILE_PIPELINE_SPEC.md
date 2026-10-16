@@ -150,7 +150,7 @@ updates, and a recorded verification command/result.
 | AUD-007 | Durable local ledger and transactional outbox recovery. | Atomic reserve/outbox insertion, restart recovery, duplicate reservation, completion suppression, and persisted-plan tamper checks. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
 | AUD-009 | Registry-integrated persistent approval runtime. | Registry-derived permission before replay reservation; SQLite restart persistence; cross-connection one-time token consumption; durable executor idempotency. | ADR-002; Security; Runbook | Implemented; 43 Swift tests passed 2026-08-12 |
 | AUD-010 | Effect-verified, fail-closed revocation. | Block one receiver-to-gateway update; require the transaction to remain incomplete, the stale gateway to stay fenced with zero effects, and recovery to require fresh installation plus independent no-effect evidence. Test stale receipts, duplicate evidence, observation-window closure, and sticky violations. | ADR-002; Security; Runbook | `RevocationOutcomeMonitor`; 108 Swift tests passed 2026-10-16 |
-| AGT-001 | Governed multi-agent work with evidence and worker separation. | Require Scout → Builder → Security Reviewer → Verifier; bind task/scope; reject missing evidence, stage skips, self-review, contradictions, and unreproduced claims. Agent verification never creates execution authority. | Agent Roles; Security | `AgentWorkCoordinator`; verification pending |
+| AGT-001 | Governed multi-agent work with evidence and worker separation. | Require Scout → Builder → Security Reviewer → Verifier; bind task/scope; reject missing evidence, stage skips, self-review, contradictions, and unreproduced claims. Agent verification never creates execution authority. | Agent Roles; Security | `AgentWorkCoordinator`; 115 Swift tests passed 2026-10-16 |
 
 ## F-010 — NTFS ADS and Windows-safe archive extraction
 
@@ -297,5 +297,5 @@ block work. A verified workflow remains advisory and has no execution adapter.
 under `CARINAApprovalBoundary/Sources/Carina`, with positive and fail-closed
 coverage under `CARINAApprovalBoundary/Tests/CarinaTests`.
 
-**Verification:** pending `swift test --parallel` on a host with Swift 5.9 or
-later; the current development environment does not provide a Swift toolchain.
+**Verification:** 2026-10-16 — macOS `swift test --parallel` completed all 115
+XCTest cases, including all seven `AgentWorkCoordinatorTests` cases.
