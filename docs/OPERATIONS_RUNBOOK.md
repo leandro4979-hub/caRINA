@@ -36,6 +36,13 @@ stage, checksum, quarantine reference, and UTC timestamp—never raw content.
   the durable ledger and supply their stable dispatch ID to the executor. Do
   not create a new action or change target/parameters. If storage is corrupt or
   the stored plan fails integrity validation, fail closed and escalate.
+- **CARINA revocation persisted but not enforced:** keep the revocation
+  transaction incomplete and fence every gateway without a fresh installation
+  receipt. Do not treat transport acknowledgement or receiver persistence as
+  enforcement. Recovery requires receipts from the frozen gateway population,
+  independent no-effect observations, and a closed observation window. Any
+  observed committed effect is a sticky violation; preserve its evidence and
+  escalate rather than overwriting it with a late success receipt.
 
 ## CARINA persistent approval recovery
 
@@ -49,6 +56,10 @@ stage, checksum, quarantine reference, and UTC timestamp—never raw content.
   Every loser is treated as consumed/unknown and must not retry execution.
 - **Expired replay reservations:** prune only within the configured retention
   transaction. Never remove live reservations to recover capacity.
+- **Revocation evidence recovery:** restore only authenticated evidence tied to
+  the revocation ID, monotonic sequence, gateway ID, and frozen observation
+  window. Unknown gateways or stale sequences do not satisfy recovery. Keep a
+  gateway fenced until its exact evidence requirements are met.
 
 ## Review, recovery, and retention
 

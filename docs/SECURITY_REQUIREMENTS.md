@@ -121,3 +121,23 @@ This provides a tested same-host reference boundary, not a distributed
 consensus or trusted-storage guarantee. Production must use a transactional
 database/outbox, protected storage, reconciliation, and separately authorized
 delivery workers.
+
+## CARINA effect-verified revocation (AUD-010)
+
+Persisting or acknowledging a revocation does not prove that every enforcement
+gateway installed it. Each revocation transaction freezes its gateway
+population, required monotonic sequence, and observation window. A gateway is
+fenced from guarded execution until the receiver has persisted the revocation
+and that gateway has produced an installation receipt at or above the required
+sequence.
+
+The transaction closes only after every frozen gateway supplies a fresh
+installation receipt and an independent effect observer reports no committed
+effect for every gateway after the observation window closes. Missing,
+unknown, or stale evidence fails closed. Any observed committed effect is a
+sticky violation that later receipts or no-effect observations cannot erase.
+
+This reference monitor evaluates evidence in memory. Production must persist
+the frozen population, receipts, observations, and sticky violation in one
+transactional authority; authenticate evidence producers; and fence gateways
+whose evidence is missing or stale.
