@@ -149,7 +149,7 @@ updates, and a recorded verification command/result.
 | AUD-005, AUD-006, AUD-008 | Versioned capability allowlist, locked ActionPlan, and isolated batch compilation. | Version-key miss before validation, locked-plan mutation rejection, and valid/failed batch isolation. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
 | AUD-007 | Durable local ledger and transactional outbox recovery. | Atomic reserve/outbox insertion, restart recovery, duplicate reservation, completion suppression, and persisted-plan tamper checks. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
 | AUD-009 | Registry-integrated persistent approval runtime. | Registry-derived permission before replay reservation; SQLite restart persistence; cross-connection one-time token consumption; durable executor idempotency. | ADR-002; Security; Runbook | Implemented; 43 Swift tests passed 2026-08-12 |
-| AUD-010 | Effect-verified, fail-closed revocation. | Block one receiver-to-gateway update; require the transaction to remain incomplete, the stale gateway to stay fenced with zero effects, and recovery to require fresh installation plus independent no-effect evidence. Test stale receipts, duplicate evidence, observation-window closure, and sticky violations. | ADR-002; Security; Runbook | `RevocationOutcomeMonitor`; verification pending |
+| AUD-010 | Effect-verified, fail-closed revocation. | Block one receiver-to-gateway update; require the transaction to remain incomplete, the stale gateway to stay fenced with zero effects, and recovery to require fresh installation plus independent no-effect evidence. Test stale receipts, duplicate evidence, observation-window closure, and sticky violations. | ADR-002; Security; Runbook | `RevocationOutcomeMonitor`; 108 Swift tests passed 2026-10-16 |
 
 ## F-010 — NTFS ADS and Windows-safe archive extraction
 
@@ -278,5 +278,5 @@ is idempotent; and an observed committed effect remains a sticky violation.
 `CARINAApprovalBoundary/Sources/Carina` and fault-injection coverage under
 `CARINAApprovalBoundary/Tests/CarinaTests`.
 
-**Verification:** pending `swift test --parallel` on a host with Swift 5.9 or
-later; the current development environment does not provide a Swift toolchain.
+**Verification:** 2026-10-16 — macOS `swift test --parallel` completed all 108
+XCTest cases, including the five `RevocationOutcomeTests` cases.
