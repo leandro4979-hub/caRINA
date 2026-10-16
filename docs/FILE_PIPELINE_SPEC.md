@@ -149,6 +149,7 @@ updates, and a recorded verification command/result.
 | AUD-005, AUD-006, AUD-008 | Versioned capability allowlist, locked ActionPlan, and isolated batch compilation. | Version-key miss before validation, locked-plan mutation rejection, and valid/failed batch isolation. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
 | AUD-007 | Durable local ledger and transactional outbox recovery. | Atomic reserve/outbox insertion, restart recovery, duplicate reservation, completion suppression, and persisted-plan tamper checks. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
 | AUD-009 | Registry-integrated persistent approval runtime. | Registry-derived permission before replay reservation; SQLite restart persistence; cross-connection one-time token consumption; durable executor idempotency. | ADR-002; Security; Runbook | Implemented; 43 Swift tests passed 2026-08-12 |
+| AUD-010 | Effect-verified, fail-closed revocation. | Block one receiver-to-gateway update; require the transaction to remain incomplete, the stale gateway to stay fenced with zero effects, and recovery to require fresh installation plus independent no-effect evidence. Test stale receipts, duplicate evidence, observation-window closure, and sticky violations. | ADR-002; Security; Runbook | `RevocationOutcomeMonitor`; verification pending |
 
 ## F-010 — NTFS ADS and Windows-safe archive extraction
 
@@ -259,3 +260,23 @@ database failures prevent execution.
 `CARINAApprovalBoundary/Sources/Carina`.
 
 **Verification:** 2026-08-12 — macOS `swift test --parallel` passed all\n43 tests. Repository Python 3.9 gates remain blocked by the pre-existing use\nof `datetime.UTC`, which requires Python 3.11 or later.
+
+## CARINA effect-verified revocation (AUD-010)
+
+**Scope:** model revocation as an evidence-backed transaction rather than a
+token-status update. Freeze the gateway population and observation deadline at
+commit. Keep gateways without a fresh installation receipt fenced.
+
+**Acceptance criteria:** receiver persistence alone never completes the
+transaction; a blocked receiver-to-gateway update leaves that gateway fenced
+and permits zero guarded effects; completion requires fresh installation
+receipts and independent no-effect observations for every frozen gateway after
+the observation window closes; stale receipts fail closed; duplicate evidence
+is idempotent; and an observed committed effect remains a sticky violation.
+
+**Implementation:** `RevocationOutcomeMonitor` under
+`CARINAApprovalBoundary/Sources/Carina` and fault-injection coverage under
+`CARINAApprovalBoundary/Tests/CarinaTests`.
+
+**Verification:** pending `swift test --parallel` on a host with Swift 5.9 or
+later; the current development environment does not provide a Swift toolchain.

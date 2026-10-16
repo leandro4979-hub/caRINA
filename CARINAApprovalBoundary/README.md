@@ -12,6 +12,19 @@ The boundary is fail-closed and intentionally separates untrusted intent from ex
 - durable action journaling
 - execution boundary adapters
 - local Ollama integration
+- effect-verified revocation with stale-gateway fencing
+
+## Effect-verified revocation
+
+`RevocationOutcomeMonitor` treats receiver persistence, gateway installation,
+and independent effect observation as separate evidence. A gateway without a
+fresh receipt is fenced, and completion requires every gateway in the frozen
+population to have both a current receipt and a no-committed-effect observation
+after the window closes. Any committed effect makes the violation sticky.
+
+The monitor is an in-memory reference boundary. Distributed deployments must
+persist and authenticate its evidence transactionally and must not infer
+enforcement from delivery acknowledgement alone.
 
 ## Proposal validation keel
 
