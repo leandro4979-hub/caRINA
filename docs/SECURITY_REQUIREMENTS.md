@@ -146,10 +146,19 @@ whose evidence is missing or stale.
 
 Agent workers are untrusted evidence and proposal producers. A task freezes an
 approved scope hash, and every report must bind that scope and task identity.
-The runtime requires separate Scout, Builder, Security Reviewer, and Verifier
-worker identities in order. Missing evidence, missing inspection records,
-scope drift, skipped stages, self-review, unresolved contradictions, and
-unreproduced claims fail closed.
+Trusted CARINA setup maps a canonical authenticated transport principal to a
+role and provisions an opaque credential bound to one coordinator instance;
+reports cannot assert identity or role. It requires separate Scout, Builder,
+Security Reviewer, and Verifier workers in order. Foreign credentials, missing
+registry state, missing evidence, missing inspection records, scope drift,
+skipped stages, self-review, unresolved contradictions, and unreproduced claims
+fail closed.
+
+Untrusted serialized work-item state is not a recovery input. Accepted evidence
+records outcome and source and destination stages, but durable recovery is not
+implemented by the in-memory reference boundary. A future adapter must
+authenticate stored transition events and replay them through the same monitor,
+preventing a forged stage or report array from skipping a required worker.
 
 Completing the agent workflow does not issue an authorization token or permit
 an external effect. Only CARINA may authorize a separately compiled action
