@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "provenance": "synthetic",
+  "number": 11,
+  "title": "destructive-1",
+  "body": "",
+  "headSha": "0000000000000000000000000000000000000000",
+  "complete": true,
+  "files": [
+    {
+      "filename": "src/migrate.ts",
+      "patch": "+db.exec(\"DROP TABLE customers\");",
+      "status": "modified"
+    }
+  ]
+}

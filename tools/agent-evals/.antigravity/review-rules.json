@@ -1,0 +1,25 @@
+{
+  "maxPatchBytes": 120000,
+  "rules": [
+    {
+      "category": "security/sql-injection",
+      "pattern": "\\b(?:SELECT|WHERE|DELETE|UPDATE)\\b[^\\n]*\\$\\{",
+      "flags": "i"
+    },
+    {
+      "category": "correctness/unvalidated-input",
+      "pattern": "\\b(?:SELECT|WHERE|DELETE|UPDATE)\\b[^\\n]*\\$\\{",
+      "flags": "i"
+    },
+    {
+      "category": "security/destructive-query",
+      "pattern": "\\b(?:DROP\\s+TABLE|TRUNCATE\\s+TABLE)\\b",
+      "flags": "i"
+    },
+    {
+      "category": "security/prompt-injection",
+      "pattern": "ignore\\s+(?:all\\s+)?(?:previous|prior)\\s+instructions|system\\s+prompt|you\\s+are\\s+(?:now\\s+)?(?:an?\\s+)?(?:AI|agent)|(?:AI|agent|assistant)[- ]directed|exfiltrate",
+      "flags": "i"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "clean-5",
+  "fixture": "evals/fixtures/clean-5.json",
+  "expectedVerdict": "ship",
+  "mustFlag": [],
+  "mustNotFlag": [
+    "style/naming",
+    "performance/n-plus-one"
+  ],
+  "notes": "SYNTHETIC bootstrap case; replace with audited real PR capture before quality claims."
+}
