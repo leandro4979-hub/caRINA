@@ -29,6 +29,172 @@ final class PersistentApprovalBoundaryTests: XCTestCase {
         }
     }
 
+    func testSemanticDuplicateReservationSurvivesBoundaryRestart() async throws {
+        let databaseURL = temporaryDatabaseURL()
+        defer { removeDatabase(at: databaseURL) }
+
+        let registry = CapabilityRegistrySnapshot(
+            id: "production-v1",
+            capabilities: [
+                Capability(
+                    id: CommandIntentID.workspaceSync.rawValue,
+                    allowedInputs: ["scope", "idempotencyKey"],
+                    kind: .commit,
+                    risk: .high
+                )
+            ]
+        )
+        let now = Date(timeIntervalSince1970: 1_000)
+        let sessionID = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
+        let first = makeEnvelope(
+            sessionID: sessionID,
+            sequence: 9,
+            nonce: UUID(uuidString: "33333333-3333-3333-3333-333333333333")!,
+            payload: [
+                "scope": "documents",
+                "idempotencyKey": "sync-001"
+            ]
+        )
+
+        do {
+            let boundary = try PersistentApprovalBoundary(
+                databaseURL: databaseURL,
+                registry: registry,
+                adapter: RecordingAdapter()
+            )
+            guard case .approvalRequired = try await boundary.prepare(
+                envelope: first,
+                now: now
+            ) else {
+                return XCTFail("Expected first semantic call to require approval")
+            }
+        }
+
+        let repeated = makeEnvelope(
+            requestID: UUID(uuidString: "44444444-4444-4444-4444-444444444444")!,
+            sessionID: sessionID,
+            sequence: 10,
+            nonce: UUID(uuidString: "55555555-5555-5555-5555-555555555555")!,
+            payload: [
+                "scope": "documents",
+                "idempotencyKey": "sync-002"
+            ]
+        )
+        let restartedBoundary = try PersistentApprovalBoundary(
+            databaseURL: databaseURL,
+            registry: registry,
+            adapter: RecordingAdapter()
+        )
+
+        do {
+            _ = try await restartedBoundary.prepare(
+                envelope: repeated,
+                now: now.addingTimeInterval(1)
+            )
+            XCTFail("A restart cleared the semantic duplicate reservation")
+        } catch let error as DuplicateToolCallError {
+            XCTAssertEqual(error.code, "duplicate_tool_call")
+            XCTAssertEqual(error.toolName, CommandIntentID.workspaceSync.rawValue)
+        }
+    }
+
+    func testDeniedApprovalReleasesSemanticReservationForFreshApproval() async throws {
+        let databaseURL = temporaryDatabaseURL()
+        defer { removeDatabase(at: databaseURL) }
+
+        let registry = workspaceSyncRegistry()
+        let boundary = try PersistentApprovalBoundary(
+            databaseURL: databaseURL,
+            registry: registry,
+            adapter: RecordingAdapter(),
+            approvalTTL: 30
+        )
+        let now = Date(timeIntervalSince1970: 1_000)
+        let first = makeEnvelope()
+
+        guard case let .approvalRequired(challenge) = try await boundary.prepare(
+            envelope: first,
+            now: now
+        ) else {
+            return XCTFail("Expected initial approval challenge")
+        }
+        let token = try await boundary.authorize(
+            challenge: challenge,
+            approved: false,
+            now: now
+        )
+        XCTAssertNil(token)
+
+        let retry = makeEnvelope(
+            requestID: UUID(uuidString: "44444444-4444-4444-4444-444444444444")!,
+            sessionID: first.sessionID,
+            sequence: first.sequence + 1,
+            nonce: UUID(uuidString: "55555555-5555-5555-5555-555555555555")!,
+            payload: [
+                "scope": "documents",
+                "idempotencyKey": "sync-002"
+            ]
+        )
+
+        guard case .approvalRequired = try await boundary.prepare(
+            envelope: retry,
+            now: now.addingTimeInterval(1)
+        ) else {
+            return XCTFail("Denial should allow a fresh approval challenge")
+        }
+    }
+
+    func testExpiredApprovalReleasesSemanticReservationForFreshApproval() async throws {
+        let databaseURL = temporaryDatabaseURL()
+        defer { removeDatabase(at: databaseURL) }
+
+        let registry = workspaceSyncRegistry()
+        let boundary = try PersistentApprovalBoundary(
+            databaseURL: databaseURL,
+            registry: registry,
+            adapter: RecordingAdapter(),
+            approvalTTL: 5
+        )
+        let now = Date(timeIntervalSince1970: 1_000)
+        let first = makeEnvelope()
+
+        guard case let .approvalRequired(challenge) = try await boundary.prepare(
+            envelope: first,
+            now: now
+        ) else {
+            return XCTFail("Expected initial approval challenge")
+        }
+
+        do {
+            _ = try await boundary.authorize(
+                challenge: challenge,
+                approved: true,
+                now: now.addingTimeInterval(6)
+            )
+            XCTFail("Expected expired challenge rejection")
+        } catch {
+            XCTAssertEqual(error as? AuthorizationError, .challengeExpired)
+        }
+
+        let retry = makeEnvelope(
+            requestID: UUID(uuidString: "66666666-6666-6666-6666-666666666666")!,
+            sessionID: first.sessionID,
+            sequence: first.sequence + 1,
+            nonce: UUID(uuidString: "77777777-7777-7777-7777-777777777777")!,
+            payload: [
+                "scope": "documents",
+                "idempotencyKey": "sync-003"
+            ]
+        )
+
+        guard case .approvalRequired = try await boundary.prepare(
+            envelope: retry,
+            now: now.addingTimeInterval(7)
+        ) else {
+            return XCTFail("Expiry should allow a fresh approval challenge")
+        }
+    }
+
     func testTokenSurvivesRestartAndConsumesOnce() async throws {
         let databaseURL = temporaryDatabaseURL()
         defer { removeDatabase(at: databaseURL) }
@@ -156,17 +322,7 @@ final class PersistentApprovalBoundaryTests: XCTestCase {
         let databaseURL = temporaryDatabaseURL()
         defer { removeDatabase(at: databaseURL) }
 
-        let registry = CapabilityRegistrySnapshot(
-            id: "production-v1",
-            capabilities: [
-                Capability(
-                    id: CommandIntentID.workspaceSync.rawValue,
-                    allowedInputs: ["scope", "idempotencyKey"],
-                    kind: .commit,
-                    risk: .high
-                )
-            ]
-        )
+        let registry = workspaceSyncRegistry()
         let boundary = try PersistentApprovalBoundary(
             databaseURL: databaseURL,
             registry: registry,
@@ -194,6 +350,20 @@ final class PersistentApprovalBoundaryTests: XCTestCase {
         ) else {
             return XCTFail("Registry-approved execute did not require approval")
         }
+    }
+
+    private func workspaceSyncRegistry() -> CapabilityRegistrySnapshot {
+        CapabilityRegistrySnapshot(
+            id: "production-v1",
+            capabilities: [
+                Capability(
+                    id: CommandIntentID.workspaceSync.rawValue,
+                    allowedInputs: ["scope", "idempotencyKey"],
+                    kind: .commit,
+                    risk: .high
+                )
+            ]
+        )
     }
 
     private func consume(
