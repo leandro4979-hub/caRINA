@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Read tools",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tool": {
+          "const": "list_review_queue"
+        }
+      },
+      "required": [
+        "tool"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tool": {
+          "const": "get_pr_context"
+        },
+        "pr": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "tool",
+        "pr"
+      ]
+    }
+  ]
+}
