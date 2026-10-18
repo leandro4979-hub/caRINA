@@ -1,0 +1,11 @@
+{
+  "id": "huge-diff",
+  "fixture": "evals/fixtures/huge-diff.json",
+  "expectedVerdict": "incomplete",
+  "mustFlag": [],
+  "mustNotFlag": [
+    "style/naming",
+    "performance/n-plus-one"
+  ],
+  "notes": "SYNTHETIC bootstrap case; replace with audited real PR capture before quality claims."
+}

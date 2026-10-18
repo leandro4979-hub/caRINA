@@ -1,0 +1,14 @@
+{
+  "id": "sql-5",
+  "fixture": "evals/fixtures/sql-5.json",
+  "expectedVerdict": "blocked",
+  "mustFlag": [
+    "security/sql-injection",
+    "correctness/unvalidated-input"
+  ],
+  "mustNotFlag": [
+    "style/naming",
+    "performance/n-plus-one"
+  ],
+  "notes": "SYNTHETIC bootstrap case; replace with audited real PR capture before quality claims."
+}

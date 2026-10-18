@@ -155,3 +155,17 @@ Completing the agent workflow does not issue an authorization token or permit
 an external effect. Only CARINA may authorize a separately compiled action
 through its capability, approval, replay, idempotency, audit, and recovery
 boundaries.
+
+## Agent configuration evaluation gate (EVAL-001)
+
+Changes to agent instructions, prompts, tool contracts and evaluation machinery
+must produce the applicable `agent-evals` evidence before merge once the
+required status is activated. The workflow runs without custom secrets, write
+permissions, review posting or execution grants. Missing detection outputs,
+failed evaluations and incomplete verification fail closed at the CI gate.
+
+The synthetic offline harness is not the CARINA authorizer and cannot grant or
+consume permissions. Prompt quality remains unverified until independently
+audited real fixtures and a measured model adapter exist. Human review must
+protect the gate itself; preserve existing branch requirements when enabling
+it. See `AGENT_EVALS.md` for the activation contract and known limits.
