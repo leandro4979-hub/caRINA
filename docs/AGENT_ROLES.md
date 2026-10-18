@@ -26,3 +26,28 @@ tests. Report blocker/high/medium/low findings.
 **May:** run approved verification and report exact results.
 **May not:** edit, relax assertions, alter production data, deploy, or approve
 security exceptions. Never declare readiness while a blocker remains.
+
+## Runtime team contract (AGT-001)
+
+Runtime work follows four segregated stages: Scout, Builder, Security Reviewer,
+and Verifier. Each stage requires a different authenticated worker identity.
+Trusted CARINA setup maps each canonical transport principal to a role and
+provisions an opaque credential bound to one coordinator instance. Workers
+cannot construct credentials or assert identity or role in their reports.
+Reports bind the task ID and approved scope hash and must state the claim,
+evidence pointers, inspected surface, uninspected surface, contradictions, and
+whether independent reproduction is still required. Foreign credentials and
+missing registry state fail closed.
+
+Workers may advance evidence or block the work. They may not skip stages,
+self-review, erase contradictions, or convert a report into execution authority.
+`verified` means only that the evidence workflow completed. Every privileged
+action still requires CARINA-issued per-action authorization and the existing
+replay, idempotency, audit, and recovery controls.
+
+Serialized workflow snapshots are not trusted transition authority. Accepted
+evidence records the outcome and source and destination stages, but this
+in-memory reference boundary does not implement durable recovery. A future
+adapter must authenticate stored transition events and replay them through the
+coordinator so a stored stage or report array cannot bypass role order or
+worker separation.

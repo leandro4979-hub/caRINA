@@ -133,5 +133,3 @@ risks, and status recommendation.
 
 - 2026-08-25 — Completed Agent Operating Contract with CI, incident,
   roles, enforcement, and checklist additions.
-
-
