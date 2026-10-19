@@ -1,0 +1,10 @@
+import { execFileSync } from 'node:child_process';
+import { appendFileSync } from 'node:fs';
+import { requiresEvals } from './paths.ts';
+const base=process.env.BASE_SHA,head=process.env.HEAD_SHA;
+if(!base||!head||![base,head].every(s=>/^[a-f0-9]{40}$/.test(s)))throw new Error('Missing or invalid comparison SHAs');
+const paths=execFileSync('git',['diff','--no-renames','--name-only','-z',`${base}...${head}`],{maxBuffer:16*1024*1024}).toString().split('\0').filter(Boolean);
+const required=process.env.FORCE_EVALS==='true'||requiresEvals(paths);
+if(!process.env.GITHUB_OUTPUT)throw new Error('GITHUB_OUTPUT missing');
+appendFileSync(process.env.GITHUB_OUTPUT,`required=${required}\n`);
+console.log(`${paths.length} changed paths; evals required=${required}`);

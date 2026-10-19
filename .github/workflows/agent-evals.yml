@@ -1,0 +1,110 @@
+name: Agent evaluations
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-evals-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      required: ${{ steps.paths.outputs.required }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Detect relevant changes
+        id: paths
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha || github.sha }}
+          FORCE_EVALS: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'agent-config') }}
+        run: node tools/agent-evals/scripts/detect-paths.ts
+
+  offline-evals:
+    needs: detect
+    if: needs.detect.outputs.required == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tools/agent-evals
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build, test, and evaluate offline
+        run: |
+          set -eu
+          node scripts/build.ts
+          node --test tests/*.test.ts
+          python3 -m unittest discover -s tests -p "test_*.py"
+          node evals/runner.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agent-eval-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: tools/agent-evals/evals/report.json
+          if-no-files-found: error
+          retention-days: 14
+
+  approval-regressions:
+    needs: detect
+    if: needs.detect.outputs.required == 'true'
+    runs-on: macos-15
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: CARINAApprovalBoundary
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run CARINA approval-boundary suite
+        run: swift test --parallel
+
+  agent-evals:
+    name: agent-evals
+    needs: [detect, offline-evals, approval-regressions]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require all applicable evidence
+        env:
+          DETECT_RESULT: ${{ needs.detect.result }}
+          REQUIRED: ${{ needs.detect.outputs.required }}
+          EVAL_RESULT: ${{ needs.offline-evals.result }}
+          APPROVAL_RESULT: ${{ needs.approval-regressions.result }}
+        run: |
+          set -eu
+          test "$DETECT_RESULT" = success
+          if [ "$REQUIRED" = true ]; then
+            test "$EVAL_RESULT" = success
+            test "$APPROVAL_RESULT" = success
+            echo 'Offline evals and CARINA boundary regressions passed.'
+          elif [ "$REQUIRED" = false ]; then
+            test "$EVAL_RESULT" = skipped
+            test "$APPROVAL_RESULT" = skipped
+            echo 'No agent-related changes; evaluations not applicable.'
+          else
+            echo 'Missing or invalid detection result.' >&2
+            exit 1
+          fi

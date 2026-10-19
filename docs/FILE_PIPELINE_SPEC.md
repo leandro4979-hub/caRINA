@@ -148,6 +148,9 @@ updates, and a recorded verification command/result.
 | AUD-001–AUD-004 | CARINA durable receipts, bound approvals, trust state, and failure verification. | Hash-chain integrity, denial, expiry, target mutation, and exact-once tests. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
 | AUD-005, AUD-006, AUD-008 | Versioned capability allowlist, locked ActionPlan, and isolated batch compilation. | Version-key miss before validation, locked-plan mutation rejection, and valid/failed batch isolation. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
 | AUD-007 | Durable local ledger and transactional outbox recovery. | Atomic reserve/outbox insertion, restart recovery, duplicate reservation, completion suppression, and persisted-plan tamper checks. | ADR-002; Security; Runbook | `CARINAApprovalBoundary` / `swift test` passed 2026-08-08 |
+| AUD-009 | Registry-integrated persistent approval runtime. | Registry-derived permission before replay reservation; SQLite restart persistence; cross-connection one-time token consumption; durable executor idempotency. | ADR-002; Security; Runbook | Implemented; 43 Swift tests passed 2026-08-12 |
+| AUD-010 | Effect-verified, fail-closed revocation. | Block one receiver-to-gateway update; require the transaction to remain incomplete, the stale gateway to stay fenced with zero effects, and recovery to require fresh installation plus independent no-effect evidence. Test stale receipts, duplicate evidence, observation-window closure, and sticky violations. | ADR-002; Security; Runbook | `RevocationOutcomeMonitor`; 108 Swift tests passed 2026-10-16 |
+| AGT-001 | Governed multi-agent work with evidence and worker separation. | Require Scout → Builder → Security Reviewer → Verifier; use coordinator-bound opaque worker credentials; bind task/scope and transition outcome; reject foreign credentials, missing evidence, stage skips, self-review, contradictions, unreproduced claims, and untrusted state snapshots. Agent verification never creates execution authority. | Agent Roles; Security | `AgentWorkCoordinator`; 10 focused cases plus the full Swift suite enforced by CI |
 
 ## F-010 — NTFS ADS and Windows-safe archive extraction
 
@@ -238,3 +241,68 @@ integrity verification before delivery.
 This is a local-filesystem reference implementation with advisory locking,
 suited to one host. It is not a distributed database, a cryptographic
 provenance system, or an external execution guarantee.
+
+## CARINA persistent approval runtime (AUD-009)
+
+**Scope:** connect the command dispatcher to the immutable capability registry
+and replace process-local replay, challenge, token, and idempotency state with
+one SQLite-backed authority. The runtime composition root accepts only a
+reviewed `AppIntentAdapter`; the current macOS app intentionally supplies none
+and therefore gains no new execution permission.
+
+**Acceptance criteria:** permission is registry-derived before replay
+reservation; unknown inputs fail closed; replay and idempotency reservations
+survive restart; issued tokens survive restart but can be consumed exactly
+once; two independent database connections have one token-consumption winner;
+database failures prevent execution.
+
+**Implementation:** `PersistentApprovalBoundary`,
+`ProductionCommandRouter`, and `SQLiteApprovalStateStore` under
+`CARINAApprovalBoundary/Sources/Carina`.
+
+**Verification:** 2026-08-12 — macOS `swift test --parallel` passed all\n43 tests. Repository Python 3.9 gates remain blocked by the pre-existing use\nof `datetime.UTC`, which requires Python 3.11 or later.
+
+## CARINA effect-verified revocation (AUD-010)
+
+**Scope:** model revocation as an evidence-backed transaction rather than a
+token-status update. Freeze the gateway population and observation deadline at
+commit. Keep gateways without a fresh installation receipt fenced.
+
+**Acceptance criteria:** receiver persistence alone never completes the
+transaction; a blocked receiver-to-gateway update leaves that gateway fenced
+and permits zero guarded effects; completion requires fresh installation
+receipts and independent no-effect observations for every frozen gateway after
+the observation window closes; stale receipts fail closed; duplicate evidence
+is idempotent; and an observed committed effect remains a sticky violation.
+
+**Implementation:** `RevocationOutcomeMonitor` under
+`CARINAApprovalBoundary/Sources/Carina` and fault-injection coverage under
+`CARINAApprovalBoundary/Tests/CarinaTests`.
+
+**Verification:** 2026-10-16 — macOS `swift test --parallel` completed all 108
+XCTest cases, including the five `RevocationOutcomeTests` cases.
+
+## Governed agent team (AGT-001)
+
+**Scope:** coordinate independent Scout, Builder, Security Reviewer, and
+Verifier workers without allowing an agent report to become authorization.
+
+**Acceptance criteria:** every report binds the task ID and frozen scope hash;
+trusted setup provisions opaque credentials bound to one coordinator instance,
+and authenticated worker identities and assigned roles come from those
+bindings rather than report fields; workers advance in role order; a worker
+cannot participate in more than one stage; foreign credentials fail closed;
+claims include evidence and inspected surfaces; unresolved contradictions and
+reproduction requirements cannot advance; and any role may block work. Each
+accepted transition records outcome and source and destination stages. A
+verified workflow remains advisory and has no execution adapter. Caller-supplied
+stages and report arrays are not decodable as authoritative state; durable
+recovery remains future adapter work and must authenticate and replay events.
+
+**Implementation:** `AgentWorkCoordinator` and its typed evidence contract
+under `CARINAApprovalBoundary/Sources/Carina`, with positive and fail-closed
+coverage under `CARINAApprovalBoundary/Tests/CarinaTests`.
+
+**Verification:** Ten focused `AgentWorkCoordinatorTests` cases cover the valid
+four-worker path and fail-closed identity, role, evidence, scope,
+contradiction, and reproduction paths. The full Swift suite is enforced by CI.

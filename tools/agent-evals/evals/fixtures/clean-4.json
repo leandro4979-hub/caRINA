@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "provenance": "synthetic",
+  "number": 4,
+  "title": "clean-4",
+  "body": "",
+  "headSha": "0000000000000000000000000000000000000000",
+  "complete": true,
+  "files": [
+    {
+      "filename": "src/clean.ts",
+      "patch": "+const answer4 = 4;",
+      "status": "modified"
+    }
+  ]
+}

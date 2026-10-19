@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "provenance": "synthetic",
+  "number": 16,
+  "title": "test-only",
+  "body": "",
+  "headSha": "0000000000000000000000000000000000000000",
+  "complete": true,
+  "files": [
+    {
+      "filename": "tests/search.test.ts",
+      "patch": "+const sample = `SELECT * WHERE id = ${input}`;",
+      "status": "modified"
+    }
+  ]
+}

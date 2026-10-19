@@ -1,0 +1,13 @@
+{
+  "id": "destructive-2",
+  "fixture": "evals/fixtures/destructive-2.json",
+  "expectedVerdict": "blocked",
+  "mustFlag": [
+    "security/destructive-query"
+  ],
+  "mustNotFlag": [
+    "style/naming",
+    "performance/n-plus-one"
+  ],
+  "notes": "SYNTHETIC bootstrap case; replace with audited real PR capture before quality claims."
+}
