@@ -99,7 +99,7 @@ public struct PersistentApprovalBoundary<Adapter: AppIntentAdapter>: Sendable {
         databaseURL: URL,
         registry: CapabilityRegistrySnapshot,
         adapter: Adapter,
-        journalURL: URL? = nil,
+        journalURL: URL,
         approvalTTL: TimeInterval = 60,
         replayRetention: TimeInterval = 24 * 60 * 60
     ) throws {

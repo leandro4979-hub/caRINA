@@ -107,14 +107,31 @@ public struct FilesystemStateBinder: FilesystemStateCapturing {
     }
 
     private func captureExisting(path: String, role: FilesystemBindingRole) throws -> FilesystemStateBinding {
-        let object = try statObject(path: path, mustExist: true)
-        if object.isSymlink { throw FilesystemStateBindingError.symlinkDetected(path) }
+        let descriptor = path.withCString { open($0, O_RDONLY | O_NOFOLLOW) }
+        guard descriptor >= 0 else {
+            if errno == ELOOP { throw FilesystemStateBindingError.symlinkDetected(path) }
+            if errno == ENOENT { throw FilesystemStateBindingError.missingExpectedPath(path) }
+            throw FilesystemStateBindingError.metadataReadFailed(path)
+        }
+        defer { close(descriptor) }
+
+        var info = stat()
+        guard fstat(descriptor, &info) == 0 else {
+            throw FilesystemStateBindingError.metadataReadFailed(path)
+        }
+
+        let object = ObjectStat(
+            exists: true,
+            device: UInt64(info.st_dev),
+            inode: UInt64(info.st_ino),
+            mode: info.st_mode
+        )
         guard object.isRegularFile else {
             throw FilesystemStateBindingError.unsupportedObjectType(path)
         }
 
         let parent = try statParent(of: path)
-        let digest = try sha256File(path: path)
+        let digest = try sha256File(descriptor: descriptor, path: path)
 
         return FilesystemStateBinding(
             path: path,
@@ -179,21 +196,22 @@ public struct FilesystemStateBinder: FilesystemStateCapturing {
         )
     }
 
-    private func sha256File(path: String) throws -> String {
-        guard let handle = FileHandle(forReadingAtPath: path) else {
+    private func sha256File(descriptor: Int32, path: String) throws -> String {
+        guard lseek(descriptor, 0, SEEK_SET) >= 0 else {
             throw FilesystemStateBindingError.contentReadFailed(path)
         }
-        defer { try? handle.close() }
 
         var hasher = SHA256()
-        do {
-            while true {
-                let chunk = try handle.read(upToCount: 64 * 1024) ?? Data()
-                if chunk.isEmpty { break }
-                hasher.update(data: chunk)
+        var buffer = [UInt8](repeating: 0, count: 64 * 1024)
+
+        while true {
+            let count = Darwin.read(descriptor, &buffer, buffer.count)
+            if count == 0 { break }
+            if count < 0 {
+                if errno == EINTR { continue }
+                throw FilesystemStateBindingError.contentReadFailed(path)
             }
-        } catch {
-            throw FilesystemStateBindingError.contentReadFailed(path)
+            hasher.update(data: Data(buffer.prefix(Int(count))))
         }
 
         return hasher.finalize().map { String(format: "%02x", $0) }.joined()

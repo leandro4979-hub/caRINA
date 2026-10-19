@@ -1,12 +1,12 @@
 import Foundation
 
-public struct SofaContributionAdapter<Transport: SofaContributionTransport>: AppIntentAdapter, Sendable {
-    public typealias Output = SofaMutationReceipt
+struct SofaContributionAdapter<Transport: SofaContributionTransport>: AppIntentAdapter, Sendable {
+    typealias Output = SofaMutationReceipt
 
     private let transport: Transport
     private let approvedRegistrySnapshotIDs: Set<String>
 
-    public init(
+    init(
         transport: Transport,
         approvedRegistrySnapshotIDs: Set<String> = [SofaCapabilityCatalog.snapshotID]
     ) {
@@ -15,7 +15,7 @@ public struct SofaContributionAdapter<Transport: SofaContributionTransport>: App
         self.approvedRegistrySnapshotIDs = approvedRegistrySnapshotIDs
     }
 
-    public static func target(postID: String) -> String {
+    static func target(postID: String) -> String {
         "sofa:\(postID)"
     }
 
@@ -23,7 +23,7 @@ public struct SofaContributionAdapter<Transport: SofaContributionTransport>: App
     /// existing approval boundary. The protected executor uses the plan's
     /// stable idempotency key and the approval fingerprint binds the encoded
     /// plan plus its human-visible target.
-    public func commandRequest(for plan: ActionPlan, now: Date = Date()) throws -> CommandRequest {
+    func commandRequest(for plan: ActionPlan, now: Date = Date()) throws -> CommandRequest {
         _ = try validate(plan: plan, requestTarget: plan.target, idempotencyKey: plan.idempotencyKey, now: now)
         let encoded: Data
         do {
@@ -41,7 +41,7 @@ public struct SofaContributionAdapter<Transport: SofaContributionTransport>: App
         )
     }
 
-    public func execute(_ request: CommandRequest) async throws -> SofaMutationReceipt {
+    func execute(_ request: CommandRequest) async throws -> SofaMutationReceipt {
         guard request.intentID == .sofaContribution else {
             throw SofaError.unsupportedAction(request.intentID.rawValue)
         }

@@ -188,6 +188,22 @@ final class ExecutionRecoveryCoordinatorTests: XCTestCase {
         }
     }
 
+    func testReservedRecoveryClaimsExecutingStateBeforeReturningPermission() async throws {
+        let initial = makeReservation(state: .reserved)
+        let store = ClaimingReservationStore(initial: initial)
+        let inspector = ReservedRealityInspector()
+
+        let decision = try await coordinator.recover(
+            key: initial.idempotencyKey,
+            store: store,
+            inspector: inspector
+        )
+
+        XCTAssertEqual(decision, .continueExecution)
+        let final = try await store.load(initial.idempotencyKey)
+        XCTAssertEqual(final?.state, .executing)
+    }
+
     func testCASFailureReloadsAndReevaluatesReality() async throws {
         let initial = makeReservation(state: .executing)
         let store = RacingReservationStore(initial: initial)
@@ -282,5 +298,40 @@ private actor RacingRealityInspector: FilesystemRealityInspecting {
                 authorizationConsumed: false
             )
         }
+    }
+}
+
+
+private actor ClaimingReservationStore: MutationReservationStore {
+    private var reservation: MutationReservation
+
+    init(initial: MutationReservation) {
+        reservation = initial
+    }
+
+    func load(_ idempotencyKey: String) async throws -> MutationReservation? {
+        reservation.idempotencyKey == idempotencyKey ? reservation : nil
+    }
+
+    func compareAndSet(
+        idempotencyKey: String,
+        expectedState: ReservationState,
+        newState: ReservationState
+    ) async throws -> Bool {
+        guard reservation.idempotencyKey == idempotencyKey,
+              reservation.state == expectedState else { return false }
+        reservation = reservation.withState(newState)
+        return true
+    }
+}
+
+private actor ReservedRealityInspector: FilesystemRealityInspecting {
+    func observe(reservation: MutationReservation) async throws -> RecoveryObservation {
+        RecoveryObservation(
+            reservationState: reservation.state,
+            preStateMatches: true,
+            postStateMatches: false,
+            authorizationConsumed: false
+        )
     }
 }

@@ -170,9 +170,34 @@ public protocol CanonicalPathResolving: Sendable {
     func isContained(path: String, inside root: String) -> Bool
 }
 
+public enum ProposalReplayReservation: Sendable, Equatable {
+    case reserved
+    case proposalAlreadyReserved
+    case digestAlreadyReserved
+}
+
 public protocol ProposalReplayChecking: Sendable {
-    func contains(proposalID: UUID) throws -> Bool
-    func containsDigest(_ digest: String) throws -> Bool
+    func reserve(proposalID: UUID, digest: String) throws -> ProposalReplayReservation
+}
+
+public final class InMemoryProposalReplayStore: ProposalReplayChecking, @unchecked Sendable {
+    private let lock = NSLock()
+    private var proposalIDs: Set<UUID> = []
+    private var digests: Set<String> = []
+
+    public init() {}
+
+    public func reserve(proposalID: UUID, digest: String) throws -> ProposalReplayReservation {
+        lock.lock()
+        defer { lock.unlock() }
+
+        if proposalIDs.contains(proposalID) { return .proposalAlreadyReserved }
+        if digests.contains(digest) { return .digestAlreadyReserved }
+
+        proposalIDs.insert(proposalID)
+        digests.insert(digest)
+        return .reserved
+    }
 }
 
 public enum ProposalValidationError: Error, Equatable, Sendable {
@@ -308,10 +333,12 @@ public struct ProposalValidator: Sendable {
             normalizedDiffDigest: diffDigest
         )
 
-        if try replayStore.contains(proposalID: proposal.proposalID) {
+        switch try replayStore.reserve(proposalID: proposal.proposalID, digest: digest) {
+        case .reserved:
+            break
+        case .proposalAlreadyReserved:
             throw ProposalValidationError.replayedProposal
-        }
-        if try replayStore.containsDigest(digest) {
+        case .digestAlreadyReserved:
             throw ProposalValidationError.replayedDigest
         }
 

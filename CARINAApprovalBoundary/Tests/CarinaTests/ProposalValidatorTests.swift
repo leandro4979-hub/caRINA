@@ -171,6 +171,19 @@ final class ProposalValidatorTests: XCTestCase {
         }
     }
 
+    func testInMemoryReplayStoreAtomicallyRejectsSecondReservation() throws {
+        let store = InMemoryProposalReplayStore()
+        let proposalID = UUID()
+        let digest = String(repeating: "a", count: 64)
+
+        XCTAssertEqual(try store.reserve(proposalID: proposalID, digest: digest), .reserved)
+        XCTAssertEqual(try store.reserve(proposalID: proposalID, digest: digest), .proposalAlreadyReserved)
+        XCTAssertEqual(
+            try store.reserve(proposalID: UUID(), digest: digest),
+            .digestAlreadyReserved
+        )
+    }
+
     private func makeValidator(
         replayedProposalIDs: Set<UUID> = [],
         filesystemBindings: [FilesystemStateBinding] = []
@@ -228,8 +241,11 @@ private struct StubProposalReplayStore: ProposalReplayChecking {
         self.digests = digests
     }
 
-    func contains(proposalID: UUID) throws -> Bool { proposalIDs.contains(proposalID) }
-    func containsDigest(_ digest: String) throws -> Bool { digests.contains(digest) }
+    func reserve(proposalID: UUID, digest: String) throws -> ProposalReplayReservation {
+        if proposalIDs.contains(proposalID) { return .proposalAlreadyReserved }
+        if digests.contains(digest) { return .digestAlreadyReserved }
+        return .reserved
+    }
 }
 
 private struct StubFilesystemStateBinder: FilesystemStateCapturing {

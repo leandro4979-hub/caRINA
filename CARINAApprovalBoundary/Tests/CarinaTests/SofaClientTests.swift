@@ -36,6 +36,23 @@ final class SofaClientTests: XCTestCase {
         XCTAssertEqual(scenario.snapshot().count, 0)
     }
 
+    func testUnsafePostIDFailsBeforeNetworkAccess() async throws {
+        let scenario = SofaHTTPScenario()
+        SofaMockURLProtocol.handler = scenario.handle
+        let client = try makeClient()
+
+        do {
+            _ = try await client.reply(postID: "../admin", body: "nope")
+            XCTFail("Expected unsafe post ID rejection")
+        } catch let error as SofaError {
+            guard case .invalidConfiguration = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+        }
+
+        XCTAssertEqual(scenario.snapshot().count, 0)
+    }
+
     func testInvalidSessionDuringVoteCreatesFreshSessionAndRereadsTarget() async throws {
         let scenario = SofaHTTPScenario { step, _ in
             switch step {
