@@ -2,6 +2,13 @@
 
 import PackageDescription
 
+#if os(macOS)
+// Use SDK SQLite; Homebrew's dylib has a different signing identity from the app.
+let sqlitePkgConfig: String? = nil
+#else
+let sqlitePkgConfig: String? = "sqlite3"
+#endif
+
 let package = Package(
     name: "Carina",
     platforms: [.macOS(.v13)],
@@ -11,9 +18,8 @@ let package = Package(
     targets: [
         .systemLibrary(
             name: "CSQLite",
-            pkgConfig: "sqlite3",
+            pkgConfig: sqlitePkgConfig,
             providers: [
-                .brew(["sqlite3"]),
                 .apt(["libsqlite3-dev"])
             ]
         ),
