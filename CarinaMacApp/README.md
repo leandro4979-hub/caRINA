@@ -33,6 +33,28 @@ states, includes the exact local pull command for a missing model, and supports
 Command-Return to send and Command-Period to stop. This adds no endpoint,
 listener, entitlement, or iPhone access.
 
+### macOS SQLite linkage
+
+The shared package uses macOS SDK SQLite through `CSQLite`, without consulting
+Homebrew's `sqlite3.pc`. Linking a signed Xcode app to Homebrew SQLite can abort
+in `dyld` before startup because their Team IDs differ. Keep library validation
+enabled; the fix is to link `/usr/lib/libsqlite3.dylib`. Non-macOS builds retain
+pkg-config discovery. After changing the manifest, rebuild the `Carina` scheme.
+
+The Xcode `Carina` target also enables the sandbox's outgoing network client
+capability so it can connect to loopback Ollama. App Sandbox and Hardened Runtime
+remain enabled; no incoming network capability is added. macOS's client entitlement
+is not restricted to loopback, so endpoint restrictions remain enforced by app code.
+
+### Ollama origin and redirects
+
+Health and generation now enforce `http://127.0.0.1:11434` before sending.
+Other hosts/ports, credentials, base paths, query strings and fragments are
+rejected. A dedicated production URLSession rejects all redirects and disables
+proxy dictionaries and modern proxy configurations. No remote fallback is used.
+Existing local streaming, cancellation and model health behavior is preserved.
+The regression HTTP fixture uses `/usr/bin/python3` on macOS and synthetic data.
+
 ### Verified recovery checks
 
 - [x] Ollama running with `llama3.2:3b` present shows green **Model ready**.

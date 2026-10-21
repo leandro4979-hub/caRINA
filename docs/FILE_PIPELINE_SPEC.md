@@ -1,5 +1,16 @@
 # File pipeline specification
 
+## Local model network boundary (OLLAMA-NET-001)
+
+The macOS conversation UI may send health and generation requests only to
+`http://127.0.0.1:11434`, using validated endpoints, a dedicated session,
+no redirects and no proxy configuration. This is separate from pipeline or
+action-execution authority. See `SECURITY_REQUIREMENTS.md` and ADR-004.
+Acceptance: invalid origins produce zero transport requests; 307/308 responses
+cannot deliver requests or synthetic prompt bodies to a second origin; normal
+local health, streaming and cancellation continue working. Owner security
+signoff and merge approval remain independent of automated verification.
+
 ## Goal and nonfunctional requirements
 
 Build a proactive, self-healing, security-first file pipeline that prevents,

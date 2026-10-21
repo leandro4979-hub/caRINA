@@ -1,5 +1,25 @@
 # Security requirements
 
+## Local Ollama transport (OLLAMA-NET-001)
+
+Both health and generation requests must use the literal origin
+`http://127.0.0.1:11434`. Reject other hosts (including DNS aliases and alternate
+numeric forms), ports, schemes, user information, base paths, query strings and
+fragments before transport. Construct endpoints from the trusted origin after
+validation. No incoming-network entitlement or cloud fallback is authorized.
+
+Production uses a dedicated URLSession with a delegate that rejects every HTTP
+redirect, including same-origin redirects. Clear both legacy proxy dictionaries
+and modern proxy configurations; do not inherit system PAC, SOCKS, HTTP or relay
+settings. An injected session contributes configuration for trusted test/embedding
+protocols only: its delegate is not reused and its proxy settings are cleared.
+Custom URLProtocol code is trusted executable embedding code, not a sandbox.
+Preserve cancellation and streaming, and never log prompts or credentials.
+
+Regression evidence must include zero-request rejection through both public APIs,
+real loopback 307/308 tests proving no request/body reaches a second origin, a
+positive receiver control, and existing health/streaming/cancellation tests.
+
 ## Upload boundary
 
 Uploads enter only private, non-public inbox/staging. Permit configured types

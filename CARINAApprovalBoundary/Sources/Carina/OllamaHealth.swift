@@ -5,13 +5,14 @@ public enum OllamaHealth {
     private struct TagsResponse: Decodable { let models: [Tag] }
 
     /// Confirms that a loopback Ollama runtime is reachable and contains the requested model.
-    public static func verify(modelName: String = OllamaConfig.modelName, baseURL: URL = OllamaConfig.baseURL, timeout: TimeInterval = 2, session: URLSession = .shared) async throws {
-        let url = baseURL.appendingPathComponent("api").appendingPathComponent("tags")
+    public static func verify(modelName: String = OllamaConfig.modelName, baseURL: URL = OllamaConfig.baseURL, timeout: TimeInterval = 2, session: URLSession? = nil) async throws {
+        let url = try OllamaOriginPolicy.endpoint("tags", baseURL: baseURL)
+        let transport = OllamaTransport(copying: session)
         let request = URLRequest(url: url, timeoutInterval: timeout)
         let data: Data
         let response: URLResponse
         do {
-            (data, response) = try await session.data(for: request)
+            (data, response) = try await transport.session.data(for: request)
         } catch {
             if OllamaErrorMapping.isCancellation(error) { throw CancellationError() }
             throw OllamaError.unavailable

@@ -59,6 +59,35 @@ final class OllamaClientTests: XCTestCase {
         catch { XCTFail("Unexpected error: \(error)") }
     }
 
+    func testUnsafeOriginsNeverReachHealthOrGenerationTransport() async {
+        let unsafe = [
+            "https://example.invalid", "http://192.168.1.1:11434",
+            "http://localhost:11434", "http://127.0.0.2:11434",
+            "http://127.0.0.1:11435", "https://127.0.0.1:11434",
+            "http://user:password@127.0.0.1:11434",
+            "http://127.0.0.1:11434/prefix", "http://127.0.0.1:11434/?proxy=remote",
+            "http://127.0.0.1:11434/#fragment", "http://2130706433:11434",
+            "http://127%2e0%2e0%2e1:11434"
+        ]
+        var requests = 0
+        MockURLProtocol.handler = { _, handlerProtocol in
+            requests += 1
+            handlerProtocol.client?.urlProtocol(handlerProtocol, didFailWithError: URLError(.cannotConnectToHost))
+        }
+        for raw in unsafe {
+            let url = URL(string: raw)!
+            do {
+                try await OllamaHealth.verify(baseURL: url, session: session())
+                XCTFail("Unsafe health origin accepted")
+            } catch { }
+            do {
+                for try await _ in OllamaClient(baseURL: url, session: session()).generate(prompt: "synthetic-review-canary") { }
+                XCTFail("Unsafe generation origin accepted")
+            } catch { }
+        }
+        XCTAssertEqual(requests, 0, "Policy must reject before any network request")
+    }
+
     func testGenerationYieldsAllResponseFragments() async throws {
         MockURLProtocol.handler = { [self] request, handlerProtocol in
             if request.url?.path == "/api/tags" { respond(request, handlerProtocol, chunks: [#"{"models":[{"name":"llama3.2:3b"}]}"#]) }

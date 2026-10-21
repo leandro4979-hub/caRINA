@@ -16,13 +16,13 @@ public struct OllamaGenerateChunk: Decodable, Sendable {
 public struct OllamaClient: Sendable {
     private let baseURL: URL
     private let modelName: String
-    private let session: URLSession
+    private let transport: OllamaTransport
     private let healthTimeout: TimeInterval
 
-    public init(baseURL: URL = OllamaConfig.baseURL, modelName: String = OllamaConfig.modelName, session: URLSession = .shared, healthTimeout: TimeInterval = 2) {
+    public init(baseURL: URL = OllamaConfig.baseURL, modelName: String = OllamaConfig.modelName, session: URLSession? = nil, healthTimeout: TimeInterval = 2) {
         self.baseURL = baseURL
         self.modelName = modelName
-        self.session = session
+        self.transport = OllamaTransport(copying: session)
         self.healthTimeout = healthTimeout
     }
 
@@ -31,15 +31,15 @@ public struct OllamaClient: Sendable {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    try await OllamaHealth.verify(modelName: modelName, baseURL: baseURL, timeout: healthTimeout, session: session)
-                    let url = baseURL.appendingPathComponent("api").appendingPathComponent("generate")
+                    try await OllamaHealth.verify(modelName: modelName, baseURL: baseURL, timeout: healthTimeout, session: transport.session)
+                    let url = try OllamaOriginPolicy.endpoint("generate", baseURL: baseURL)
                     var request = URLRequest(url: url)
                     request.httpMethod = "POST"
                     request.timeoutInterval = 60
                     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                     request.setValue("application/x-ndjson", forHTTPHeaderField: "Accept")
                     request.httpBody = try JSONEncoder().encode(OllamaGenerateRequest(model: modelName, prompt: prompt))
-                    let (bytes, response) = try await session.bytes(for: request)
+                    let (bytes, response) = try await transport.session.bytes(for: request)
                     guard let http = response as? HTTPURLResponse, (200 ... 299).contains(http.statusCode) else { throw OllamaError.badResponse }
                     let decoder = JSONDecoder()
                     var sawDone = false
