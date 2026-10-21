@@ -46,6 +46,15 @@ capability so it can connect to loopback Ollama. App Sandbox and Hardened Runtim
 remain enabled; no incoming network capability is added. macOS's client entitlement
 is not restricted to loopback, so endpoint restrictions remain enforced by app code.
 
+### Ollama origin and redirects
+
+Health and generation now enforce `http://127.0.0.1:11434` before sending.
+Other hosts/ports, credentials, base paths, query strings and fragments are
+rejected. A dedicated production URLSession rejects all redirects and disables
+proxy dictionaries and modern proxy configurations. No remote fallback is used.
+Existing local streaming, cancellation and model health behavior is preserved.
+The regression HTTP fixture uses `/usr/bin/python3` on macOS and synthetic data.
+
 ### Verified recovery checks
 
 - [x] Ollama running with `llama3.2:3b` present shows green **Model ready**.
