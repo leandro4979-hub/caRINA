@@ -4,14 +4,15 @@ import XCTest
 
 private final class QwenMockProtocol: URLProtocol {
     static var handler: ((URLRequest, URLProtocol) -> Void)?
+    static var onStop: ((URLRequest) -> Void)?
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() { Self.handler?(request, self) }
-    override func stopLoading() {}
+    override func stopLoading() { Self.onStop?(request) }
 }
 
 final class QwenOpenAIProviderTests: XCTestCase {
-    override func tearDown() { QwenMockProtocol.handler = nil; super.tearDown() }
+    override func tearDown() { QwenMockProtocol.handler = nil; QwenMockProtocol.onStop = nil; super.tearDown() }
     private func session() -> URLSession {
         let c = URLSessionConfiguration.ephemeral
         c.protocolClasses = [QwenMockProtocol.self]
@@ -103,6 +104,29 @@ final class QwenOpenAIProviderTests: XCTestCase {
 
     func testOneMiBPlusOneByteResponseFailsClosed() async throws {
         try await checkResponseSize(payloadSize: 1_048_577, shouldPass: false)
+    }
+
+    func testOversizedResponseCancelsTransport() async throws {
+        let stopped = expectation(description: "Oversized response cancels URLProtocol transport")
+        QwenMockProtocol.onStop = { request in
+            if request.url?.path == "/v1/chat/completions" { stopped.fulfill() }
+        }
+        QwenMockProtocol.handler = { [self] req, proto in
+            if req.url?.path == "/api/tags" {
+                respond(req, proto, #"{"models":[{"name":"qwen3.5:4b"}]}"#)
+                return
+            }
+            let response = HTTPURLResponse(url: req.url!, statusCode: 200, httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"])!
+            proto.client?.urlProtocol(proto, didReceive: response, cacheStoragePolicy: .notAllowed)
+            proto.client?.urlProtocol(proto, didLoad: Data(repeating: 65, count: 1_048_577))
+            // Deliberately leave the transfer open; cancellation must stop it.
+        }
+        do {
+            _ = try await QwenOpenAIProvider(session: session()).complete(prompt: "bounded")
+            XCTFail("Expected responseTooLarge")
+        } catch QwenOpenAIProviderError.responseTooLarge { }
+        await fulfillment(of: [stopped], timeout: 3)
     }
 
     func testLiveLocalQwenWhenEnabled() async throws {
