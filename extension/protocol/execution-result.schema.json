@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "carina://protocol/v1/execution-result.schema.json",
+  "title": "ExecutionResult",
+  "type": "object",
+  "properties": {
+    "type": { "const": "EXECUTION_RESULT" },
+    "version": { "const": 1 },
+    "authorizationId": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "candidateId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "status": { "type": "string", "enum": ["EXECUTED", "EXECUTION_FAILED"] },
+    "executedAt": { "type": "integer", "minimum": 0 }
+  },
+  "required": ["type", "version", "authorizationId", "candidateId", "status", "executedAt"],
+  "additionalProperties": false
+}

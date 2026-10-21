@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "carina://protocol/v1/context-update.schema.json",
+  "title": "ContextUpdate",
+  "type": "object",
+  "properties": {
+    "type": { "const": "CONTEXT_UPDATE" },
+    "version": { "const": 1 },
+    "mediaPlaying": { "type": "boolean" },
+    "overlayVisible": { "type": "boolean" },
+    "userActive": { "type": "boolean" },
+    "sensitiveSignals": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "enum": ["PAYMENT", "CHECKOUT", "PURCHASE", "FINANCIAL_TRANSFER", "LOGIN", "PASSWORD", "PASSKEY", "TWO_FACTOR", "CAPTCHA", "ACCOUNT_RECOVERY", "SECURITY_SETTINGS", "PERMISSION_ESCALATION", "CREDENTIAL_MANAGEMENT", "SSH", "GPG", "API_KEY", "TOKEN", "WALLET"]
+      }
+    },
+    "observedAt": { "type": "integer", "minimum": 0 }
+  },
+  "required": ["type", "version", "mediaPlaying", "overlayVisible", "userActive", "sensitiveSignals", "observedAt"],
+  "additionalProperties": false
+}

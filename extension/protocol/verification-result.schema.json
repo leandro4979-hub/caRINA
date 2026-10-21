@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "carina://protocol/v1/verification-result.schema.json",
+  "title": "VerificationResult",
+  "type": "object",
+  "properties": {
+    "type": { "const": "VERIFICATION_RESULT" },
+    "version": { "const": 1 },
+    "authorizationId": { "type": "string", "pattern": "^[a-f0-9]{32}$" },
+    "candidateId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "status": { "type": "string", "enum": ["VERIFIED", "FAILED_VERIFICATION"] },
+    "reasonCode": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Z0-9_]+$" },
+    "verifiedAt": { "type": "integer", "minimum": 0 }
+  },
+  "required": ["type", "version", "authorizationId", "candidateId", "status", "reasonCode", "verifiedAt"],
+  "additionalProperties": false
+}
