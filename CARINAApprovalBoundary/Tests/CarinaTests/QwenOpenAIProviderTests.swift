@@ -61,6 +61,50 @@ final class QwenOpenAIProviderTests: XCTestCase {
         XCTAssertEqual(paths, ["/api/tags", "/v1/chat/completions"])
     }
 
+    private func checkResponseSize(payloadSize: Int, shouldPass: Bool) async throws {
+        QwenMockProtocol.handler = { [self] req, proto in
+            if req.url!.path == "/api/tags" {
+                respond(req, proto, #"{"models":[{"name":"qwen3.5:4b"}]}"#)
+                return
+            }
+            // JSON response with exact byte size, sent as small chunks and no Content-Length.
+            let prefix = #"{"choices":[{"message":{"content":""#
+            let suffix = #""}}]}"#
+            let count = payloadSize - prefix.utf8.count - suffix.utf8.count
+            XCTAssertGreaterThanOrEqual(count, 0)
+            let reply = HTTPURLResponse(url: req.url!, statusCode: 200, httpVersion: nil,
+                                        headerFields: ["Content-Type": "application/json"])!
+            proto.client?.urlProtocol(proto, didReceive: reply, cacheStoragePolicy: .notAllowed)
+            proto.client?.urlProtocol(proto, didLoad: Data(prefix.utf8))
+            let chunk = Data(repeating: 65, count: 8192)
+            for _ in 0..<(count / chunk.count) {
+                proto.client?.urlProtocol(proto, didLoad: chunk)
+            }
+            let remainder = count % chunk.count
+            if remainder > 0 { proto.client?.urlProtocol(proto, didLoad: Data(repeating: 65, count: remainder)) }
+            proto.client?.urlProtocol(proto, didLoad: Data(suffix.utf8))
+            proto.client?.urlProtocolDidFinishLoading(proto)
+        }
+        if shouldPass {
+            let answer = try await QwenOpenAIProvider(session: session()).complete(prompt: "bounded")
+            let overhead = #"{"choices":[{"message":{"content":""# .utf8.count + #""}}]}"#.utf8.count
+            XCTAssertEqual(answer.utf8.count, payloadSize - overhead)
+        } else {
+            do {
+                _ = try await QwenOpenAIProvider(session: session()).complete(prompt: "bounded")
+                XCTFail("An over-limit response must fail closed")
+            } catch QwenOpenAIProviderError.responseTooLarge { }
+        }
+    }
+
+    func testExactlyOneMiBResponseSucceeds() async throws {
+        try await checkResponseSize(payloadSize: 1_048_576, shouldPass: true)
+    }
+
+    func testOneMiBPlusOneByteResponseFailsClosed() async throws {
+        try await checkResponseSize(payloadSize: 1_048_577, shouldPass: false)
+    }
+
     func testLiveLocalQwenWhenEnabled() async throws {
         guard ProcessInfo.processInfo.environment["QWEN_LIVE_TEST"] == "1" else {
             throw XCTSkip("Live Ollama test is explicitly opt-in")
