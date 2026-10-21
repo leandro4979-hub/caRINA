@@ -5,6 +5,7 @@ import Foundation
 @MainActor
 final class LocalOllamaViewModel: ObservableObject {
     @Published var prompt = ""
+    @Published var useQwenOpenAI = false
     @Published private(set) var response = ""
     @Published private(set) var status = ""
     @Published private(set) var isGenerating = false
@@ -37,6 +38,13 @@ final class LocalOllamaViewModel: ObservableObject {
             }
 
             do {
+                if self?.useQwenOpenAI == true {
+                    let text = try await QwenOpenAIProvider().complete(prompt: submittedPrompt)
+                    try Task.checkCancellation()
+                    self?.response = text
+                    self?.status = "Done"
+                    return
+                }
 #if DEBUG
                 let stream: AsyncThrowingStream<String, Error> = self?.useSlowStreamFixture == true
                     ? SlowStreamFixture.generate()

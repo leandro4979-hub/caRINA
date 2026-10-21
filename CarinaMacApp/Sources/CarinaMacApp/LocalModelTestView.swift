@@ -11,6 +11,10 @@ struct LocalModelTestView: View {
             Text("Uses Ollama only on this Mac. Nothing is sent over the network.")
                 .foregroundStyle(.secondary)
 
+            Toggle("Qwen via OpenAI-compatible local API", isOn: $viewModel.useQwenOpenAI)
+                .disabled(viewModel.isGenerating)
+                .accessibilityIdentifier("QwenProviderToggle")
+
 #if DEBUG
             Toggle("Slow stream test mode", isOn: $viewModel.useSlowStreamFixture)
                 .accessibilityIdentifier("SlowStreamToggle")
