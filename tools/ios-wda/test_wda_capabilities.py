@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from wda_capabilities import build_capabilities
+from wda_capabilities import build_capabilities, validated_appium_url
 
 
 class CapabilitiesTests(unittest.TestCase):
@@ -72,6 +72,35 @@ class CapabilitiesTests(unittest.TestCase):
                 os.environ["CARINA_WDA_MODE"] = mode
                 with self.assertRaisesRegex(RuntimeError, "CARINA_IOS_UDID"):
                     build_capabilities()
+
+
+    def test_appium_url_accepts_literal_loopback(self):
+        for url in ("http://127.0.0.1:4723", "http://[::1]:4723/", "http://127.1:4723"):
+            with self.subTest(url=url):
+                self.assertEqual(validated_appium_url(url), url.rstrip("/"))
+
+    def test_appium_url_rejects_remote_or_ambiguous_addresses(self):
+        invalid = (
+            "http://192.168.1.5:4723",
+            "http://example.com:4723",
+            "http://localhost:4723",
+            "http://0.0.0.0:4723",
+            "http://[::]:4723",
+            "https://127.0.0.1:4723",
+            "http://127.0.0.1:4723/wd/hub",
+            "http://127.0.0.1:4723?redirect=https://example.com",
+            "http://user:pass@127.0.0.1:4723",
+            "http://127.0.0.1",
+            "http://127.0.0.1:invalid",
+            "http://127.0.0.1:99999",
+            "file:///tmp/socket",
+            "http://127.0.0.1:4723#fragment",
+        )
+        for url in invalid:
+            with self.subTest(url=url):
+                with self.assertRaises(ValueError):
+                    validated_appium_url(url)
+
 
 
 if __name__ == "__main__":
