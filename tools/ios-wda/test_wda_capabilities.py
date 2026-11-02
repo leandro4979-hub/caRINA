@@ -75,7 +75,7 @@ class CapabilitiesTests(unittest.TestCase):
 
 
     def test_appium_url_accepts_literal_loopback(self):
-        for url in ("http://127.0.0.1:4723", "http://[::1]:4723/", "http://127.1:4723"):
+        for url in ("http://127.0.0.1:4723", "http://[::1]:4723/", "http://127.0.0.2:4723"):
             with self.subTest(url=url):
                 self.assertEqual(validated_appium_url(url), url.rstrip("/"))
 
