@@ -11,7 +11,7 @@ from appium.options.common import AppiumOptions
 from wda_capabilities import build_capabilities
 
 
-APPIUM_URL = os.environ.get("APPIUM_URL", "http://127.0.0.1:4723/wd/hub").rstrip("/")
+APPIUM_URL = os.environ.get("APPIUM_URL", "http://127.0.0.1:4723").rstrip("/")
 
 
 def appium_server_is_alive() -> bool:
@@ -48,15 +48,15 @@ def main() -> int:
         print(f"Session ID: {driver.session_id}")
         print(f"Status: {status}")
 
-        screenshot = driver.get_screenshot_as_png()
-        if not screenshot:
-            raise RuntimeError("WDA session exists but returned an empty screenshot.")
-
-        output_path = "wda-smoke-test.png"
-        with open(output_path, "wb") as output_file:
-            output_file.write(screenshot)
-
-        print(f"Screenshot captured successfully: {output_path}")
+        # Screenshot capture is explicitly opt-in to avoid recording personal apps.
+        if os.environ.get("CARINA_WDA_CAPTURE_SCREENSHOT") == "1":
+            screenshot = driver.get_screenshot_as_png()
+            if not screenshot:
+                raise RuntimeError("WDA session exists but returned an empty screenshot.")
+            output_path = "wda-smoke-test.png"
+            with open(output_path, "wb") as output_file:
+                output_file.write(screenshot)
+            print(f"Screenshot captured successfully: {output_path}")
         return 0
 
     except Exception as exc:
