@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import os
+from ipaddress import ip_address
+from urllib.parse import urlsplit
+
 from pathlib import Path
 from typing import Any
 
@@ -52,3 +55,25 @@ def build_capabilities() -> dict[str, Any]:
         })
 
     return capabilities
+
+def validated_appium_url(value: str) -> str:
+    """Reject non-loopback endpoints and ambiguous URL components."""
+    try:
+        parsed = urlsplit(value)
+        address = ip_address(parsed.hostname or "")
+        if (
+            parsed.scheme != "http"
+            or not address.is_loopback
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+            or parsed.path not in ("", "/")
+            or parsed.port is None
+        ):
+            raise ValueError("Invalid Appium URL")
+    except ValueError as exc:
+        raise ValueError(
+            "APPIUM_URL must be http://127.0.0.1:PORT or http://[::1]:PORT"
+        ) from exc
+    return value.rstrip("/")
