@@ -81,6 +81,8 @@ class CapabilitiesTests(unittest.TestCase):
 
     def test_appium_url_rejects_remote_or_ambiguous_addresses(self):
         invalid = (
+            "http://127.1:4723",
+            "http://2130706433:4723",
             "http://192.168.1.5:4723",
             "http://example.com:4723",
             "http://localhost:4723",
