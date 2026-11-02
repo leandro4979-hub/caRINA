@@ -317,3 +317,12 @@ coverage under `CARINAApprovalBoundary/Tests/CarinaTests`.
 **Verification:** Ten focused `AgentWorkCoordinatorTests` cases cover the valid
 four-worker path and fail-closed identity, role, evidence, scope,
 contradiction, and reproduction paths. The full Swift suite is enforced by CI.
+
+## CI specification synchronization (CI-SYNC-001)
+
+Branch-creation pushes supply an all-zero previous SHA. The specification
+gate compares the full committed tree against Git's empty tree in this case.
+Normal events keep their merge-base comparison; unavailable nonzero bases
+remain failures. Pipeline implementation or test changes still require the
+specification or security document. Regression coverage uses isolated Git
+repositories in `tests/test_spec_sync.py`.
