@@ -8,7 +8,7 @@ The existing `preinstalled` mode remains the default. It requires `CARINA_IOS_UD
 
 For the previously verified local configuration the WDA team is `S6FYTWBGVH` and the updated WDA base bundle ID is `com.leandrofajardo.carina.wda`. Reverify profile validity before future sessions. Do not automatically create or revoke certificates, register devices, or refresh provisioning profiles.
 
-Run `python3 -m unittest discover -s tools/ios-wda -p 'test_wda_capabilities.py' -v` from the repository root with `PYTHONPATH=tools/ios-wda`. The smoke script uses Appium 3's root endpoint `http://127.0.0.1:4723` by default. It requires isolated Python dependencies `Appium-Python-Client` and `requests`. Its screenshot option is **off** by default and requires `CARINA_WDA_CAPTURE_SCREENSHOT=1`.
+Run `python3 -m unittest discover -s tools/ios-wda -p 'test_wda_capabilities.py' -v` from the repository root with `PYTHONPATH=tools/ios-wda`. The smoke script uses Appium 3's root endpoint `http://127.0.0.1:4723` by default. `APPIUM_URL` overrides are restricted to HTTP with a literal loopback IP address and explicit port, without userinfo, paths, query strings, or fragments. DNS names and non-loopback addresses are rejected before connecting. Remote Appium access requires a separately reviewed transport adapter, not an override to this smoke script. It requires isolated Python dependencies `Appium-Python-Client` and `requests`. Its screenshot option is **off** by default and requires `CARINA_WDA_CAPTURE_SCREENSHOT=1`.
 
 ## Authorization boundary
 
